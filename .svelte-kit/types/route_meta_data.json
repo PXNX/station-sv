@@ -1,0 +1,9 @@
+{
+	"/": [
+		"src/routes/+page.server.ts"
+	],
+	"/privacy-policy": [],
+	"/station/[id]": [
+		"src/routes/station/[id]/+page.server.ts"
+	]
+}
