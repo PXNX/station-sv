@@ -4,6 +4,76 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { Station } from '$lib/types';
 
+interface BahnhofDeStation {
+	number: number;
+	name: string;
+	mailingAddress?: {
+		city?: string;
+		zipcode?: string;
+		street?: string;
+	};
+	evaNumbers?: Array<{
+		number: number;
+		geographicCoordinates?: {
+			coordinates: [number, number]; // [longitude, latitude]
+		};
+	}>;
+	ril100Identifiers?: Array<{
+		rilIdentifier: string;
+	}>;
+}
+
+async function fetchStationFromBahnhofDe(stationId: number): Promise<Partial<Station> | null> {
+	try {
+		const response = await fetch(
+			`https://apis.deutschebahn.com/db-api-marketplace/apis/station-data/v2/stations/${stationId}`,
+			{
+				headers: {
+					Accept: 'application/json'
+				}
+			}
+		);
+
+		if (!response.ok) {
+			console.error(`Failed to fetch station from bahnhof.de: ${response.status}`);
+			return null;
+		}
+
+		const data: BahnhofDeStation = await response.json();
+
+		// Extract coordinates from evaNumbers
+		let latitude: number | undefined;
+		let longitude: number | undefined;
+
+		if (data.evaNumbers && data.evaNumbers.length > 0) {
+			const primaryEva = data.evaNumbers[0];
+			if (primaryEva.geographicCoordinates?.coordinates) {
+				[longitude, latitude] = primaryEva.geographicCoordinates.coordinates;
+			}
+		}
+
+		return {
+			station_id: data.number,
+			name: data.name,
+			city: data.mailingAddress?.city,
+			country: 'Germany',
+			latitude,
+			longitude
+		};
+	} catch (err) {
+		console.error('Error fetching from bahnhof.de:', err);
+		return null;
+	}
+}
+
+function getStationImageUrl(stationId: number): string {
+	return `https://map.railway-stations.org/station.php?stationId=${stationId}`;
+}
+
+function getStationPdfUrl(stationId: number): string {
+	return `https://www.bahnhof.de/downloads/station-plans/${stationId}.pdf`;
+}
+
 const mockStations: Station[] = [
 	{
 		station_id: 1071,
@@ -96,20 +166,45 @@ const mockStations: Station[] = [
 	}
 ];
 
-export const load = async ({ params }: Parameters<PageServerLoad>[0]) => {
+export const load = async ({ params, fetch }: Parameters<PageServerLoad>[0]) => {
 	const stationId = parseInt(params.id);
 
 	if (isNaN(stationId)) {
 		throw error(400, 'Invalid station ID');
 	}
 
-	const station = mockStations.find((s) => s.station_id === stationId);
+	// First, try to find in mock data
+	let station = mockStations.find((s) => s.station_id === stationId);
 
+	// If not in mock data, try to fetch from API
 	if (!station) {
-		throw error(404, 'Station not found');
+		const apiData = await fetchStationFromBahnhofDe(stationId);
+
+		if (apiData && apiData.name) {
+			// Create a basic station object from API data
+			station = {
+				station_id: stationId,
+				name: apiData.name,
+				city: apiData.city,
+
+				latitude: apiData.latitude,
+				longitude: apiData.longitude,
+				has_warm_sleep: false,
+				has_outlets: false,
+				has_toilets: false,
+				is_open_24h: false,
+				additional_info:
+					'Station information not yet available. Please contribute if you visit this station!'
+			};
+		} else {
+			throw error(404, 'Station not found');
+		}
 	}
 
+	// Add image and PDF URLs
 	return {
-		station
+		station,
+		imageUrl: getStationImageUrl(stationId),
+		pdfUrl: getStationPdfUrl(stationId)
 	};
 };
