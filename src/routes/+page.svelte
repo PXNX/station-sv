@@ -1,6 +1,5 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import type { Station } from '$lib/types';
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
@@ -15,6 +14,7 @@
 	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import type { PageData, ActionData } from './$types';
+	import type { StationResult } from '$lib/types';
 
 	interface Props {
 		data: PageData;
@@ -25,7 +25,7 @@
 
 	// Station search state
 	let stationSearchTerm = $state($page.url.searchParams.get('name') || '');
-	let searchResults: Station[] = $state(data.stations || []);
+	let searchResults: StationResult[] = $state(data.stations || []);
 	let stationLoading = $state(false);
 
 	// Station filters - initialize from URL params
@@ -112,8 +112,6 @@
 	/>
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
-
-<svelte:window onclick={handleClickOutside} />
 
 <!-- Header -->
 <header class="mb-10 text-center">
@@ -263,22 +261,33 @@
 	</div>
 {/if}
 
+{$inspect(searchResults)}
+
+<!--  Station Card section -->
 {#if searchResults.length > 0}
 	<div class="space-y-4">
-		{#each searchResults as station (station.station_id)}
+		{#each searchResults as station (station.eva)}
 			<a
-				href={`/station/${station.station_id}`}
+				href={`/station/${station.eva}`}
 				class="card group overflow-hidden border border-white/30 bg-white/10 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-white/50 hover:bg-white/20"
-				style="view-transition-name: station-{station.station_id}"
+				style="view-transition-name: station-{station.eva}"
 			>
-				<div class="card-body p-4">
-					<div class="flex items-start gap-4">
-						<!-- Station Icon -->
-						<div class="flex-shrink-0" style="view-transition-name: icon-{station.station_id}">
+				<div class="card-body p-0">
+					<div class="flex flex-1 items-start gap-4 p-4">
+						<div class="flex-shrink-0" style="view-transition-name: icon-{station.eva}">
 							<div
 								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 ring-4 ring-white/40 ring-offset-4 ring-offset-transparent transition-all duration-300 group-hover:ring-white/60"
 							>
-								<FluentEmojiStation class="h-10 w-10" />
+								{#if station.photoUrl}
+									<img
+										src={station.photoUrl}
+										alt={station.name}
+										class="h-full w-full rounded-2xl object-cover transition-transform duration-300 group-hover:scale-110"
+										style="view-transition-name: photo-{station.eva}"
+									/>
+								{:else}
+									<FluentEmojiStation class="h-10 w-10" />
+								{/if}
 							</div>
 						</div>
 
@@ -289,13 +298,17 @@
 							>
 								{station.name}
 							</h3>
-							{#if station.city}
-								<p
-									class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
-								>
-									{station.city}
-								</p>
-							{/if}
+							<div
+								class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
+							>
+								{#if station.city}
+									<span>{station.city}, </span>
+								{/if}
+								{station.country.toUpperCase()}
+								{#if station.eva}
+									#{station.eva}
+								{/if}
+							</div>
 
 							<!-- Amenities Tags -->
 							<div class="mt-3 flex flex-wrap gap-2">
@@ -315,14 +328,7 @@
 										Outlets
 									</span>
 								{/if}
-								{#if station.has_toilets}
-									<span
-										class="badge badge-sm flex items-center gap-1 border-blue-400/50 bg-blue-400/20 text-blue-100"
-									>
-										<FluentEmojiToilet class="h-3 w-3" />
-										Toilets
-									</span>
-								{/if}
+
 								{#if station.toilets_open_at_night}
 									<span
 										class="badge badge-sm flex items-center gap-1 border-blue-300/50 bg-blue-300/20 text-blue-100"

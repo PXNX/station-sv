@@ -13,7 +13,8 @@
 	import FluentEmojiWarning from '~icons/fluent-emoji/warning';
 
 	interface Station {
-		station_id: number;
+		eva: number;
+		station_id_ger: number | null;
 		name: string;
 		city: string | null;
 		country: string;
@@ -83,10 +84,10 @@
 	function goBack() {
 		if (hasChanges) {
 			if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-				goto(`/station/${data.station.station_id}`);
+				goto(`/station/${data.station.eva}`);
 			}
 		} else {
-			goto(`/station/${data.station.station_id}`);
+			goto(`/station/${data.station.eva}`);
 		}
 	}
 
@@ -141,6 +142,7 @@
 		{#if data.station.city}
 			<p class="text-sm text-white/50">{data.station.city}, {data.station.country}</p>
 		{/if}
+		<p class="text-xs text-white/40">EVA: {data.station.eva}</p>
 	</div>
 
 	<!-- Edit Form -->

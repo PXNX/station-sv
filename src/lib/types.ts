@@ -1,7 +1,7 @@
 // src/lib/types.ts
 
 export interface Station {
-	station_id: number;
+	eva: number;
 	name: string;
 	city?: string;
 
@@ -33,3 +33,16 @@ export interface SearchParams {
 	name?: string;
 	country?: string;
 }
+
+export type StationResult = {
+	eva: number;
+	name: string;
+	city: string | null;
+	country: string;
+	has_warm_sleep: boolean;
+	has_outlets: boolean;
+	has_toilets: boolean;
+	toilets_open_at_night: boolean;
+	is_open_24h: boolean;
+	photoUrl: string | null;
+};

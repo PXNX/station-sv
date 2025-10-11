@@ -2,7 +2,13 @@
 import { pgTable, varchar, boolean, integer, text, doublePrecision } from 'drizzle-orm/pg-core';
 
 export const stations = pgTable('stations', {
-	stationId: integer('station_id').primaryKey(),
+	// Primary key: EVA number (European station identifier)
+	eva: integer('eva').primaryKey(),
+
+	// German station ID - used for railway-stations.org API photo lookups
+	// Example: 1071 for Fulda (while EVA would be 8011160)
+	stationIdGER: integer('station_id_ger'),
+
 	name: varchar('name', { length: 255 }).notNull(),
 	city: varchar('city', { length: 255 }),
 	country: varchar('country', { length: 2 }).notNull(),

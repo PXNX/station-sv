@@ -30,19 +30,19 @@
 	let favorites = $state<number[]>([]);
 
 	function toggleFavorite() {
-		const index = favorites.indexOf(station.station_id);
+		const index = favorites.indexOf(station.eva);
 
 		if (index > -1) {
 			favorites.splice(index, 1);
 			isFavorite = false;
 		} else {
-			favorites.push(station.station_id);
+			favorites.push(station.eva);
 			isFavorite = true;
 		}
 	}
-
+	s;
 	$effect(() => {
-		isFavorite = favorites.includes(station.station_id);
+		isFavorite = favorites.includes(station.eva);
 	});
 
 	function goBack() {
@@ -50,7 +50,7 @@
 	}
 
 	function goToEdit() {
-		goto(`/station/${station.station_id}/edit`);
+		goto(`/station/${station.eva}/edit`);
 	}
 
 	function nextPhoto() {
@@ -92,7 +92,7 @@
 </div>
 
 <!-- Station Header -->
-<div class="mb-8" style="view-transition-name: station-{station.station_id}">
+<div class="mb-8" style="view-transition-name: station-{station.eva}">
 	<div class="mb-4 flex items-start justify-between gap-4">
 		<div>
 			<h1 class="mb-2 text-3xl font-bold text-white">
@@ -119,12 +119,7 @@
 
 	<!-- Community Photos -->
 	{#if photos && photos.length > 0}
-		<div class="mb-6">
-			<h3 class="mb-3 flex items-center gap-2 text-sm font-medium text-white/70">
-				<FluentEmojiCamera class="h-5 w-5" />
-				<span>Station Photos ({selectedPhotoIndex + 1}/{photos.length})</span>
-			</h3>
-
+		<div class="mb-4">
 			<!-- Main Photo Display -->
 			<div
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
@@ -132,7 +127,7 @@
 				<img
 					src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
 					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-					class="h-96 w-full object-cover"
+					class="h-80 w-full object-cover"
 				/>
 
 				<!-- Photo Navigation Arrows -->
@@ -175,31 +170,10 @@
 					{/if}
 				</div>
 			</div>
-
-			<!-- Photo Thumbnails -->
-			{#if photos.length > 1}
-				<div class="mt-3 flex gap-2 overflow-x-auto pb-2">
-					{#each photos as photo, index}
-						<button
-							onclick={() => (selectedPhotoIndex = index)}
-							class="flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all {selectedPhotoIndex ===
-							index
-								? 'border-blue-400 ring-2 ring-blue-400/50'
-								: 'border-white/20 hover:border-white/40'}"
-						>
-							<img
-								src="{photoBaseUrl}{photo.path}"
-								alt="Thumbnail"
-								class="h-16 w-24 object-cover"
-							/>
-						</button>
-					{/each}
-				</div>
-			{/if}
 		</div>
 	{:else}
 		<!-- Fallback message when no photos available -->
-		<div class="mb-6 rounded-lg border border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
+		<div class="mb-4 rounded-lg border border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
 			<FluentEmojiCamera class="mx-auto mb-3 h-12 w-12 opacity-50" />
 			<p class="text-white/60">No photos available for this station yet</p>
 			<p class="mt-1 text-sm text-white/40">Be the first to contribute!</p>

@@ -27,17 +27,17 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/privacy-policy" | "/station" | "/station/[id]" | "/station/[id]/edit";
+		RouteId(): "/" | "/privacy-policy" | "/station" | "/station/[eva]" | "/station/[eva]/edit";
 		RouteParams(): {
-			"/station/[id]": { id: string };
-			"/station/[id]/edit": { id: string }
+			"/station/[eva]": { eva: string };
+			"/station/[eva]/edit": { eva: string }
 		};
 		LayoutParams(): {
-			"/": { id?: string };
+			"/": { eva?: string };
 			"/privacy-policy": Record<string, never>;
-			"/station": { id?: string };
-			"/station/[id]": { id: string };
-			"/station/[id]/edit": { id: string }
+			"/station": { eva?: string };
+			"/station/[eva]": { eva: string };
+			"/station/[eva]/edit": { eva: string }
 		};
 		Pathname(): "/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {} | `/station/${string}/edit` & {} | `/station/${string}/edit/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
