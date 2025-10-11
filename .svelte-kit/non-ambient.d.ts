@@ -27,17 +27,19 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/privacy-policy" | "/station" | "/station/[id]";
+		RouteId(): "/" | "/privacy-policy" | "/station" | "/station/[id]" | "/station/[id]/edit";
 		RouteParams(): {
-			"/station/[id]": { id: string }
+			"/station/[id]": { id: string };
+			"/station/[id]/edit": { id: string }
 		};
 		LayoutParams(): {
 			"/": { id?: string };
 			"/privacy-policy": Record<string, never>;
 			"/station": { id?: string };
-			"/station/[id]": { id: string }
+			"/station/[id]": { id: string };
+			"/station/[id]/edit": { id: string }
 		};
-		Pathname(): "/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {};
+		Pathname(): "/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {} | `/station/${string}/edit` & {} | `/station/${string}/edit/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/favicon.png" | string & {};
 	}
