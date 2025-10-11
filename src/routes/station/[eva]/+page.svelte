@@ -178,7 +178,12 @@
 		<div class="mb-4 rounded-lg border border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
 			<FluentEmojiCamera class="mx-auto mb-3 h-12 w-12 opacity-50" />
 			<p class="text-white/60">No photos available for this station yet</p>
-			<p class="mt-1 text-sm text-white/40">Be the first to contribute!</p>
+			<p class="mt-1 text-sm text-white/40">
+				Be the first to <a
+					href="https://map.railway-stations.org/upload.php?countryCode={station.country.toLowerCase()}&stationId=Z{station.station_id_ger}"
+					class="text-blue-500">contribute</a
+				> a photo!
+			</p>
 		</div>
 	{/if}
 </div>
