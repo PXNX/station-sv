@@ -22,7 +22,7 @@
 	}
 
 	// Determine which icon to show based on error type
-	const errorIcon = $derived(() => {
+	const errorIcon = $derived.by(() => {
 		if (isStationNotFound) return FluentEmojiMagnifyingGlassTiltedLeft;
 		if (status === 404) return FluentEmojiFaceWithRaisedEyebrow;
 		if (status === 400) return FluentEmojiWarning;

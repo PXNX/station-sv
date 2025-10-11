@@ -8,6 +8,12 @@
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
 	import FluentEmojiToilet from '~icons/fluent-emoji/toilet';
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
+	import FluentEmojiTwelveOclock from '~icons/fluent-emoji/twelve-oclock';
+	import FluentEmojiFire from '~icons/fluent-emoji/fire';
+	import FluentEmojiCrescentMoon from '~icons/fluent-emoji/crescent-moon';
+	import FluentEmojiRedCircle from '~icons/fluent-emoji/red-circle';
+	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
+	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import type { PageData, ActionData } from './$types';
 
 	interface Props {
@@ -111,8 +117,11 @@
 
 <!-- Header -->
 <header class="mb-10 text-center">
-	<FluentEmojiStation class="h-8 w-8" />
-	<h1 class="text-2xl font-bold text-white">Train Station Search</h1>
+	<div class="mb-4 flex justify-center">
+		<FluentEmojiStation class="h-16 w-16" />
+	</div>
+	<h1 class="text-3xl font-bold text-white">Train Station Search</h1>
+	<p class="mt-2 text-white/70">Find stations with sleeping spots, outlets & facilities</p>
 </header>
 
 <!-- Search Form -->
@@ -150,7 +159,10 @@
 								class="block w-full px-4 py-3 text-left transition-colors hover:bg-blue-100"
 								onclick={() => selectStationSuggestion(suggestion)}
 							>
-								<div class="font-semibold text-gray-800">{suggestion.name}</div>
+								<div class="flex items-center gap-2 font-semibold text-gray-800">
+									<FluentLocation24Regular class="h-4 w-4" />
+									{suggestion.name}
+								</div>
 								{#if suggestion.id}
 									<div class="text-xs text-gray-600">{suggestion.id}</div>
 								{/if}
@@ -169,7 +181,8 @@
 						bind:checked={filterOpen24h}
 						class="checkbox checkbox-sm border-white/40"
 					/>
-					<span class="text-sm text-white">🕐 Open 24/7</span>
+					<FluentEmojiTwelveOclock class="h-5 w-5" />
+					<span class="text-sm text-white">Open 24/7</span>
 				</label>
 
 				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
@@ -179,7 +192,8 @@
 						bind:checked={filterOutletAvailable}
 						class="checkbox checkbox-sm border-white/40"
 					/>
-					<span class="text-sm text-white">⚡ Outlet available</span>
+					<FluentEmojiHighVoltage class="h-5 w-5" />
+					<span class="text-sm text-white">Outlet available</span>
 				</label>
 
 				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
@@ -189,7 +203,8 @@
 						bind:checked={filterWarmSleep}
 						class="checkbox checkbox-sm border-white/40"
 					/>
-					<span class="text-sm text-white">🔥 Warm sleeping spots</span>
+					<FluentEmojiFire class="h-5 w-5" />
+					<span class="text-sm text-white">Warm sleeping spots</span>
 				</label>
 
 				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
@@ -199,7 +214,8 @@
 						bind:checked={filterToiletsAtNight}
 						class="checkbox checkbox-sm border-white/40"
 					/>
-					<span class="text-sm text-white">🚽 Toilets at night</span>
+					<FluentEmojiCrescentMoon class="h-5 w-5" />
+					<span class="text-sm text-white">Toilets at night</span>
 				</label>
 			</div>
 
@@ -262,19 +278,7 @@
 							<div
 								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 ring-4 ring-white/40 ring-offset-4 ring-offset-transparent transition-all duration-300 group-hover:ring-white/60"
 							>
-								<svg
-									class="h-8 w-8 text-white"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-									/>
-								</svg>
+								<FluentEmojiStation class="h-10 w-10" />
 							</div>
 						</div>
 
@@ -297,35 +301,49 @@
 							<div class="mt-3 flex flex-wrap gap-2">
 								{#if station.has_warm_sleep}
 									<span
-										class="badge badge-sm border-orange-400/50 bg-orange-400/20 text-orange-100"
+										class="badge badge-sm flex items-center gap-1 border-orange-400/50 bg-orange-400/20 text-orange-100"
 									>
-										🔥 Warm Sleep
+										<FluentEmojiFire class="h-3 w-3" />
+										Warm Sleep
 									</span>
 								{/if}
 								{#if station.has_outlets}
 									<span
-										class="badge badge-sm border-yellow-400/50 bg-yellow-400/20 text-yellow-100"
+										class="badge badge-sm flex items-center gap-1 border-yellow-400/50 bg-yellow-400/20 text-yellow-100"
 									>
-										<FluentEmojiHighVoltage /> Outlets
+										<FluentEmojiHighVoltage class="h-3 w-3" />
+										Outlets
 									</span>
 								{/if}
 								{#if station.has_toilets}
-									<span class="badge badge-sm border-blue-400/50 bg-blue-400/20 text-blue-100">
-										<FluentEmojiToilet /> Toilets
+									<span
+										class="badge badge-sm flex items-center gap-1 border-blue-400/50 bg-blue-400/20 text-blue-100"
+									>
+										<FluentEmojiToilet class="h-3 w-3" />
+										Toilets
 									</span>
 								{/if}
 								{#if station.toilets_open_at_night}
-									<span class="badge badge-sm border-blue-300/50 bg-blue-300/20 text-blue-100">
-										🌙 Night Toilets
+									<span
+										class="badge badge-sm flex items-center gap-1 border-blue-300/50 bg-blue-300/20 text-blue-100"
+									>
+										<FluentEmojiCrescentMoon class="h-3 w-3" />
+										Night Toilets
 									</span>
 								{/if}
 								{#if station.is_open_24h}
-									<span class="badge badge-sm border-green-400/50 bg-green-400/20 text-green-100">
-										🕐 24/7 Open
+									<span
+										class="badge badge-sm flex items-center gap-1 border-green-400/50 bg-green-400/20 text-green-100"
+									>
+										<FluentEmojiGreenCircle class="h-3 w-3" />
+										24/7 Open
 									</span>
 								{:else}
-									<span class="badge badge-sm border-red-400/50 bg-red-400/20 text-red-100">
-										🕐 Limited Hours
+									<span
+										class="badge badge-sm flex items-center gap-1 border-red-400/50 bg-red-400/20 text-red-100"
+									>
+										<FluentEmojiRedCircle class="h-3 w-3" />
+										Limited Hours
 									</span>
 								{/if}
 							</div>
@@ -347,10 +365,10 @@
 <!-- Empty State -->
 {#if showEmptyState}
 	<div class="card border border-white/30 bg-white/10 backdrop-blur-md">
-		<div class="card-body items-center justify-center gap-y-2 py-20">
-			<FluentEmojiFaceWithRaisedEyebrow class="h-12 w-12" />
+		<div class="card-body items-center justify-center gap-y-4 py-20">
+			<FluentEmojiFaceWithRaisedEyebrow class="h-16 w-16" />
 			<h3 class="text-2xl font-bold text-white">No stations found</h3>
-			<p class="text-lg text-white/70">
+			<p class="text-center text-lg text-white/70">
 				Try adjusting your search or filters. Make sure to enter at least 2 characters.
 			</p>
 		</div>
