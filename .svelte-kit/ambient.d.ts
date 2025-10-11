@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const DATABASE_URL: string;
 	export const ALLUSERSPROFILE: string;
 	export const APPDATA: string;
 	export const BUN_INSPECT_CONNECT_TO: string;
@@ -129,6 +130,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		DATABASE_URL: string;
 		ALLUSERSPROFILE: string;
 		APPDATA: string;
 		BUN_INSPECT_CONNECT_TO: string;

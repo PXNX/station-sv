@@ -5,5 +5,8 @@
 	"/privacy-policy": [],
 	"/station/[id]": [
 		"src/routes/station/[id]/+page.server.ts"
+	],
+	"/station/[id]/edit": [
+		"src/routes/station/[id]/edit/+page.server.ts"
 	]
 }

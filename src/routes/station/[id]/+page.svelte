@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
+	import FluentEdit24Regular from '~icons/fluent/edit-24-regular';
 	import FluentEmojiBed from '~icons/fluent-emoji/bed';
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
 	import FluentEmojiToilet from '~icons/fluent-emoji/toilet';
@@ -17,13 +18,13 @@
 	}
 
 	let { data }: Props = $props();
-	const { station, imageUrl, pdfUrl } = data;
+	const { station, photos, photoBaseUrl, imageUrl, pdfUrl } = data;
 
 	let isFavorite = $state(false);
 	let imageLoaded = $state(false);
 	let imageError = $state(false);
 
-	// In-memory favorites storage (no localStorage)
+	// In-memory favorites storage
 	let favorites = $state<number[]>([]);
 
 	function toggleFavorite() {
@@ -46,6 +47,10 @@
 		goto('/');
 	}
 
+	function goToEdit() {
+		goto(`/station/${station.station_id}/edit`);
+	}
+
 	function handleImageLoad() {
 		imageLoaded = true;
 		imageError = false;
@@ -63,16 +68,26 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-<!-- Back Button -->
-<button
-	onclick={goBack}
-	class="group mb-6 inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
->
-	<FluentArrowLeft24Regular class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-	<span>Back</span>
-</button>
+<!-- Navigation Buttons -->
+<div class="mb-6 flex items-center justify-between gap-4">
+	<button
+		onclick={goBack}
+		class="group inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
+	>
+		<FluentArrowLeft24Regular class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+		<span>Back</span>
+	</button>
 
-<!-- Station Header with Image -->
+	<button
+		onclick={goToEdit}
+		class="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
+	>
+		<FluentEdit24Regular class="h-5 w-5" />
+		<span>Edit Details</span>
+	</button>
+</div>
+
+<!-- Station Header -->
 <div class="mb-8" style="view-transition-name: station-{station.station_id}">
 	<div class="mb-4 flex items-start justify-between gap-4">
 		<div>
@@ -98,21 +113,51 @@
 		</button>
 	</div>
 
-	<!-- Station Image -->
+	<!-- Community Photos -->
+	{#if photos && photos.length > 0}
+		<div class="mb-4">
+			<h3 class="mb-3 text-sm font-medium text-white/70">Community Photos</h3>
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+				{#each photos as photo}
+					<div
+						class="group relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
+					>
+						<img
+							src="{photoBaseUrl}{photo.path}"
+							alt="Station photo by {photo.photographer}"
+							class="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+						/>
+						<div
+							class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-3"
+						>
+							<p class="text-xs text-white/90">📷 {photo.photographer}</p>
+							{#if photo.createdAt}
+								<p class="text-xs text-white/60">
+									{new Date(photo.createdAt).toLocaleDateString()}
+								</p>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Station Map Image -->
 	{#if imageUrl}
 		<div
 			class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 		>
 			{#if !imageLoaded && !imageError}
 				<div class="flex h-64 items-center justify-center">
-					<div class="text-white/50">Loading image...</div>
+					<div class="text-white/50">Loading map...</div>
 				</div>
 			{/if}
 
 			{#if !imageError}
 				<img
 					src={imageUrl}
-					alt="{station.name} station"
+					alt="{station.name} station map"
 					class="h-auto max-h-96 w-full object-cover"
 					class:hidden={!imageLoaded}
 					onload={handleImageLoad}
@@ -121,7 +166,7 @@
 			{:else}
 				<div class="flex h-48 items-center justify-center">
 					<div class="text-center text-white/50">
-						<p>Station image not available</p>
+						<p>Station map not available</p>
 					</div>
 				</div>
 			{/if}
@@ -177,6 +222,12 @@
 				{station.has_toilets ? 'Yes' : 'No'}
 			</span>
 		</div>
+		<div class="mb-2 flex items-center justify-between text-sm">
+			<span class="text-white/70">Open at night:</span>
+			<span class={station.toilets_open_at_night ? 'text-green-300' : 'text-red-300'}>
+				{station.toilets_open_at_night ? 'Yes' : 'No'}
+			</span>
+		</div>
 		{#if station.toilet_notes}
 			<p class="text-sm text-white/60">{station.toilet_notes}</p>
 		{/if}
@@ -220,7 +271,7 @@
 		class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
 	>
 		<FluentEmojiWorldMap class="h-5 w-5" />
-		Station Map
+		Station Map (PDF)
 	</a>
 
 	{#if station.latitude && station.longitude}
