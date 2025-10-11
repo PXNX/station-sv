@@ -4,6 +4,7 @@ export interface Station {
 	eva: number;
 	name: string;
 	city?: string;
+	country: string;
 
 	// Sleeping information
 	has_warm_sleep: boolean;
