@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		station: {
-			station_id: station.eva,
+			eva: station.eva,
 			name: station.name,
 			city: station.city,
 			country: station.country,
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
 	default: async ({ request, params }) => {
-		const eva = parseInt(params.id);
+		const eva = parseInt(params.eva);
 		const formData = await request.formData();
 
 		// Extract form data
