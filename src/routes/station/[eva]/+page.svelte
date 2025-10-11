@@ -14,6 +14,9 @@
 	import FluentEmojiCamera from '~icons/fluent-emoji/camera';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentMap24Regular from '~icons/fluent/map-24-regular';
+	import FluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
+	import FluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
+
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -40,7 +43,7 @@
 			isFavorite = true;
 		}
 	}
-	s;
+
 	$effect(() => {
 		isFavorite = favorites.includes(station.eva);
 	});
@@ -137,21 +140,14 @@
 						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
 						aria-label="Previous photo"
 					>
-						<FluentArrowLeft24Regular class="h-6 w-6" />
+						<FluentChevronLeft24Regular class="h-6 w-6" />
 					</button>
 					<button
 						onclick={nextPhoto}
 						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
 						aria-label="Next photo"
 					>
-						<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9 5l7 7-7 7"
-							/>
-						</svg>
+						<FluentChevronRight24Regular class="h-6 w-6" />
 					</button>
 				{/if}
 
@@ -165,7 +161,13 @@
 					</p>
 					{#if photos[selectedPhotoIndex].createdAt}
 						<p class="text-xs text-white/60">
-							{new Date(photos[selectedPhotoIndex].createdAt).toLocaleDateString()}
+							{(() => {
+								const date = new Date(photos[selectedPhotoIndex].createdAt);
+								const day = String(date.getDate()).padStart(2, '0');
+								const month = String(date.getMonth() + 1).padStart(2, '0');
+								const year = date.getFullYear();
+								return `${day}.${month}.${year}`;
+							})()}
 						</p>
 					{/if}
 				</div>

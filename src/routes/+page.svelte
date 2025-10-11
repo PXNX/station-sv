@@ -276,7 +276,7 @@
 					<div class="flex flex-1 items-start gap-4 p-4">
 						<div class="flex-shrink-0" style="view-transition-name: icon-{station.eva}">
 							<div
-								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 ring-4 ring-white/40 ring-offset-4 ring-offset-transparent transition-all duration-300 group-hover:ring-white/60"
+								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 transition-all duration-300"
 							>
 								{#if station.photoUrl}
 									<img
@@ -301,13 +301,12 @@
 							<div
 								class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
 							>
+								#{station.eva} ·
+
 								{#if station.city}
 									<span>{station.city}, </span>
 								{/if}
 								{station.country.toUpperCase()}
-								{#if station.eva}
-									#{station.eva}
-								{/if}
 							</div>
 
 							<!-- Amenities Tags -->

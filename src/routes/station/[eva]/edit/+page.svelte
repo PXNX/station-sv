@@ -11,24 +11,7 @@
 	import FluentEmojiThreeOClock from '~icons/fluent-emoji/three-oclock';
 	import FluentEmojiInformation from '~icons/fluent-emoji/information';
 	import FluentEmojiWarning from '~icons/fluent-emoji/warning';
-
-	interface Station {
-		eva: number;
-		station_id_ger: number | null;
-		name: string;
-		city: string | null;
-		country: string;
-		has_warm_sleep: boolean;
-		sleep_notes: string | null;
-		has_outlets: boolean;
-		outlet_notes: string | null;
-		has_toilets: boolean;
-		toilet_notes: string | null;
-		toilets_open_at_night: boolean;
-		is_open_24h: boolean;
-		opening_hours: string | null;
-		additional_info: string | null;
-	}
+	import type { Station } from '$lib/types';
 
 	interface Props {
 		data: {
@@ -139,10 +122,12 @@
 	<div class="mb-8">
 		<h1 class="mb-2 text-3xl font-bold text-white">Edit Station Details</h1>
 		<p class="text-lg text-white/70">{data.station.name}</p>
-		{#if data.station.city}
-			<p class="text-sm text-white/50">{data.station.city}, {data.station.country}</p>
-		{/if}
-		<p class="text-xs text-white/40">EVA: {data.station.eva}</p>
+		<p class="text-sm text-white/50">
+			#{data.station.eva} ·
+			{#if data.station.city}
+				{data.station.city}, {data.station.country}
+			{/if}
+		</p>
 	</div>
 
 	<!-- Edit Form -->

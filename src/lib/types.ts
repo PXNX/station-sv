@@ -15,6 +15,7 @@ export interface Station {
 
 	// Toilets
 	has_toilets: boolean;
+	toilets_open_at_night: boolean;
 	toilet_notes?: string;
 
 	// Opening hours

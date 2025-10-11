@@ -10,15 +10,19 @@ import type { StationResult } from '$lib/types';
  */
 async function fetchStationPhotoById(country: string, germanId: number) {
 	try {
-		const response = await fetch(
-			`https://api.railway-stations.org/photoStationById/${country}/${germanId}`
-		);
+		const url = `https://api.railway-stations.org/photoStationById/${country.toLowerCase()}/${germanId}`;
+		console.log('Fetching photo from:', url);
+
+		const response = await fetch(url);
+		console.log('Response status:', response.status);
 
 		if (!response.ok) {
+			console.log('Response not OK:', response.statusText);
 			return null;
 		}
 
 		const data = await response.json();
+		console.log('API response data:', JSON.stringify(data, null, 2));
 
 		if (!data.stations || data.stations.length === 0) {
 			return null;
