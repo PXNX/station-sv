@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { enhance } from '$app/forms';
 	import { beforeNavigate } from '$app/navigation';
-	import FluentEmojiLeftArrow from '~icons/fluent-emoji/left-arrow';
+	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
 	import FluentEmojiDownArrow from '~icons/fluent-emoji/down-arrow';
 	import FluentEmojiBed from '~icons/fluent-emoji/bed';
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
@@ -130,7 +130,7 @@
 		type="button"
 		class="group mb-6 inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
 	>
-		<FluentEmojiLeftArrow class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+		<FluentArrowLeft24Regular class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
 		<span>Back to Station</span>
 	</button>
 
@@ -307,14 +307,6 @@
 
 		<!-- Action Buttons -->
 		<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-			<button
-				type="button"
-				onclick={goBack}
-				class="rounded-lg border border-white/20 bg-white/5 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10 disabled:opacity-50"
-				disabled={isSubmitting}
-			>
-				Cancel
-			</button>
 			<button
 				type="submit"
 				class="flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"

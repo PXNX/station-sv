@@ -11,6 +11,9 @@
 	import FluentEmojiWorldMap from '~icons/fluent-emoji/world-map';
 	import FluentEmojiStar from '~icons/fluent-emoji/star';
 	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
+	import FluentEmojiCamera from '~icons/fluent-emoji/camera';
+	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
+	import FluentMap24Regular from '~icons/fluent/map-24-regular';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -21,8 +24,7 @@
 	const { station, photos, photoBaseUrl, imageUrl, pdfUrl } = data;
 
 	let isFavorite = $state(false);
-	let imageLoaded = $state(false);
-	let imageError = $state(false);
+	let selectedPhotoIndex = $state(0);
 
 	// In-memory favorites storage
 	let favorites = $state<number[]>([]);
@@ -51,14 +53,16 @@
 		goto(`/station/${station.station_id}/edit`);
 	}
 
-	function handleImageLoad() {
-		imageLoaded = true;
-		imageError = false;
+	function nextPhoto() {
+		if (photos && photos.length > 0) {
+			selectedPhotoIndex = (selectedPhotoIndex + 1) % photos.length;
+		}
 	}
 
-	function handleImageError() {
-		imageError = true;
-		imageLoaded = false;
+	function prevPhoto() {
+		if (photos && photos.length > 0) {
+			selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
+		}
 	}
 </script>
 
@@ -115,61 +119,90 @@
 
 	<!-- Community Photos -->
 	{#if photos && photos.length > 0}
-		<div class="mb-4">
-			<h3 class="mb-3 text-sm font-medium text-white/70">Community Photos</h3>
-			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				{#each photos as photo}
-					<div
-						class="group relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
-					>
-						<img
-							src="{photoBaseUrl}{photo.path}"
-							alt="Station photo by {photo.photographer}"
-							class="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-						/>
-						<div
-							class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-3"
-						>
-							<p class="text-xs text-white/90">📷 {photo.photographer}</p>
-							{#if photo.createdAt}
-								<p class="text-xs text-white/60">
-									{new Date(photo.createdAt).toLocaleDateString()}
-								</p>
-							{/if}
-						</div>
-					</div>
-				{/each}
-			</div>
-		</div>
-	{/if}
+		<div class="mb-6">
+			<h3 class="mb-3 flex items-center gap-2 text-sm font-medium text-white/70">
+				<FluentEmojiCamera class="h-5 w-5" />
+				<span>Station Photos ({selectedPhotoIndex + 1}/{photos.length})</span>
+			</h3>
 
-	<!-- Station Map Image -->
-	{#if imageUrl}
-		<div
-			class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
-		>
-			{#if !imageLoaded && !imageError}
-				<div class="flex h-64 items-center justify-center">
-					<div class="text-white/50">Loading map...</div>
-				</div>
-			{/if}
-
-			{#if !imageError}
+			<!-- Main Photo Display -->
+			<div
+				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
+			>
 				<img
-					src={imageUrl}
-					alt="{station.name} station map"
-					class="h-auto max-h-96 w-full object-cover"
-					class:hidden={!imageLoaded}
-					onload={handleImageLoad}
-					onerror={handleImageError}
+					src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
+					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+					class="h-96 w-full object-cover"
 				/>
-			{:else}
-				<div class="flex h-48 items-center justify-center">
-					<div class="text-center text-white/50">
-						<p>Station map not available</p>
-					</div>
+
+				<!-- Photo Navigation Arrows -->
+				{#if photos.length > 1}
+					<button
+						onclick={prevPhoto}
+						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
+						aria-label="Previous photo"
+					>
+						<FluentArrowLeft24Regular class="h-6 w-6" />
+					</button>
+					<button
+						onclick={nextPhoto}
+						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
+						aria-label="Next photo"
+					>
+						<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 5l7 7-7 7"
+							/>
+						</svg>
+					</button>
+				{/if}
+
+				<!-- Photo Info -->
+				<div
+					class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4"
+				>
+					<p class="flex items-center gap-2 text-sm text-white/90">
+						<FluentEmojiCamera class="h-4 w-4" />
+						<span>Photo by {photos[selectedPhotoIndex].photographer}</span>
+					</p>
+					{#if photos[selectedPhotoIndex].createdAt}
+						<p class="text-xs text-white/60">
+							{new Date(photos[selectedPhotoIndex].createdAt).toLocaleDateString()}
+						</p>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Photo Thumbnails -->
+			{#if photos.length > 1}
+				<div class="mt-3 flex gap-2 overflow-x-auto pb-2">
+					{#each photos as photo, index}
+						<button
+							onclick={() => (selectedPhotoIndex = index)}
+							class="flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all {selectedPhotoIndex ===
+							index
+								? 'border-blue-400 ring-2 ring-blue-400/50'
+								: 'border-white/20 hover:border-white/40'}"
+						>
+							<img
+								src="{photoBaseUrl}{photo.path}"
+								alt="Thumbnail"
+								class="h-16 w-24 object-cover"
+							/>
+						</button>
+					{/each}
 				</div>
 			{/if}
+		</div>
+	{:else}
+		<!-- Fallback message when no photos available -->
+		<div class="mb-6 rounded-lg border border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
+			<FluentEmojiCamera class="mx-auto mb-3 h-12 w-12 opacity-50" />
+			<p class="text-white/60">No photos available for this station yet</p>
+			<p class="mt-1 text-sm text-white/40">Be the first to contribute!</p>
 		</div>
 	{/if}
 </div>
@@ -281,20 +314,7 @@
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-green-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-500/30"
 		>
-			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-				/>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-				/>
-			</svg>
+			<FluentLocation24Regular class="h-5 w-5" />
 			Google Maps
 		</a>
 
@@ -304,14 +324,7 @@
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-orange-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-500/30"
 		>
-			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-				/>
-			</svg>
+			<FluentMap24Regular class="h-5 w-5" />
 			OpenStreetMap
 		</a>
 	{/if}
