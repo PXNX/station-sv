@@ -22,7 +22,7 @@
 	}
 
 	// Determine which icon to show based on error type
-	const errorIcon = $derived.by(() => {
+	const ErrorIcon = $derived.by(() => {
 		if (isStationNotFound) return FluentEmojiMagnifyingGlassTiltedLeft;
 		if (status === 404) return FluentEmojiFaceWithRaisedEyebrow;
 		if (status === 400) return FluentEmojiWarning;
@@ -31,7 +31,7 @@
 	});
 
 	// Determine error title
-	const errorTitle = $derived(() => {
+	const errorTitle = $derived.by(() => {
 		if (isStationNotFound) return 'Station Not Found';
 		if (status === 404) return 'Page Not Found';
 		if (status === 400) return 'Bad Request';
@@ -40,7 +40,7 @@
 	});
 
 	// Determine helpful message
-	const helpMessage = $derived(() => {
+	const helpMessage = $derived.by(() => {
 		if (isStationNotFound)
 			return "The station you're looking for doesn't exist in our database yet. Try searching for it or check the station ID.";
 		if (status === 404)
@@ -70,7 +70,7 @@
 			<div
 				class="rounded-full bg-gradient-to-br from-red-400/20 to-orange-400/20 p-6 ring-4 ring-white/20"
 			>
-				<svelte:component this={errorIcon()} class="h-20 w-20" />
+				<ErrorIcon class="h-20 w-20" />
 			</div>
 		</div>
 
@@ -86,7 +86,7 @@
 		<p class="mb-2 text-lg text-white/80">{errorMessage}</p>
 
 		<!-- Help Message -->
-		<p class="mb-8 text-sm text-white/60">{helpMessage()}</p>
+		<p class="mb-8 text-sm text-white/60">{helpMessage}</p>
 
 		<!-- Action Buttons -->
 		<div class="flex flex-col gap-3 sm:flex-row sm:justify-center">

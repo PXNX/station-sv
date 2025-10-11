@@ -1,5 +1,6 @@
 CREATE TABLE "stations" (
-	"station_id" integer PRIMARY KEY NOT NULL,
+	"eva" integer PRIMARY KEY NOT NULL,
+	"station_id_ger" integer,
 	"name" varchar(255) NOT NULL,
 	"city" varchar(255),
 	"country" varchar(2) NOT NULL,

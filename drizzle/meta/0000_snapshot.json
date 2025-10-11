@@ -1,5 +1,5 @@
 {
-  "id": "5221b379-77d6-4f22-96b1-fe724cf5d2b8",
+  "id": "d7427d17-aa43-4bfa-898d-0f9c05552b22",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,11 +8,17 @@
       "name": "stations",
       "schema": "",
       "columns": {
-        "station_id": {
-          "name": "station_id",
+        "eva": {
+          "name": "eva",
           "type": "integer",
           "primaryKey": true,
           "notNull": true
+        },
+        "station_id_ger": {
+          "name": "station_id_ger",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "name": {
           "name": "name",

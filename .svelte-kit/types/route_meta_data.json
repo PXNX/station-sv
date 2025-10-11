@@ -3,10 +3,10 @@
 		"src/routes/+page.server.ts"
 	],
 	"/privacy-policy": [],
-	"/station/[id]": [
-		"src/routes/station/[id]/+page.server.ts"
+	"/station/[eva]": [
+		"src/routes/station/[eva]/+page.server.ts"
 	],
-	"/station/[id]/edit": [
-		"src/routes/station/[id]/edit/+page.server.ts"
+	"/station/[eva]/edit": [
+		"src/routes/station/[eva]/edit/+page.server.ts"
 	]
 }

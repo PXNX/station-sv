@@ -6,18 +6,14 @@ import { stations } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const stationId = parseInt(params.id);
+	const eva = parseInt(params.eva);
 
-	if (isNaN(stationId)) {
+	if (isNaN(eva)) {
 		throw error(400, 'Invalid station ID');
 	}
 
 	// Fetch station from database
-	const dbStation = await db
-		.select()
-		.from(stations)
-		.where(eq(stations.stationId, stationId))
-		.limit(1);
+	const dbStation = await db.select().from(stations).where(eq(stations.eva, eva)).limit(1);
 
 	if (!dbStation[0]) {
 		throw error(404, 'Station not found');
@@ -27,7 +23,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	return {
 		station: {
-			station_id: station.stationId,
+			station_id: station.eva,
 			name: station.name,
 			city: station.city,
 			country: station.country,
@@ -49,7 +45,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
 	default: async ({ request, params }) => {
-		const stationId = parseInt(params.id);
+		const eva = parseInt(params.id);
 		const formData = await request.formData();
 
 		// Extract form data
@@ -80,10 +76,10 @@ export const actions: Actions = {
 					openingHours,
 					additionalInfo
 				})
-				.where(eq(stations.stationId, stationId));
+				.where(eq(stations.eva, eva));
 
 			// Redirect back to station detail page
-			throw redirect(303, `/station/${stationId}`);
+			throw redirect(303, `/station/${eva}`);
 		} catch (err) {
 			// If it's a redirect, re-throw it
 			if (err instanceof Response) {

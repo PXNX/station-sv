@@ -1,36 +1,75 @@
 // src/routes/+page.server.ts
 import type { PageServerLoad, Actions } from './$types';
-import type { Station } from '$lib/types';
 import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
-import { eq, and, like, or, sql } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
+import type { StationResult } from '$lib/types';
 
 /**
- * Fetch recent photos from railway-stations.org API
+ * Fetch photo for a specific station by German ID
  */
-async function fetchRecentStationPhotos(sinceHours = 800) {
+async function fetchStationPhotoById(country: string, germanId: number) {
 	try {
 		const response = await fetch(
-			`https://api.railway-stations.org/photoStationsByRecentPhotoImports?sinceHours=${sinceHours}`
+			`https://api.railway-stations.org/photoStationById/${country}/${germanId}`
 		);
 
 		if (!response.ok) {
-			throw new Error(`API error: ${response.status}`);
+			return null;
 		}
 
 		const data = await response.json();
 
+		if (!data.stations || data.stations.length === 0) {
+			return null;
+		}
+
+		const station = data.stations[0];
+		if (!station.photos || station.photos.length === 0) {
+			return null;
+		}
+
+		// Get the latest photo (last in array) - most recent upload
+		const latestPhoto = station.photos[station.photos.length - 1];
+
+		// Ensure photo path is valid
+		if (!latestPhoto.path) {
+			return null;
+		}
+
 		return {
-			photoBaseUrl: data.photoBaseUrl || 'https://api.railway-stations.org/photos/',
-			stations: data.stations || []
+			photoBaseUrl: data.photoBaseUrl || 'https://api.railway-stations.org/photos',
+			photoPath: latestPhoto.path
 		};
 	} catch (error) {
-		console.error('Failed to fetch recent photos:', error);
-		return {
-			photoBaseUrl: 'https://api.railway-stations.org/photos/',
-			stations: []
-		};
+		console.error(`Failed to fetch photo for station ${country}/${germanId}:`, error);
+		return null;
 	}
+}
+
+/**
+ * Fetch photos for multiple stations in parallel
+ */
+async function fetchStationPhotos(stationIds: { country: string; germanId: number }[]) {
+	const photoPromises = stationIds
+		.filter(({ germanId }) => germanId != null)
+		.map(({ country, germanId }) =>
+			fetchStationPhotoById(country, germanId).then((photo) => ({
+				key: `${country}-${germanId}`,
+				photo
+			}))
+		);
+
+	const results = await Promise.all(photoPromises);
+
+	const photoMap = new Map();
+	for (const { key, photo } of results) {
+		if (photo) {
+			photoMap.set(key, photo);
+		}
+	}
+
+	return photoMap;
 }
 
 /**
@@ -99,44 +138,24 @@ async function searchStationsInDB(
 /**
  * Merge API photo data with local DB amenities data
  */
-function mergeStationData(dbStations: any[], apiData: any) {
-	const apiStationMap = new Map();
-
-	// Create a map of API stations by ID
-	if (apiData.stations) {
-		for (const apiStation of apiData.stations) {
-			apiStationMap.set(`${apiStation.country}-${apiStation.id}`, apiStation);
-		}
-	}
-
-	// Merge data
+function mergeStationData(dbStations: any[], photoMap: Map<string, any>): StationResult[] {
 	return dbStations.map((dbStation) => {
-		const apiStation = apiStationMap.get(`${dbStation.country}-${dbStation.stationId}`);
+		// Use stationIdGER for photo lookup
+		const photoData = dbStation.stationIdGER
+			? photoMap.get(`${dbStation.country}-${dbStation.stationIdGER}`)
+			: null;
 
 		return {
-			station_id: dbStation.stationId,
+			eva: dbStation.eva,
 			name: dbStation.name,
 			city: dbStation.city,
 			country: dbStation.country,
 			has_warm_sleep: dbStation.hasWarmSleep,
-			sleep_notes: dbStation.sleepNotes,
 			has_outlets: dbStation.hasOutlets,
-			outlet_notes: dbStation.outletNotes,
 			has_toilets: dbStation.hasToilets,
-			toilet_notes: dbStation.toiletNotes,
 			toilets_open_at_night: dbStation.toiletsOpenAtNight,
 			is_open_24h: dbStation.isOpen24h,
-			opening_hours: dbStation.openingHours,
-			latitude: dbStation.latitude,
-			longitude: dbStation.longitude,
-			additional_info: dbStation.additionalInfo,
-			// Add photo data from API if available
-			photos: apiStation?.photos || [],
-			photoUrl: apiStation?.photos?.[0]
-				? `${apiData.photoBaseUrl}${apiStation.photos[0].path}`
-				: null,
-			photographer: apiStation?.photos?.[0]?.photographer,
-			photoTimestamp: apiStation?.photos?.[0]?.createdAt
+			photoUrl: photoData ? `${photoData.photoBaseUrl}${photoData.photoPath}` : null
 		};
 	});
 }
@@ -171,11 +190,18 @@ export const load: PageServerLoad = async ({ url }) => {
 		outlets: filterOutlets
 	});
 
-	// Fetch recent photos from API
-	const apiData = await fetchRecentStationPhotos(800);
+	// Fetch photos for all found stations (using German IDs)
+	const stationIds = dbStations
+		.filter((s) => s.stationIdGER != null)
+		.map((s) => ({
+			country: s.country,
+			germanId: s.stationIdGER
+		}));
 
-	// Merge data
-	const stations = mergeStationData(dbStations, apiData);
+	const photoMap = await fetchStationPhotos(stationIds);
+
+	// Merge data with latest photos
+	const stations = mergeStationData(dbStations, photoMap);
 
 	return {
 		stations,
@@ -215,11 +241,18 @@ export const actions: Actions = {
 			outlets: filterOutlets
 		});
 
-		// Fetch recent photos from API
-		const apiData = await fetchRecentStationPhotos(800);
+		// Fetch photos for all found stations (using German IDs)
+		const stationIds = dbStations
+			.filter((s) => s.stationIdGER != null)
+			.map((s) => ({
+				country: s.country,
+				germanId: s.stationIdGER
+			}));
 
-		// Merge data
-		const stations = mergeStationData(dbStations, apiData);
+		const photoMap = await fetchStationPhotos(stationIds);
+
+		// Merge data with latest photos
+		const stations = mergeStationData(dbStations, photoMap);
 
 		return {
 			stations,
