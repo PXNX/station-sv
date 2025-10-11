@@ -1,71 +1,67 @@
 #!/usr/bin/env bun
-
 interface BahnStation {
-	EVA_NR: string;
-	DS100: string;
-	IFOPT: string;
-	NAME: string;
-	Verkehr: string;
-	Laenge: string;
-	Breite: string;
-	Betreiber_Name: string;
-	Betreiber_Nr: string;
-	Status: string;
+	eva: number;
+	ds100: string;
+	lat: number;
+	lon: number;
+	name: string;
+	is_active_ris: boolean;
+	is_active_iris: boolean;
+	meta_evas: number[];
+	available_transports: string[];
+	number_of_events: number | null;
 }
 
 interface RailwayStation {
-	id: number;
+	country: string;
+	id: string;
 	title: string;
 	lat: number;
 	lon: number;
+	photos: any[];
 	shortCode: string;
-	photographer?: string;
-	photographerUrl?: string;
-	photoUrl?: string;
-	license?: string;
-	licenseUrl?: string;
-}
-
-interface RailwayStationsResponse {
-	[key: string]: RailwayStation;
 }
 
 interface BahnStationsResponse {
-	[key: string]: BahnStation;
+	stations: BahnStation[];
 }
 
-interface EnrichedStation extends BahnStation {
-	railwayStationId?: number;
+interface RailwayStationsResponse {
+	photoBaseUrl: string;
+	licenses: any[];
+	photographers: any[];
+	stations: RailwayStation[];
+}
+
+interface OutputStation {
+	eva: number;
+	stationIdGER: number | null;
+	name: string;
+	country: string;
+	latitude: number;
+	longitude: number;
 }
 
 async function fetchStations() {
 	console.log('Fetching stations from bahnvorhersage.de...');
 	const bahnResponse = await fetch('https://bahnvorhersage.de/api/stations.json');
-	const bahnStationsObj: BahnStationsResponse = await bahnResponse.json();
-
-	// Convert object to array
-	const bahnStations: BahnStation[] = Object.values(bahnStationsObj);
+	const bahnData: BahnStationsResponse = await bahnResponse.json();
 
 	console.log('Fetching photo stations from railway-stations.org...');
 	const railwayResponse = await fetch('https://api.railway-stations.org/photoStationsByCountry/de');
-	const railwayStationsObj: RailwayStationsResponse = await railwayResponse.json();
+	const railwayData: RailwayStationsResponse = await railwayResponse.json();
 
-	// Convert object to array
-	const railwayStations: RailwayStation[] = Object.values(railwayStationsObj);
-
-	return { bahnStations, railwayStations };
+	return { bahnStations: bahnData.stations, railwayStations: railwayData.stations };
 }
 
 function matchStations(
 	bahnStations: BahnStation[],
 	railwayStations: RailwayStation[]
-): EnrichedStation[] {
-	// Create a map for faster lookups
+): OutputStation[] {
 	const railwayMap = new Map<string, number>();
-
 	railwayStations.forEach((station) => {
 		if (station.shortCode) {
-			railwayMap.set(station.shortCode, station.id);
+			railwayMap.set(station.shortCode, parseInt(station.id));
 		}
 	});
 
@@ -73,18 +69,20 @@ function matchStations(
 	console.log(`Available ${railwayStations.length} photo stations with shortCode...`);
 
 	let matchCount = 0;
-	const enrichedStations: EnrichedStation[] = bahnStations.map((station) => {
-		const railwayId = railwayMap.get(station.DS100);
-
-		if (railwayId !== undefined) {
+	const outputStations: OutputStation[] = bahnStations.map((station) => {
+		const stationIdGER = railwayMap.get(station.ds100);
+		if (stationIdGER !== undefined) {
 			matchCount++;
-			return {
-				...station,
-				railwayStationId: railwayId
-			};
 		}
 
-		return station;
+		return {
+			eva: station.eva,
+			stationIdGER: stationIdGER ?? null,
+			name: station.name,
+			country: 'de',
+			latitude: station.lat,
+			longitude: station.lon
+		};
 	});
 
 	console.log(
@@ -92,26 +90,130 @@ function matchStations(
 	);
 	console.log(`✗ Unmatched: ${bahnStations.length - matchCount} stations`);
 
-	return enrichedStations;
+	// Deduplicate by EVA number at the end - keep first occurrence
+	const evaMap = new Map<number, OutputStation>();
+	let duplicateCount = 0;
+
+	outputStations.forEach((station) => {
+		if (!evaMap.has(station.eva)) {
+			evaMap.set(station.eva, station);
+		} else {
+			duplicateCount++;
+		}
+	});
+
+	if (duplicateCount > 0) {
+		console.log(`⚠️  Removed ${duplicateCount} duplicate EVA numbers from final output`);
+	}
+
+	return Array.from(evaMap.values());
+}
+
+function generateSQLInserts(stations: OutputStation[]): string {
+	// Filter out stations without German station ID
+	const stationsWithGerID = stations.filter((s) => s.stationIdGER !== null);
+	console.log(
+		`\nFiltering: ${stations.length - stationsWithGerID.length} stations without German station ID removed`
+	);
+
+	// Final safety check: deduplicate by both EVA and stationIdGER
+	const evaMap = new Map<number, OutputStation>();
+	const gerIdMap = new Map<number, OutputStation>();
+	const uniqueStations: OutputStation[] = [];
+
+	let duplicateEvaCount = 0;
+	let duplicateGerIdCount = 0;
+
+	stationsWithGerID.forEach((station) => {
+		let shouldAdd = true;
+
+		// Check EVA uniqueness
+		if (evaMap.has(station.eva)) {
+			duplicateEvaCount++;
+			shouldAdd = false;
+		}
+
+		// Check German station ID uniqueness
+		if (gerIdMap.has(station.stationIdGER!)) {
+			duplicateGerIdCount++;
+			shouldAdd = false;
+		}
+
+		if (shouldAdd) {
+			evaMap.set(station.eva, station);
+			gerIdMap.set(station.stationIdGER!, station);
+			uniqueStations.push(station);
+		}
+	});
+
+	if (duplicateEvaCount > 0 || duplicateGerIdCount > 0) {
+		console.log(
+			`⚠️ SQL generation: removed ${duplicateEvaCount} duplicate EVAs and ${duplicateGerIdCount} duplicate German station IDs`
+		);
+	}
+
+	const lines: string[] = [
+		'-- Generated SQL INSERT statements for stations',
+		'-- Run this in your PostgreSQL database',
+		'-- Only includes stations with German station IDs',
+		'',
+		'INSERT INTO stations (eva, station_id_ger, name, country, latitude, longitude) VALUES'
+	];
+
+	const valueLines = uniqueStations.map((station, index) => {
+		const eva = station.eva;
+		const stationIdGER = station.stationIdGER!; // We know it's not null now
+		const name = station.name.replace(/'/g, "''"); // Escape single quotes
+		const country = station.country;
+		const lat = station.latitude;
+		const lon = station.longitude;
+
+		const trailing = index < uniqueStations.length - 1 ? ',' : ';';
+		return `  (${eva}, ${stationIdGER}, '${name}', '${country}', ${lat}, ${lon})${trailing}`;
+	});
+
+	lines.push(...valueLines);
+	lines.push('');
+	return lines.join('\n');
 }
 
 async function main() {
 	try {
 		const { bahnStations, railwayStations } = await fetchStations();
-		const enrichedStations = matchStations(bahnStations, railwayStations);
+		const outputStations = matchStations(bahnStations, railwayStations);
 
-		const outputFile = 'enriched_stations.json';
-		await Bun.write(outputFile, JSON.stringify(enrichedStations, null, 2));
+		// Save JSON output
+		const jsonFile = 'stations.json';
+		await Bun.write(jsonFile, JSON.stringify(outputStations, null, 2));
+		console.log(`\n✓ JSON data saved to ${jsonFile}`);
 
-		console.log(`\n✓ Enriched data saved to ${outputFile}`);
+		// Generate and save SQL
+		const sqlFile = 'stations.sql';
+		const sql = generateSQLInserts(outputStations);
+		await Bun.write(sqlFile, sql);
+		console.log(`✓ SQL INSERT statements saved to ${sqlFile}`);
 
 		// Show some examples
-		const matched = enrichedStations.filter((s) => s.railwayStationId !== undefined).slice(0, 3);
+		const matched = outputStations.filter((s) => s.stationIdGER !== null).slice(0, 3);
 		if (matched.length > 0) {
 			console.log('\nExample matched stations:');
 			matched.forEach((s) => {
-				console.log(`  ${s.NAME} (DS100: ${s.DS100}) → ID: ${s.railwayStationId}`);
+				console.log(`  ${s.name} (EVA: ${s.eva}) → German Station ID: ${s.stationIdGER}`);
 			});
+		}
+
+		// Verify uniqueness
+		const evaSet = new Set(outputStations.map((s) => s.eva));
+		console.log(`\n📊 Total stations: ${outputStations.length}`);
+		console.log(`✓ Unique EVA numbers: ${evaSet.size}`);
+		console.log(
+			`📸 With German Station ID: ${outputStations.filter((s) => s.stationIdGER !== null).length}`
+		);
+
+		if (evaSet.size !== outputStations.length) {
+			console.error(
+				`\n⚠️ WARNING: Found ${outputStations.length - evaSet.size} duplicate EVA numbers in output!`
+			);
 		}
 	} catch (error) {
 		console.error('Error:', error);
