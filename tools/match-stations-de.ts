@@ -35,8 +35,9 @@ interface RailwayStationsResponse {
 
 interface OutputStation {
 	eva: number;
-	stationIdGER: number | null;
+	stationIdGER: string | null;
 	name: string;
+	city: string | null;
 	country: string;
 	latitude: number;
 	longitude: number;
@@ -54,14 +55,30 @@ async function fetchStations() {
 	return { bahnStations: bahnData.stations, railwayStations: railwayData.stations };
 }
 
+function extractCityFromName(name: string): string {
+	// Try to extract city from station name
+	// Common patterns: "City Hbf", "City Station", "City-Suburb", "City (Qualifier)"
+
+	// Remove common station suffixes
+	const withoutSuffix = name
+		.replace(/\s+(Hbf|Hauptbahnhof|Bahnhof|Bf)(\s|$)/i, ' ')
+		.replace(/\s+\([^)]+\)$/, '') // Remove parenthetical qualifiers
+		.trim();
+
+	// Take the first part before any dash or "am"/"an"/"bei"
+	const cityPart = withoutSuffix.split(/[-\/]|(\sam\s)|(\san\s)|(\sbei\s)/i)[0].trim();
+
+	return cityPart || name; // Fallback to full name if extraction fails
+}
+
 function matchStations(
 	bahnStations: BahnStation[],
 	railwayStations: RailwayStation[]
 ): OutputStation[] {
-	const railwayMap = new Map<string, number>();
+	const railwayMap = new Map<string, string>();
 	railwayStations.forEach((station) => {
 		if (station.shortCode) {
-			railwayMap.set(station.shortCode, parseInt(station.id));
+			railwayMap.set(station.shortCode, station.id); // Keep as string
 		}
 	});
 
@@ -75,10 +92,15 @@ function matchStations(
 			matchCount++;
 		}
 
+		// Extract city from station name
+		// Format is usually "City Station Name" or "City Hbf" or "City-Suburb"
+		const city = extractCityFromName(station.name);
+
 		return {
 			eva: station.eva,
 			stationIdGER: stationIdGER ?? null,
 			name: station.name,
+			city: city,
 			country: 'de',
 			latitude: station.lat,
 			longitude: station.lon
@@ -118,7 +140,7 @@ function generateSQLInserts(stations: OutputStation[]): string {
 
 	// Final safety check: deduplicate by both EVA and stationIdGER
 	const evaMap = new Map<number, OutputStation>();
-	const gerIdMap = new Map<number, OutputStation>();
+	const gerIdMap = new Map<string, OutputStation>();
 	const uniqueStations: OutputStation[] = [];
 
 	let duplicateEvaCount = 0;
@@ -157,19 +179,20 @@ function generateSQLInserts(stations: OutputStation[]): string {
 		'-- Run this in your PostgreSQL database',
 		'-- Only includes stations with German station IDs',
 		'',
-		'INSERT INTO stations (eva, station_id_ger, name, country, latitude, longitude) VALUES'
+		'INSERT INTO stations (eva, station_id_ger, name, city, country, latitude, longitude) VALUES'
 	];
 
 	const valueLines = uniqueStations.map((station, index) => {
 		const eva = station.eva;
-		const stationIdGER = station.stationIdGER!; // We know it's not null now
+		const stationIdGER = `'${station.stationIdGER!.replace(/'/g, "''")}'`; // Escape as string
 		const name = station.name.replace(/'/g, "''"); // Escape single quotes
+		const city = station.city ? `'${station.city.replace(/'/g, "''")}'` : 'NULL';
 		const country = station.country;
 		const lat = station.latitude;
 		const lon = station.longitude;
 
 		const trailing = index < uniqueStations.length - 1 ? ',' : ';';
-		return `  (${eva}, ${stationIdGER}, '${name}', '${country}', ${lat}, ${lon})${trailing}`;
+		return `  (${eva}, ${stationIdGER}, '${name}', ${city}, '${country}', ${lat}, ${lon})${trailing}`;
 	});
 
 	lines.push(...valueLines);

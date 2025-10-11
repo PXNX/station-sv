@@ -1,156 +1,82 @@
-#!/usr/bin/env bun
-interface BahnStation {
-	eva: number;
-	ds100: string;
-	lat: number;
-	lon: number;
-	name: string;
-	is_active_ris: boolean;
-	is_active_iris: boolean;
-	meta_evas: number[];
-	available_transports: string[];
-	number_of_events: number | null;
-}
+// src/lib/server/schema.ts
+import { pgTable, varchar, boolean, integer, text, doublePrecision } from 'drizzle-orm/pg-core';
 
-interface RailwayStation {
-	country: string;
-	id: string;
-	title: string;
-	lat: number;
-	lon: number;
-	photos: any[];
-	shortCode: string;
-}
+export const stations = pgTable('stations', {
+	// Primary key: EVA number (European station identifier)
+	eva: integer('eva').primaryKey(),
 
-interface BahnStationsResponse {
-	stations: BahnStation[];
-}
+	// German station ID - used for railway-stations.org API photo lookups
+	// Example: 1071 for Fulda (while EVA would be 8011160)
+	stationIdGER: integer('station_id_ger'),
 
-interface RailwayStationsResponse {
-	photoBaseUrl: string;
-	licenses: any[];
-	photographers: any[];
-	stations: RailwayStation[];
-}
+	name: varchar('name', { length: 255 }).notNull(),
+	city: varchar('city', { length: 255 }),
+	country: varchar('country', { length: 2 }).notNull(),
 
-interface OutputStation {
-	eva: number;
-	stationIdGER: number | null;
-	name: string;
-	country: string;
-	latitude: number;
-	longitude: number;
-}
+	// Amenities
+	hasWarmSleep: boolean('has_warm_sleep').default(false),
+	sleepNotes: text('sleep_notes'),
 
-async function fetchStations() {
-	console.log('Fetching stations from bahnvorhersage.de...');
-	const bahnResponse = await fetch('https://bahnvorhersage.de/api/stations.json');
-	const bahnData: BahnStationsResponse = await bahnResponse.json();
+	hasOutlets: boolean('has_outlets').default(false),
+	outletNotes: text('outlet_notes'),
 
-	console.log('Fetching photo stations from railway-stations.org...');
-	const railwayResponse = await fetch('https://api.railway-stations.org/photoStationsByCountry/de');
-	const railwayData: RailwayStationsResponse = await railwayResponse.json();
+	hasToilets: boolean('has_toilets').default(false),
+	toiletNotes: text('toilet_notes'),
+	toiletsOpenAtNight: boolean('toilets_open_at_night').default(false),
 
-	return { bahnStations: bahnData.stations, railwayStations: railwayData.stations };
-}
+	isOpen24h: boolean('is_open_24h').default(false),
+	openingHours: varchar('opening_hours', { length: 100 }),
 
-function matchStations(
-	bahnStations: BahnStation[],
-	railwayStations: RailwayStation[]
-): OutputStation[] {
-	const railwayMap = new Map<string, number>();
-	railwayStations.forEach((station) => {
-		if (station.shortCode) {
-			railwayMap.set(station.shortCode, parseInt(station.id));
-		}
-	});
+	// Location
+	latitude: doublePrecision('latitude').notNull(),
+	longitude: doublePrecision('longitude').notNull(),
 
-	console.log(`\nMatching ${bahnStations.length} stations from bahnvorhersage.de...`);
-	console.log(`Available ${railwayStations.length} photo stations with shortCode...`);
+	// Additional info
+	additionalInfo: text('additional_info')
+});
 
-	let matchCount = 0;
-	const outputStations: OutputStation[] = bahnStations.map((station) => {
-		const stationIdGER = railwayMap.get(station.ds100);
-		if (stationIdGER !== undefined) {
-			matchCount++;
-		}
+export type Station = typeof stations.$inferSelect;
+export type NewStation = typeof stations.$inferInsert;
 
-		return {
-			eva: station.eva,
-			stationIdGER: stationIdGER ?? null,
-			name: station.name,
-			country: 'de',
-			latitude: station.lat,
-			longitude: station.lon
-		};
-	});
+import { timestamp, serial } from 'drizzle-orm/pg-core';
 
-	console.log(
-		`\n✓ Matched ${matchCount} stations (${((matchCount / bahnStations.length) * 100).toFixed(2)}%)`
-	);
-	console.log(`✗ Unmatched: ${bahnStations.length - matchCount} stations`);
+export const users = pgTable('users', {
+	id: text('id').primaryKey(),
+	email: text('email').notNull().unique(),
+	name: text('name').notNull(),
+	picture: text('picture'),
+	isAdmin: boolean('is_admin').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
 
-	return outputStations;
-}
+export const sessions = pgTable('sessions', {
+	id: text('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
+});
 
-function generateSQLInserts(stations: OutputStation[]): string {
-	const lines: string[] = [
-		'-- Generated SQL INSERT statements for stations',
-		'-- Run this in your PostgreSQL database',
-		'',
-		'INSERT INTO stations (eva, station_id_ger, name, country, latitude, longitude) VALUES'
-	];
-
-	const valueLines = stations.map((station, index) => {
-		const eva = station.eva;
-		const stationIdGER = station.stationIdGER !== null ? station.stationIdGER : 'NULL';
-		const name = station.name.replace(/'/g, "''"); // Escape single quotes
-		const country = station.country;
-		const lat = station.latitude;
-		const lon = station.longitude;
-
-		const trailing = index < stations.length - 1 ? ',' : ';';
-		return `  (${eva}, ${stationIdGER}, '${name}', '${country}', ${lat}, ${lon})${trailing}`;
-	});
-
-	lines.push(...valueLines);
-	lines.push('');
-	return lines.join('\n');
-}
-
-async function main() {
-	try {
-		const { bahnStations, railwayStations } = await fetchStations();
-		const outputStations = matchStations(bahnStations, railwayStations);
-
-		// Save JSON output
-		const jsonFile = 'stations.json';
-		await Bun.write(jsonFile, JSON.stringify(outputStations, null, 2));
-		console.log(`\n✓ JSON data saved to ${jsonFile}`);
-
-		// Generate and save SQL
-		const sqlFile = 'stations.sql';
-		const sql = generateSQLInserts(outputStations);
-		await Bun.write(sqlFile, sql);
-		console.log(`✓ SQL INSERT statements saved to ${sqlFile}`);
-
-		// Show some examples
-		const matched = outputStations.filter((s) => s.stationIdGER !== null).slice(0, 3);
-		if (matched.length > 0) {
-			console.log('\nExample matched stations:');
-			matched.forEach((s) => {
-				console.log(`  ${s.name} (EVA: ${s.eva}) → German Station ID: ${s.stationIdGER}`);
-			});
-		}
-
-		console.log(`\n📊 Total stations: ${outputStations.length}`);
-		console.log(
-			`📸 With German Station ID: ${outputStations.filter((s) => s.stationIdGER !== null).length}`
-		);
-	} catch (error) {
-		console.error('Error:', error);
-		process.exit(1);
-	}
-}
-
-main();
+export const pendingEdits = pgTable('pending_edits', {
+	id: serial('id').primaryKey(),
+	stationEva: integer('station_eva')
+		.notNull()
+		.references(() => stations.eva, { onDelete: 'cascade' }),
+	userId: text('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	hasWarmSleep: boolean('has_warm_sleep'),
+	sleepNotes: text('sleep_notes'),
+	hasOutlets: boolean('has_outlets'),
+	outletNotes: text('outlet_notes'),
+	hasToilets: boolean('has_toilets'),
+	toiletNotes: text('toilet_notes'),
+	toiletsOpenAtNight: boolean('toilets_open_at_night'),
+	isOpen24h: boolean('is_open_24h'),
+	openingHours: text('opening_hours'),
+	additionalInfo: text('additional_info'),
+	status: text('status').notNull().default('pending'), // 'pending', 'approved', 'rejected'
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+	reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+	reviewedBy: text('reviewed_by').references(() => users.id)
+});

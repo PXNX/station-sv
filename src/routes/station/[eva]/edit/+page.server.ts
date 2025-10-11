@@ -1,25 +1,38 @@
-// src/routes/station/[id]/edit/+page.server.ts
 import { error, redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { stations } from '$lib/server/schema';
-import { eq } from 'drizzle-orm';
+import { stations, pendingEdits } from '$lib/server/schema';
+import { eq, and } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (!locals.user) {
+		throw redirect(302, '/login');
+	}
+
 	const eva = parseInt(params.eva);
-
 	if (isNaN(eva)) {
 		throw error(400, 'Invalid station ID');
 	}
 
-	// Fetch station from database
 	const dbStation = await db.select().from(stations).where(eq(stations.eva, eva)).limit(1);
-
 	if (!dbStation[0]) {
 		throw error(404, 'Station not found');
 	}
 
 	const station = dbStation[0];
+
+	// Check if user has pending edits for this station
+	const userPendingEdits = await db
+		.select()
+		.from(pendingEdits)
+		.where(
+			and(
+				eq(pendingEdits.stationEva, eva),
+				eq(pendingEdits.userId, locals.user.id),
+				eq(pendingEdits.status, 'pending')
+			)
+		)
+		.limit(1);
 
 	return {
 		station: {
@@ -39,57 +52,53 @@ export const load: PageServerLoad = async ({ params }) => {
 			latitude: station.latitude,
 			longitude: station.longitude,
 			additional_info: station.additionalInfo || ''
-		}
+		},
+		hasPendingEdit: userPendingEdits.length > 0,
+		isAdmin: locals.user.isAdmin
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async ({ request, params, locals }) => {
+		if (!locals.user) {
+			return fail(401, { error: 'You must be logged in to edit stations' });
+		}
+
 		const eva = parseInt(params.eva);
 		const formData = await request.formData();
 
-		// Extract form data
-		const hasWarmSleep = formData.get('has_warm_sleep') === 'on';
-		const sleepNotes = formData.get('sleep_notes')?.toString() || null;
-		const hasOutlets = formData.get('has_outlets') === 'on';
-		const outletNotes = formData.get('outlet_notes')?.toString() || null;
-		const hasToilets = formData.get('has_toilets') === 'on';
-		const toiletNotes = formData.get('toilet_notes')?.toString() || null;
-		const toiletsOpenAtNight = formData.get('toilets_open_at_night') === 'on';
-		const isOpen24h = formData.get('is_open_24h') === 'on';
-		const openingHours = formData.get('opening_hours')?.toString() || null;
-		const additionalInfo = formData.get('additional_info')?.toString() || null;
+		const editData = {
+			hasWarmSleep: formData.get('has_warm_sleep') === 'on',
+			sleepNotes: formData.get('sleep_notes')?.toString() || null,
+			hasOutlets: formData.get('has_outlets') === 'on',
+			outletNotes: formData.get('outlet_notes')?.toString() || null,
+			hasToilets: formData.get('has_toilets') === 'on',
+			toiletNotes: formData.get('toilet_notes')?.toString() || null,
+			toiletsOpenAtNight: formData.get('toilets_open_at_night') === 'on',
+			isOpen24h: formData.get('is_open_24h') === 'on',
+			openingHours: formData.get('opening_hours')?.toString() || null,
+			additionalInfo: formData.get('additional_info')?.toString() || null
+		};
 
 		try {
-			// Update station in database
-			await db
-				.update(stations)
-				.set({
-					hasWarmSleep,
-					sleepNotes,
-					hasOutlets,
-					outletNotes,
-					hasToilets,
-					toiletNotes,
-					toiletsOpenAtNight,
-					isOpen24h,
-					openingHours,
-					additionalInfo
-				})
-				.where(eq(stations.eva, eva));
-
-			// Redirect back to station detail page
-			throw redirect(303, `/station/${eva}`);
-		} catch (err) {
-			// If it's a redirect, re-throw it
-			if (err instanceof Response) {
-				throw err;
+			// If user is admin, apply changes directly
+			if (locals.user.isAdmin) {
+				await db.update(stations).set(editData).where(eq(stations.eva, eva));
+				throw redirect(303, `/station/${eva}`);
 			}
 
-			console.error('Failed to update station:', err);
-			return fail(500, {
-				error: 'Failed to update station. Please try again.'
+			// Otherwise, create pending edit for approval
+			await db.insert(pendingEdits).values({
+				stationEva: eva,
+				userId: locals.user.id,
+				...editData
 			});
+
+			throw redirect(303, `/station/${eva}?submitted=true`);
+		} catch (err) {
+			if (err instanceof Response) throw err;
+			console.error('Failed to submit edit:', err);
+			return fail(500, { error: 'Failed to submit edit. Please try again.' });
 		}
 	}
 };
