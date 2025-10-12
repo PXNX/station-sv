@@ -24,5 +24,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		sameSite: 'lax'
 	});
 
+	console.log('Redirecting to:', url.toString(), 'state:', state);
+
 	redirect(302, url.toString());
 };
