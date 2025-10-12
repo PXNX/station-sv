@@ -35,26 +35,43 @@ export const load = async ({ params, locals, url }: Parameters<PageServerLoad>[0
 		)
 		.limit(1);
 
+	const hasPendingEdit = userPendingEdits.length > 0;
+	const pendingEdit = hasPendingEdit ? userPendingEdits[0] : null;
+
+	// If there's a pending edit, use its values; otherwise use station values
 	return {
 		station: {
 			eva: station.eva,
 			name: station.name,
 			city: station.city,
 			country: station.country,
-			has_warm_sleep: station.hasWarmSleep || false,
-			sleep_notes: station.sleepNotes || '',
-			has_outlets: station.hasOutlets || false,
-			outlet_notes: station.outletNotes || '',
-			has_toilets: station.hasToilets || false,
-			toilet_notes: station.toiletNotes || '',
-			toilets_open_at_night: station.toiletsOpenAtNight || false,
-			is_open_24h: station.isOpen24h || false,
-			opening_hours: station.openingHours || '',
+			has_warm_sleep: pendingEdit?.hasWarmSleep ?? station.hasWarmSleep ?? false,
+			sleep_notes: pendingEdit?.sleepNotes ?? station.sleepNotes ?? '',
+			has_outlets: pendingEdit?.hasOutlets ?? station.hasOutlets ?? false,
+			outlet_notes: pendingEdit?.outletNotes ?? station.outletNotes ?? '',
+			has_toilets: pendingEdit?.hasToilets ?? station.hasToilets ?? false,
+			toilet_notes: pendingEdit?.toiletNotes ?? station.toiletNotes ?? '',
+			toilets_open_at_night: pendingEdit?.toiletsOpenAtNight ?? station.toiletsOpenAtNight ?? false,
+			is_open_24h: pendingEdit?.isOpen24h ?? station.isOpen24h ?? false,
+			opening_hours: pendingEdit?.openingHours ?? station.openingHours ?? '',
 			latitude: station.latitude,
 			longitude: station.longitude,
-			additional_info: station.additionalInfo || ''
+			additional_info: pendingEdit?.additionalInfo ?? station.additionalInfo ?? ''
 		},
-		hasPendingEdit: userPendingEdits.length > 0,
+		originalStation: {
+			has_warm_sleep: station.hasWarmSleep ?? false,
+			sleep_notes: station.sleepNotes ?? '',
+			has_outlets: station.hasOutlets ?? false,
+			outlet_notes: station.outletNotes ?? '',
+			has_toilets: station.hasToilets ?? false,
+			toilet_notes: station.toiletNotes ?? '',
+			toilets_open_at_night: station.toiletsOpenAtNight ?? false,
+			is_open_24h: station.isOpen24h ?? false,
+			opening_hours: station.openingHours ?? '',
+			additional_info: station.additionalInfo ?? ''
+		},
+		hasPendingEdit,
+		pendingEditId: pendingEdit?.id ?? null,
 		isAdmin: locals.user.isAdmin
 	};
 };
@@ -88,12 +105,33 @@ export const actions = {
 				throw redirect(303, `/station/${eva}`);
 			}
 
-			// Otherwise, create pending edit for approval
-			await db.insert(pendingEdits).values({
-				stationEva: eva,
-				userId: locals.user.id,
-				...editData
-			});
+			// Check if user already has a pending edit for this station
+			const existingPendingEdit = await db
+				.select()
+				.from(pendingEdits)
+				.where(
+					and(
+						eq(pendingEdits.stationEva, eva),
+						eq(pendingEdits.userId, locals.user.id),
+						eq(pendingEdits.status, 'pending')
+					)
+				)
+				.limit(1);
+
+			if (existingPendingEdit.length > 0) {
+				// Update existing pending edit
+				await db
+					.update(pendingEdits)
+					.set(editData)
+					.where(eq(pendingEdits.id, existingPendingEdit[0].id));
+			} else {
+				// Create new pending edit
+				await db.insert(pendingEdits).values({
+					stationEva: eva,
+					userId: locals.user.id,
+					...editData
+				});
+			}
 
 			throw redirect(303, `/station/${eva}?submitted=true`);
 		} catch (err) {
