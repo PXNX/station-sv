@@ -105,24 +105,6 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-{#if data.session && data.user && data.user.isAdmin}
-	<div class="mb-4 flex justify-center">
-		<a href="/pending" class="btn btn-primary"> Pending changes </a>
-	</div>
-{/if}
-
-{#if data.session && data.user && !data.user.isAdmin}
-	<div class="mb-4 flex justify-center">
-		<a href="/pending" class="btn btn-primary"> Your pending changes </a>
-	</div>
-{/if}
-
-{#if data.session && data.user}
-	<div class="mb-4 flex justify-center">
-		<a href="/logout" class="btn btn-primary"> Logout </a>
-	</div>
-{/if}
-
 {$inspect(data)}
 <!-- Header -->
 <header class="mb-10 text-center">
@@ -130,8 +112,28 @@
 		<FluentEmojiStation class="h-16 w-16" />
 	</div>
 	<h1 class="text-3xl font-bold text-white">Train Station Search</h1>
-	<p class="mt-2 text-white/70">Find stations with sleeping spots, outlets & facilities</p>
 </header>
+
+<div class="card mb-6 border border-white/30 bg-white/10 backdrop-blur-md">
+	<div class="card-body flex flex-row-reverse justify-between gap-x-2 p-1 md:p-2">
+		{#if data.session && data.user}
+			<a href="/auth/logout" class="btn btn-ghost"> Logout </a>
+		{/if}
+
+		{#if !data.session || !data.user}
+			<a href="/auth/login" class="btn btn-ghost"> Login </a>
+		{/if}
+
+		{#if data.session && data.user && data.user.isAdmin}
+			<a href="/pending" class="btn btn-ghost">
+				{#if data.session && data.user && data.user.isAdmin}
+					Pending changes{:else}
+					Your pending changes
+				{/if}
+			</a>
+		{/if}
+	</div>
+</div>
 
 <!-- Search Form -->
 <div class="card mb-6 border border-white/30 bg-white/10 backdrop-blur-md">

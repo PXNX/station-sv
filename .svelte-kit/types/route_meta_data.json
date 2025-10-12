@@ -9,8 +9,8 @@
 	"/auth/login/google": [
 		"src/routes/auth/login/google/+server.ts"
 	],
-	"/(authorized)/logout": [
-		"src/routes/(authorized)/logout/+server.ts"
+	"/(authorized)/auth/logout": [
+		"src/routes/(authorized)/auth/logout/+server.ts"
 	],
 	"/(admin)/pending": [
 		"src/routes/(admin)/pending/+page.server.ts"
