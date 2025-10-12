@@ -16,8 +16,10 @@
 	interface Props {
 		data: {
 			station: Station;
+			originalStation: any;
 			isAdmin: boolean;
 			hasPendingEdit: boolean;
+			pendingEditId: number | null;
 		};
 	}
 
@@ -30,7 +32,7 @@
 	let showConfirmSaveDialog = $state(false);
 	let pendingNavigation: (() => void) | null = null;
 
-	// Store original values for comparison
+	// Store original values for comparison (from the station data which already includes pending edits)
 	const originalValues = {
 		has_warm_sleep: data.station.has_warm_sleep,
 		sleep_notes: data.station.sleep_notes || '',
@@ -72,8 +74,11 @@
 			formState.additional_info !== originalValues.additional_info
 	);
 
-	// Determine button text based on admin status
-	const buttonText = $derived(data.isAdmin ? 'Save Changes' : 'Submit Changes');
+	// Determine button text based on admin status and pending edit
+	// 'Update Pending Change' shows when user is editing their existing pending edit
+	const buttonText = $derived(
+		data.isAdmin ? 'Save Changes' : data.hasPendingEdit ? 'Update Pending Change' : 'Submit Changes'
+	);
 
 	function goBack() {
 		if (hasChanges && !hasSubmitted) {
@@ -168,12 +173,22 @@
 			{/if}
 		</p>
 		{#if !data.isAdmin}
-			<div class="mt-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-3">
-				<p class="text-sm text-blue-300">
-					<FluentEmojiInformation class="inline h-4 w-4" />
-					Your changes will be reviewed by administrators before being applied to the station.
-				</p>
-			</div>
+			{#if data.hasPendingEdit}
+				<div class="mt-4 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-3">
+					<p class="text-sm text-yellow-300">
+						<FluentEmojiWarning class="inline h-4 w-4" />
+						You are editing your pending changes. The form has been pre-filled with your previously submitted
+						values.
+					</p>
+				</div>
+			{:else}
+				<div class="mt-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-3">
+					<p class="text-sm text-blue-300">
+						<FluentEmojiInformation class="inline h-4 w-4" />
+						Your changes will be reviewed by administrators before being applied to the station.
+					</p>
+				</div>
+			{/if}
 		{/if}
 	</div>
 
@@ -386,11 +401,18 @@
 <dialog class="modal" class:modal-open={showConfirmSaveDialog}>
 	<div class="modal-box bg-gray-800 text-white">
 		<h3 class="text-lg font-bold">
-			{data.isAdmin ? 'Confirm Changes' : 'Submit for Review'}
+			{data.isAdmin
+				? 'Confirm Changes'
+				: data.hasPendingEdit
+					? 'Update Pending Changes'
+					: 'Submit for Review'}
 		</h3>
 		<p class="py-4">
 			{#if data.isAdmin}
 				Are you sure you want to save these changes? They will be applied immediately.
+			{:else if data.hasPendingEdit}
+				Are you sure you want to update your pending changes? Your previous submission will be
+				replaced with these new values.
 			{:else}
 				Are you sure you want to submit these changes? An administrator will review them before they
 				are applied.
@@ -399,7 +421,11 @@
 		<div class="modal-action">
 			<button onclick={cancelSave} class="btn btn-ghost">Cancel</button>
 			<button onclick={confirmSave} class="btn btn-primary">
-				{data.isAdmin ? 'Save Changes' : 'Submit for Review'}
+				{data.isAdmin
+					? 'Save Changes'
+					: data.hasPendingEdit
+						? 'Update Pending Changes'
+						: 'Submit for Review'}
 			</button>
 		</div>
 	</div>
