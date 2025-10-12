@@ -1,6 +1,5 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentEmojiFaceWithRaisedEyebrow from '~icons/fluent-emoji/face-with-raised-eyebrow';
@@ -15,6 +14,7 @@
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import type { PageData, ActionData } from './$types';
 	import type { StationResult } from '$lib/types';
+	import { page } from '$app/state';
 
 	interface Props {
 		data: PageData;
@@ -24,16 +24,16 @@
 	let { data, form }: Props = $props();
 
 	// Station search state
-	let stationSearchTerm = $state($page.url.searchParams.get('name') || '');
+	let stationSearchTerm = $state(page.url.searchParams.get('name') || '');
 	let searchResults: StationResult[] = $state(data.stations || []);
 	let stationLoading = $state(false);
 
 	// Station filters - initialize from URL params
 	let showFavoritesOnly = $state(false);
-	let filterOpen24h = $state($page.url.searchParams.get('open24h') === 'true');
-	let filterWarmSleep = $state($page.url.searchParams.get('warmSleep') === 'true');
-	let filterOutletAvailable = $state($page.url.searchParams.get('outlets') === 'true');
-	let filterToiletsAtNight = $state($page.url.searchParams.get('toiletsAtNight') === 'true');
+	let filterOpen24h = $state(page.url.searchParams.get('open24h') === 'true');
+	let filterWarmSleep = $state(page.url.searchParams.get('warmSleep') === 'true');
+	let filterOutletAvailable = $state(page.url.searchParams.get('outlets') === 'true');
+	let filterToiletsAtNight = $state(page.url.searchParams.get('toiletsAtNight') === 'true');
 
 	// Autocomplete state
 	let stationSuggestions = $state<any[]>([]);
@@ -105,7 +105,6 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-{$inspect(data)}
 <!-- Header -->
 <header class="mb-10 text-center">
 	<div class="mb-4 flex justify-center">

@@ -1,6 +1,5 @@
 <!-- src/routes/+error.svelte -->
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import FluentEmojiCrossMark from '~icons/fluent-emoji/cross-mark';
 	import FluentEmojiFaceWithRaisedEyebrow from '~icons/fluent-emoji/face-with-raised-eyebrow';
@@ -8,9 +7,10 @@
 	import FluentEmojiWarning from '~icons/fluent-emoji/warning';
 	import FluentEmojiSos from '~icons/fluent-emoji/sos-button';
 	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
+	import { page } from '$app/state';
 
-	const status = $derived($page.status);
-	const errorMessage = $derived($page.error?.message || 'An unexpected error occurred');
+	const status = $derived(page.status);
+	const errorMessage = $derived(page.error?.message || 'An unexpected error occurred');
 	const isStationNotFound = $derived(status === 404 && errorMessage.includes('Station'));
 
 	function goHome() {
