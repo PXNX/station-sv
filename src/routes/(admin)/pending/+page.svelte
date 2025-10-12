@@ -151,31 +151,33 @@
 						{/each}
 					</div>
 
-					{#if data.isAdmin}
-						<div class="flex gap-3">
-							<form method="POST" action="?/approve" use:enhance>
-								<input type="hidden" name="editId" value={edit.id} />
-								<button
-									type="submit"
-									class="flex items-center gap-2 rounded bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
-								>
-									<FluentEmojiCheckMark class="h-5 w-5" />
-									Approve
-								</button>
-							</form>
-
+					<div class="flex flex-row-reverse justify-between gap-2">
+						{#if data.isAdmin}
 							<form method="POST" action="?/reject" use:enhance>
 								<input type="hidden" name="editId" value={edit.id} />
-								<button
-									type="submit"
-									class="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
-								>
+								<button type="submit" class="btn btn-error flex items-center gap-2">
 									<FluentEmojiCrossMark class="h-5 w-5" />
 									Reject
 								</button>
 							</form>
-						</div>
-					{/if}
+
+							<form method="POST" action="?/approve" use:enhance>
+								<input type="hidden" name="editId" value={edit.id} />
+								<button type="submit" class="btn btn-success flex items-center gap-2">
+									<FluentEmojiCheckMark class="h-5 w-5" />
+									Approve
+								</button>
+							</form>
+						{:else}
+							<form method="POST" action="?/remove" use:enhance>
+								<input type="hidden" name="editId" value={edit.id} />
+								<button type="submit" class="btn btn-error flex items-center gap-2">
+									<FluentEmojiCrossMark class="h-5 w-5" />
+									Cancel Pending Edit
+								</button>
+							</form>
+						{/if}
+					</div>
 				</div>
 			{/each}
 		</div>
