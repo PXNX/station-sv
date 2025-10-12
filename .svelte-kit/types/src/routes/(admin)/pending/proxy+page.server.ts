@@ -106,6 +106,30 @@ export const actions = {
 			.where(eq(pendingEdits.id, editId));
 
 		return { success: true };
+	},
+
+	remove: async ({ request, locals }: import('./$types').RequestEvent) => {
+		if (!locals.user) {
+			return { success: false, error: 'Authentication required' };
+		}
+
+		const formData = await request.formData();
+		const editId = parseInt(formData.get('editId')?.toString() || '');
+
+		// Verify the edit belongs to the user
+		const edit = await db.select().from(pendingEdits).where(eq(pendingEdits.id, editId)).limit(1);
+		if (!edit[0]) {
+			return { success: false, error: 'Edit not found' };
+		}
+
+		if (edit[0].userId !== locals.user.id) {
+			return { success: false, error: 'You can only remove your own pending edits' };
+		}
+
+		// Delete the pending edit
+		await db.delete(pendingEdits).where(eq(pendingEdits.id, editId));
+
+		return { success: true };
 	}
 };
 ;null as any as Actions;

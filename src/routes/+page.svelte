@@ -124,11 +124,11 @@
 			<a href="/auth/login" class="btn btn-ghost"> Login </a>
 		{/if}
 
-		{#if data.session && data.user && data.user.isAdmin}
+		{#if data.session && data.user}
 			<a href="/pending" class="btn btn-ghost">
 				{#if data.session && data.user && data.user.isAdmin}
 					Pending changes{:else}
-					Your pending changes
+					My pending changes
 				{/if}
 			</a>
 		{/if}
