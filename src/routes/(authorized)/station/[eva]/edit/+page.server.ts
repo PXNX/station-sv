@@ -4,9 +4,9 @@ import { db } from '$lib/server/db';
 import { stations, pendingEdits } from '$lib/server/schema';
 import { eq, and } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, url }) => {
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, `/auth/login?next=${encodeURIComponent(url.pathname)}`);
 	}
 
 	const eva = parseInt(params.eva);

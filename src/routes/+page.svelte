@@ -111,6 +111,12 @@
 	</div>
 {/if}
 
+{#if data.session && data.user && !data.user.isAdmin}
+	<div class="mb-4 flex justify-center">
+		<a href="/pending" class="btn btn-primary"> Your pending changes </a>
+	</div>
+{/if}
+
 {#if data.session && data.user}
 	<div class="mb-4 flex justify-center">
 		<a href="/logout" class="btn btn-primary"> Logout </a>
