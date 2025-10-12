@@ -18,7 +18,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 	try {
 		const tokens = await google.validateAuthorizationCode(code, codeVerifier);
 		const response = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-			headers: { Authorization: `Bearer ${tokens.accessToken}` }
+			headers: { Authorization: `Bearer ${tokens.accessToken()}` }
 		});
 
 		const googleUser = await response.json();
@@ -64,6 +64,8 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 			headers: { Location: '/' }
 		});
 	} catch (e) {
+		console.error(e);
+
 		if (e instanceof OAuth2RequestError) {
 			return new Response('OAuth error', { status: 400 });
 		}

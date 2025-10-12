@@ -2,27 +2,24 @@
 	"/": [
 		"src/routes/+page.server.ts"
 	],
-	"/admin/pending": [
-		"src/routes/admin/pending/+page.server.ts"
-	],
 	"/auth/callback/google": [
 		"src/routes/auth/callback/google/+server.ts"
-	],
-	"/dashboard": [
-		"src/routes/dashboard/+page.server.ts"
 	],
 	"/login": [],
 	"/login/google": [
 		"src/routes/login/google/+server.ts"
 	],
-	"/logout": [
-		"src/routes/logout/+server.ts"
+	"/(authorized)/logout": [
+		"src/routes/(authorized)/logout/+server.ts"
+	],
+	"/(admin)/pending": [
+		"src/routes/(admin)/pending/+page.server.ts"
 	],
 	"/privacy-policy": [],
 	"/station/[eva]": [
 		"src/routes/station/[eva]/+page.server.ts"
 	],
-	"/station/[eva]/edit": [
-		"src/routes/station/[eva]/edit/+page.server.ts"
+	"/(authorized)/station/[eva]/edit": [
+		"src/routes/(authorized)/station/[eva]/edit/+page.server.ts"
 	]
 }

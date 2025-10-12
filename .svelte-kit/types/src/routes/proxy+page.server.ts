@@ -12,10 +12,7 @@ import type { StationResult } from '$lib/types';
 async function fetchStationPhotoById(country: string, germanId: number) {
 	try {
 		const url = `https://api.railway-stations.org/photoStationById/${country.toLowerCase()}/${germanId}`;
-		console.log('Fetching photo from:', url);
-
 		const response = await fetch(url);
-		console.log('Response status:', response.status);
 
 		if (!response.ok) {
 			console.log('Response not OK:', response.statusText);
@@ -23,7 +20,6 @@ async function fetchStationPhotoById(country: string, germanId: number) {
 		}
 
 		const data = await response.json();
-		console.log('API response data:', JSON.stringify(data, null, 2));
 
 		if (!data.stations || data.stations.length === 0) {
 			return null;
@@ -165,7 +161,7 @@ function mergeStationData(dbStations: any[], photoMap: Map<string, any>): Statio
 	});
 }
 
-export const load = async ({ url }: Parameters<PageServerLoad>[0]) => {
+export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
 	const searchName = url.searchParams.get('name');
 	const filterOpen24h = url.searchParams.get('open24h') === 'true';
 	const filterWarmSleep = url.searchParams.get('warmSleep') === 'true';
@@ -182,7 +178,9 @@ export const load = async ({ url }: Parameters<PageServerLoad>[0]) => {
 				toilets: filterToilets,
 				toiletsAtNight: filterToiletsAtNight,
 				outlets: filterOutlets
-			}
+			},
+			user: locals.user,
+			session: locals.session
 		};
 	}
 
@@ -206,17 +204,19 @@ export const load = async ({ url }: Parameters<PageServerLoad>[0]) => {
 	const photoMap = await fetchStationPhotos(stationIds);
 
 	// Merge data with latest photos
-	const stations = mergeStationData(dbStations, photoMap);
+	const stationsData = mergeStationData(dbStations, photoMap);
 
 	return {
-		stations,
+		stations: stationsData,
 		filters: {
 			open24h: filterOpen24h,
 			warmSleep: filterWarmSleep,
 			toilets: filterToilets,
 			toiletsAtNight: filterToiletsAtNight,
 			outlets: filterOutlets
-		}
+		},
+		user: locals.user,
+		session: locals.session
 	};
 };
 
@@ -257,10 +257,10 @@ export const actions = {
 		const photoMap = await fetchStationPhotos(stationIds);
 
 		// Merge data with latest photos
-		const stations = mergeStationData(dbStations, photoMap);
+		const stationsData = mergeStationData(dbStations, photoMap);
 
 		return {
-			stations,
+			stations: stationsData,
 			success: true
 		};
 	}

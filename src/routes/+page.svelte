@@ -91,14 +91,6 @@
 		stationSuggestions = [];
 	}
 
-	// Close dropdown when clicking outside
-	function handleClickOutside(event: MouseEvent) {
-		const target = event.target as HTMLElement;
-		if (!target.closest('.autocomplete-container')) {
-			showStationDropdown = false;
-		}
-	}
-
 	const showEmptyState = $derived(
 		!stationLoading && searchResults.length === 0 && stationSearchTerm.length >= 2
 	);
@@ -113,6 +105,19 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
+{#if data.session && data.user && data.user.isAdmin}
+	<div class="mb-4 flex justify-center">
+		<a href="/pending" class="btn btn-primary"> Pending changes </a>
+	</div>
+{/if}
+
+{#if data.session && data.user}
+	<div class="mb-4 flex justify-center">
+		<a href="/logout" class="btn btn-primary"> Logout </a>
+	</div>
+{/if}
+
+{$inspect(data)}
 <!-- Header -->
 <header class="mb-10 text-center">
 	<div class="mb-4 flex justify-center">
@@ -261,7 +266,9 @@
 	</div>
 {/if}
 
-{$inspect(searchResults)}
+<!--{
+	$inspect(searchResults)
+} -->
 
 <!--  Station Card section -->
 {#if searchResults.length > 0}

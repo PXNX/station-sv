@@ -27,28 +27,31 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/admin" | "/admin/pending" | "/auth" | "/auth/callback" | "/auth/callback/google" | "/dashboard" | "/login" | "/login/google" | "/logout" | "/privacy-policy" | "/station" | "/station/[eva]" | "/station/[eva]/edit";
+		RouteId(): "/(authorized)" | "/(admin)" | "/" | "/auth" | "/auth/callback" | "/auth/callback/google" | "/login" | "/login/google" | "/(authorized)/logout" | "/(admin)/pending" | "/privacy-policy" | "/station" | "/(authorized)/station" | "/station/[eva]" | "/(authorized)/station/[eva]" | "/(authorized)/station/[eva]/edit";
 		RouteParams(): {
 			"/station/[eva]": { eva: string };
-			"/station/[eva]/edit": { eva: string }
+			"/(authorized)/station/[eva]": { eva: string };
+			"/(authorized)/station/[eva]/edit": { eva: string }
 		};
 		LayoutParams(): {
+			"/(authorized)": { eva?: string };
+			"/(admin)": Record<string, never>;
 			"/": { eva?: string };
-			"/admin": Record<string, never>;
-			"/admin/pending": Record<string, never>;
 			"/auth": Record<string, never>;
 			"/auth/callback": Record<string, never>;
 			"/auth/callback/google": Record<string, never>;
-			"/dashboard": Record<string, never>;
 			"/login": Record<string, never>;
 			"/login/google": Record<string, never>;
-			"/logout": Record<string, never>;
+			"/(authorized)/logout": Record<string, never>;
+			"/(admin)/pending": Record<string, never>;
 			"/privacy-policy": Record<string, never>;
 			"/station": { eva?: string };
+			"/(authorized)/station": { eva?: string };
 			"/station/[eva]": { eva: string };
-			"/station/[eva]/edit": { eva: string }
+			"/(authorized)/station/[eva]": { eva: string };
+			"/(authorized)/station/[eva]/edit": { eva: string }
 		};
-		Pathname(): "/" | "/admin" | "/admin/" | "/admin/pending" | "/admin/pending/" | "/auth" | "/auth/" | "/auth/callback" | "/auth/callback/" | "/auth/callback/google" | "/auth/callback/google/" | "/dashboard" | "/dashboard/" | "/login" | "/login/" | "/login/google" | "/login/google/" | "/logout" | "/logout/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {} | `/station/${string}/edit` & {} | `/station/${string}/edit/` & {};
+		Pathname(): "/" | "/auth" | "/auth/" | "/auth/callback" | "/auth/callback/" | "/auth/callback/google" | "/auth/callback/google/" | "/login" | "/login/" | "/login/google" | "/login/google/" | "/logout" | "/logout/" | "/pending" | "/pending/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {} | `/station/${string}/edit` & {} | `/station/${string}/edit/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/favicon.png" | string & {};
 	}
