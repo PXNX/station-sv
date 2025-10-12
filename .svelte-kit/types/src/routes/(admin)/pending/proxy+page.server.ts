@@ -3,30 +3,45 @@ import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { pendingEdits, stations, users } from '$lib/server/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
-export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
+export const load = async ({ locals, url }: Parameters<PageServerLoad>[0]) => {
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, `/auth/login?next=${encodeURIComponent(url.pathname)}`);
 	}
 
-	if (!locals.user.isAdmin) {
-		throw error(403, 'Admin access required');
-	}
+	const isAdmin = locals.user.isAdmin;
 
-	const pending = await db
-		.select({
-			edit: pendingEdits,
-			station: stations,
-			user: users
-		})
-		.from(pendingEdits)
-		.innerJoin(stations, eq(pendingEdits.stationEva, stations.eva))
-		.innerJoin(users, eq(pendingEdits.userId, users.id))
-		.where(eq(pendingEdits.status, 'pending'))
-		.orderBy(pendingEdits.createdAt);
+	// Admin sees all pending edits with user info
+	// Regular users see only their own pending edits
+	const pending = isAdmin
+		? await db
+				.select({
+					edit: pendingEdits,
+					station: stations,
+					user: users
+				})
+				.from(pendingEdits)
+				.innerJoin(stations, eq(pendingEdits.stationEva, stations.eva))
+				.innerJoin(users, eq(pendingEdits.userId, users.id))
+				.where(eq(pendingEdits.status, 'pending'))
+				.orderBy(pendingEdits.createdAt)
+		: await db
+				.select({
+					edit: pendingEdits,
+					station: stations,
+					user: users
+				})
+				.from(pendingEdits)
+				.innerJoin(stations, eq(pendingEdits.stationEva, stations.eva))
+				.innerJoin(users, eq(pendingEdits.userId, users.id))
+				.where(and(eq(pendingEdits.userId, locals.user.id), eq(pendingEdits.status, 'pending')))
+				.orderBy(pendingEdits.createdAt);
 
-	return { pendingEdits: pending };
+	return {
+		pendingEdits: pending,
+		isAdmin
+	};
 };
 
 export const actions = {

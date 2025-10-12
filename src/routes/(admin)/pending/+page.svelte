@@ -6,32 +6,121 @@
 	let { data } = $props();
 
 	function formatDate(date: Date) {
-		return new Date(date).toLocaleString('DE-de');
+		return new Date(date).toLocaleString('de-DE');
 	}
 
-	function showChanges(edit: any) {
-		const changes = [];
-		if (edit.hasWarmSleep !== undefined) changes.push(`Warm Sleep: ${edit.hasWarmSleep}`);
-		if (edit.sleepNotes) changes.push(`Sleep Notes: ${edit.sleepNotes}`);
+	function formatValue(value: any): string {
+		if (value === null || value === undefined) return 'Not set';
+		if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+		return value.toString();
+	}
 
-		return changes.join('\n');
+	interface DiffField {
+		label: string;
+		oldValue: any;
+		newValue: any;
+		hasChanged: boolean;
+	}
+
+	function getChanges(edit: any, station: any): DiffField[] {
+		const fields: DiffField[] = [
+			{
+				label: 'Warm Sleep Available',
+				oldValue: station.hasWarmSleep,
+				newValue: edit.hasWarmSleep,
+				hasChanged: edit.hasWarmSleep !== null && edit.hasWarmSleep !== station.hasWarmSleep
+			},
+			{
+				label: 'Sleep Notes',
+				oldValue: station.sleepNotes,
+				newValue: edit.sleepNotes,
+				hasChanged: edit.sleepNotes !== null && edit.sleepNotes !== station.sleepNotes
+			},
+			{
+				label: 'Outlets Available',
+				oldValue: station.hasOutlets,
+				newValue: edit.hasOutlets,
+				hasChanged: edit.hasOutlets !== null && edit.hasOutlets !== station.hasOutlets
+			},
+			{
+				label: 'Outlet Notes',
+				oldValue: station.outletNotes,
+				newValue: edit.outletNotes,
+				hasChanged: edit.outletNotes !== null && edit.outletNotes !== station.outletNotes
+			},
+			{
+				label: 'Toilets Available',
+				oldValue: station.hasToilets,
+				newValue: edit.hasToilets,
+				hasChanged: edit.hasToilets !== null && edit.hasToilets !== station.hasToilets
+			},
+			{
+				label: 'Toilet Notes',
+				oldValue: station.toiletNotes,
+				newValue: edit.toiletNotes,
+				hasChanged: edit.toiletNotes !== null && edit.toiletNotes !== station.toiletNotes
+			},
+			{
+				label: 'Toilets Open at Night',
+				oldValue: station.toiletsOpenAtNight,
+				newValue: edit.toiletsOpenAtNight,
+				hasChanged:
+					edit.toiletsOpenAtNight !== null && edit.toiletsOpenAtNight !== station.toiletsOpenAtNight
+			},
+			{
+				label: 'Open 24 Hours',
+				oldValue: station.isOpen24h,
+				newValue: edit.isOpen24h,
+				hasChanged: edit.isOpen24h !== null && edit.isOpen24h !== station.isOpen24h
+			},
+			{
+				label: 'Opening Hours',
+				oldValue: station.openingHours,
+				newValue: edit.openingHours,
+				hasChanged: edit.openingHours !== null && edit.openingHours !== station.openingHours
+			},
+			{
+				label: 'Additional Info',
+				oldValue: station.additionalInfo,
+				newValue: edit.additionalInfo,
+				hasChanged: edit.additionalInfo !== null && edit.additionalInfo !== station.additionalInfo
+			}
+		];
+
+		return fields.filter((f) => f.hasChanged);
 	}
 </script>
 
 <div class="container mx-auto max-w-6xl px-4 py-8">
-	<h1 class="mb-8 text-3xl font-bold text-white">Pending Edits</h1>
+	<h1 class="mb-8 text-3xl font-bold text-white">
+		{data.isAdmin ? 'Pending Edits' : 'My Pending Edits'}
+	</h1>
 
 	{#if data.pendingEdits.length === 0}
-		<p class="text-white/70">No pending edits to review.</p>
+		<p class="text-white/70">
+			{data.isAdmin ? 'No pending edits to review.' : 'You have no pending edits awaiting review.'}
+		</p>
 	{:else}
-		<div class="space-y-4">
+		<div class="space-y-6">
 			{#each data.pendingEdits as { edit, station, user }}
+				{@const changes = getChanges(edit, station)}
 				<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
 					<div class="mb-4 flex items-start justify-between">
 						<div>
 							<h3 class="text-xl font-semibold text-white">{station.name}</h3>
 							<p class="text-sm text-white/60">
-								Submitted by {user.name} ({user.email}) on {formatDate(edit.createdAt)}
+								{#if data.isAdmin}
+									Submitted by {user.name} ({user.email}) on {formatDate(edit.createdAt)}
+								{:else}
+									Submitted on {formatDate(edit.createdAt)}
+								{/if}
+							</p>
+							{#if !data.isAdmin}
+								<p class="mt-1 text-sm font-medium text-yellow-400">⏳ Awaiting admin review</p>
+							{/if}
+							<p class="text-sm font-medium text-blue-400">
+								{changes.length}
+								{changes.length === 1 ? 'change' : 'changes'} proposed
 							</p>
 						</div>
 						<a href="/station/{station.eva}" class="text-blue-400 hover:text-blue-300">
@@ -39,51 +128,54 @@
 						</a>
 					</div>
 
-					<div class="mb-4 grid gap-4 md:grid-cols-2">
-						<div class="rounded bg-white/5 p-4">
-							<h4 class="mb-2 font-semibold text-white">Sleeping</h4>
-							<p class="text-sm text-white/80">
-								Warm Sleep: {edit.hasWarmSleep ? 'Yes' : 'No'}
-							</p>
-							{#if edit.sleepNotes}
-								<p class="mt-1 text-sm text-white/60">{edit.sleepNotes}</p>
-							{/if}
-						</div>
-
-						<div class="rounded bg-white/5 p-4">
-							<h4 class="mb-2 font-semibold text-white">Outlets</h4>
-							<p class="text-sm text-white/80">
-								Available: {edit.hasOutlets ? 'Yes' : 'No'}
-							</p>
-							{#if edit.outletNotes}
-								<p class="mt-1 text-sm text-white/60">{edit.outletNotes}</p>
-							{/if}
-						</div>
+					<div class="mb-6 space-y-3">
+						{#each changes as change}
+							<div class="rounded-lg border border-white/10 bg-black/20 p-4">
+								<h4 class="mb-3 font-semibold text-white">{change.label}</h4>
+								<div class="space-y-2">
+									<div
+										class="flex items-start gap-3 rounded border-l-4 border-red-500 bg-red-950/40 px-3 py-2"
+									>
+										<span class="font-mono text-xs text-red-400">−</span>
+										<span class="flex-1 text-sm text-red-200">{formatValue(change.oldValue)}</span>
+									</div>
+									<div
+										class="flex items-start gap-3 rounded border-l-4 border-green-500 bg-green-950/40 px-3 py-2"
+									>
+										<span class="font-mono text-xs text-green-400">+</span>
+										<span class="flex-1 text-sm text-green-200">{formatValue(change.newValue)}</span
+										>
+									</div>
+								</div>
+							</div>
+						{/each}
 					</div>
 
-					<div class="flex gap-3">
-						<form method="POST" action="?/approve" use:enhance>
-							<input type="hidden" name="editId" value={edit.id} />
-							<button
-								type="submit"
-								class="flex items-center gap-2 rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-							>
-								<FluentEmojiCheckMark class="h-5 w-5" />
-								Approve
-							</button>
-						</form>
+					{#if data.isAdmin}
+						<div class="flex gap-3">
+							<form method="POST" action="?/approve" use:enhance>
+								<input type="hidden" name="editId" value={edit.id} />
+								<button
+									type="submit"
+									class="flex items-center gap-2 rounded bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+								>
+									<FluentEmojiCheckMark class="h-5 w-5" />
+									Approve
+								</button>
+							</form>
 
-						<form method="POST" action="?/reject" use:enhance>
-							<input type="hidden" name="editId" value={edit.id} />
-							<button
-								type="submit"
-								class="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-							>
-								<FluentEmojiCrossMark class="h-5 w-5" />
-								Reject
-							</button>
-						</form>
-					</div>
+							<form method="POST" action="?/reject" use:enhance>
+								<input type="hidden" name="editId" value={edit.id} />
+								<button
+									type="submit"
+									class="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700"
+								>
+									<FluentEmojiCrossMark class="h-5 w-5" />
+									Reject
+								</button>
+							</form>
+						</div>
+					{/if}
 				</div>
 			{/each}
 		</div>

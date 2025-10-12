@@ -5,9 +5,9 @@
 	"/auth/callback/google": [
 		"src/routes/auth/callback/google/+server.ts"
 	],
-	"/login": [],
-	"/login/google": [
-		"src/routes/login/google/+server.ts"
+	"/auth/login": [],
+	"/auth/login/google": [
+		"src/routes/auth/login/google/+server.ts"
 	],
 	"/(authorized)/logout": [
 		"src/routes/(authorized)/logout/+server.ts"

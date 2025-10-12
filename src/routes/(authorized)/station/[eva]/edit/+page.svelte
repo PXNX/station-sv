@@ -16,11 +16,19 @@
 	interface Props {
 		data: {
 			station: Station;
+			isAdmin: boolean;
+			hasPendingEdit: boolean;
 		};
 	}
 
 	let { data }: Props = $props();
 	let isSubmitting = $state(false);
+	let hasSubmitted = $state(false);
+
+	// Dialog states
+	let showUnsavedDialog = $state(false);
+	let showConfirmSaveDialog = $state(false);
+	let pendingNavigation: (() => void) | null = null;
 
 	// Store original values for comparison
 	const originalValues = {
@@ -64,40 +72,71 @@
 			formState.additional_info !== originalValues.additional_info
 	);
 
+	// Determine button text based on admin status
+	const buttonText = $derived(data.isAdmin ? 'Save Changes' : 'Submit Changes');
+
 	function goBack() {
-		if (hasChanges) {
-			if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
-				goto(`/station/${data.station.eva}`);
-			}
+		if (hasChanges && !hasSubmitted) {
+			pendingNavigation = () => goto(`/station/${data.station.eva}`);
+			showUnsavedDialog = true;
 		} else {
 			goto(`/station/${data.station.eva}`);
 		}
 	}
 
+	function confirmLeave() {
+		showUnsavedDialog = false;
+		if (pendingNavigation) {
+			pendingNavigation();
+			pendingNavigation = null;
+		}
+	}
+
+	function cancelLeave() {
+		showUnsavedDialog = false;
+		pendingNavigation = null;
+	}
+
 	// Intercept navigation to warn about unsaved changes
 	beforeNavigate(({ cancel }) => {
-		if (hasChanges && !isSubmitting) {
-			if (!confirm('You have unsaved changes. Are you sure you want to leave?')) {
-				cancel();
-			}
+		if (hasChanges && !isSubmitting && !hasSubmitted) {
+			cancel();
+			pendingNavigation = null;
+			showUnsavedDialog = true;
 		}
 	});
 
-	function handleSubmit() {
-		if (!hasChanges) {
+	let formElement: HTMLFormElement;
+
+	function initiateSubmit() {
+		if (!hasChanges || hasSubmitted) {
 			return;
 		}
+		showConfirmSaveDialog = true;
+	}
 
-		if (!confirm('Are you sure you want to save these changes?')) {
-			return ({ update }: any) => {
-				// Don't proceed with submission
-			};
+	function confirmSave() {
+		showConfirmSaveDialog = false;
+		if (formElement) {
+			formElement.requestSubmit();
 		}
+	}
 
+	function cancelSave() {
+		showConfirmSaveDialog = false;
+	}
+
+	function handleSubmit() {
 		isSubmitting = true;
-		return async ({ update }: any) => {
+		return async ({ result, update }: any) => {
 			await update();
+			hasSubmitted = true;
 			isSubmitting = false;
+
+			// Redirect on success
+			if (result.type === 'redirect') {
+				goto(result.location);
+			}
 		};
 	}
 </script>
@@ -128,10 +167,18 @@
 				{data.station.city}, {data.station.country}
 			{/if}
 		</p>
+		{#if !data.isAdmin}
+			<div class="mt-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-3">
+				<p class="text-sm text-blue-300">
+					<FluentEmojiInformation class="inline h-4 w-4" />
+					Your changes will be reviewed by administrators before being applied to the station.
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Edit Form -->
-	<form method="POST" use:enhance={handleSubmit} class="space-y-6">
+	<form bind:this={formElement} method="POST" use:enhance={handleSubmit} class="space-y-6">
 		<!-- Sleeping Section -->
 		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
@@ -295,10 +342,11 @@
 		<!-- Action Buttons -->
 		<div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
 			<button
-				type="submit"
+				type="button"
+				onclick={initiateSubmit}
 				class="flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-				disabled={isSubmitting || !hasChanges}
-				title={!hasChanges ? 'No changes to save' : ''}
+				disabled={isSubmitting || !hasChanges || hasSubmitted}
+				title={!hasChanges ? 'No changes to save' : hasSubmitted ? 'Already submitted' : ''}
 			>
 				{#if isSubmitting}
 					<span
@@ -307,12 +355,12 @@
 					<span>Saving...</span>
 				{:else}
 					<FluentEmojiDownArrow class="h-5 w-5" />
-					<span>Save Changes</span>
+					<span>{buttonText}</span>
 				{/if}
 			</button>
 		</div>
 
-		{#if hasChanges}
+		{#if hasChanges && !hasSubmitted}
 			<p class="flex items-center justify-center gap-2 text-center text-sm text-yellow-400/80">
 				<FluentEmojiWarning class="h-5 w-5" />
 				<span>You have unsaved changes</span>
@@ -320,3 +368,40 @@
 		{/if}
 	</form>
 </div>
+
+<!-- Unsaved Changes Dialog -->
+<dialog class="modal" class:modal-open={showUnsavedDialog}>
+	<div class="modal-box bg-gray-800 text-white">
+		<h3 class="text-lg font-bold">Unsaved Changes</h3>
+		<p class="py-4">You have unsaved changes. Are you sure you want to leave?</p>
+		<div class="modal-action">
+			<button onclick={cancelLeave} class="btn btn-ghost">Cancel</button>
+			<button onclick={confirmLeave} class="btn btn-error">Leave Without Saving</button>
+		</div>
+	</div>
+	<div class="modal-backdrop" onclick={cancelLeave}></div>
+</dialog>
+
+<!-- Confirm Save Dialog -->
+<dialog class="modal" class:modal-open={showConfirmSaveDialog}>
+	<div class="modal-box bg-gray-800 text-white">
+		<h3 class="text-lg font-bold">
+			{data.isAdmin ? 'Confirm Changes' : 'Submit for Review'}
+		</h3>
+		<p class="py-4">
+			{#if data.isAdmin}
+				Are you sure you want to save these changes? They will be applied immediately.
+			{:else}
+				Are you sure you want to submit these changes? An administrator will review them before they
+				are applied.
+			{/if}
+		</p>
+		<div class="modal-action">
+			<button onclick={cancelSave} class="btn btn-ghost">Cancel</button>
+			<button onclick={confirmSave} class="btn btn-primary">
+				{data.isAdmin ? 'Save Changes' : 'Submit for Review'}
+			</button>
+		</div>
+	</div>
+	<div class="modal-backdrop" onclick={cancelSave}></div>
+</dialog>
