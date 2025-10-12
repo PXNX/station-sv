@@ -2,14 +2,12 @@
 import { Google } from 'arctic';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$env/static/private';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } from '$env/static/private';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import { sessions, users } from './schema';
 
-const REDIRECT_URI = 'http://localhost:3021/auth/callback/google';
-
-export const google = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, REDIRECT_URI);
+export const google = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
 
 export function generateSessionToken(): string {
 	const bytes = new Uint8Array(20);
