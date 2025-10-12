@@ -1,3 +1,4 @@
+// src/lib/server/auth.ts
 import { Google } from 'arctic';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';

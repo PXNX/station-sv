@@ -1,3 +1,4 @@
+// src/routes/auth/callback/google/+server.ts
 import { OAuth2RequestError } from 'arctic';
 import { google, generateSessionToken, createSession } from '$lib/server/auth';
 import { db } from '$lib/server/db';
