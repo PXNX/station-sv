@@ -1,3 +1,4 @@
+<!-- src/routes/auth/login/+page.svelte -->
 <script lang="ts">
 	import { page } from '$app/state';
 
@@ -25,7 +26,7 @@
 		<div class="card-body items-center justify-center gap-6 p-8 md:p-10">
 			<a
 				class="btn border-[#e5e5e5] bg-white text-black"
-				href={`/auth/login/google?next=${encodeURIComponent(page.url.pathname + page.url.search)}`}
+				href={`/auth/login/google?next=${encodeURIComponent(page.url.searchParams.get('next') || '/')}`}
 			>
 				<LogosGoogleIcon class="h-6 w-6" />
 				Continue with Google
