@@ -8,6 +8,7 @@
 	import FluentEmojiToilet from '~icons/fluent-emoji/toilet';
 	import FluentEmojiTwelveOclock from '~icons/fluent-emoji/twelve-oclock';
 	import FluentEmojiInformation from '~icons/fluent-emoji/information';
+	import FluentEmojiSatelliteAntenna from '~icons/fluent-emoji/satellite-antenna';
 	import FluentEmojiWorldMap from '~icons/fluent-emoji/world-map';
 	import FluentEmojiStar from '~icons/fluent-emoji/star';
 	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
@@ -31,6 +32,34 @@
 
 	// In-memory favorites storage
 	let favorites = $state<number[]>([]);
+
+	// Helper function to get status color class
+	function getStatusColor(value: boolean | null | undefined): string {
+		if (value === null || value === undefined) return 'text-blue-400';
+		return value ? 'text-green-300' : 'text-red-300';
+	}
+
+	// Helper function to get status text
+	function getStatusText(value: boolean | null | undefined): string {
+		if (value === null || value === undefined) return 'Unknown';
+		return value ? 'Yes' : 'No';
+	}
+
+	// Check if any field is unknown
+	const hasUnknownFields = $derived(
+		station.has_warm_sleep === null ||
+			station.has_warm_sleep === undefined ||
+			station.has_outlets === null ||
+			station.has_outlets === undefined ||
+			station.has_toilets === null ||
+			station.has_toilets === undefined ||
+			station.toilets_open_at_night === null ||
+			station.toilets_open_at_night === undefined ||
+			station.is_open_24h === null ||
+			station.is_open_24h === undefined ||
+			station.has_wifi === null ||
+			station.has_wifi === undefined
+	);
 
 	function toggleFavorite() {
 		const index = favorites.indexOf(station.eva);
@@ -188,6 +217,21 @@
 	{/if}
 </div>
 
+<!-- Help Hint for Unknown Fields -->
+{#if hasUnknownFields}
+	<div class="mb-6 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 backdrop-blur-sm">
+		<div class="flex items-start gap-3">
+			<FluentEmojiInformation class="mt-0.5 h-5 w-5 flex-shrink-0" />
+			<div>
+				<p class="text-sm text-white/80">
+					<strong>Missing information?</strong> Help improve this station's data by clicking the
+					<strong>Edit Details</strong> button above to add any unknown information.
+				</p>
+			</div>
+		</div>
+	</div>
+{/if}
+
 <!-- Amenities Grid -->
 <div class="mb-6 grid gap-4 sm:grid-cols-2">
 	<!-- Sleeping -->
@@ -198,8 +242,8 @@
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
 			<span class="text-white/70">Warm area:</span>
-			<span class={station.has_warm_sleep ? 'text-green-300' : 'text-red-300'}>
-				{station.has_warm_sleep ? 'Yes' : 'No'}
+			<span class={getStatusColor(station.has_warm_sleep)}>
+				{getStatusText(station.has_warm_sleep)}
 			</span>
 		</div>
 		{#if station.sleep_notes}
@@ -215,8 +259,8 @@
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
 			<span class="text-white/70">Available:</span>
-			<span class={station.has_outlets ? 'text-green-300' : 'text-red-300'}>
-				{station.has_outlets ? 'Yes' : 'No'}
+			<span class={getStatusColor(station.has_outlets)}>
+				{getStatusText(station.has_outlets)}
 			</span>
 		</div>
 		{#if station.outlet_notes}
@@ -232,14 +276,14 @@
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
 			<span class="text-white/70">Available:</span>
-			<span class={station.has_toilets ? 'text-green-300' : 'text-red-300'}>
-				{station.has_toilets ? 'Yes' : 'No'}
+			<span class={getStatusColor(station.has_toilets)}>
+				{getStatusText(station.has_toilets)}
 			</span>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
 			<span class="text-white/70">Open at night:</span>
-			<span class={station.toilets_open_at_night ? 'text-green-300' : 'text-red-300'}>
-				{station.toilets_open_at_night ? 'Yes' : 'No'}
+			<span class={getStatusColor(station.toilets_open_at_night)}>
+				{getStatusText(station.toilets_open_at_night)}
 			</span>
 		</div>
 		{#if station.toilet_notes}
@@ -255,12 +299,37 @@
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
 			<span class="text-white/70">24/7 Access:</span>
-			<span class={station.is_open_24h ? 'text-green-300' : 'text-red-300'}>
-				{station.is_open_24h ? 'Yes' : 'No'}
+			<span class={getStatusColor(station.is_open_24h)}>
+				{getStatusText(station.is_open_24h)}
 			</span>
 		</div>
 		{#if station.opening_hours}
 			<p class="text-sm text-white/60">{station.opening_hours}</p>
+		{/if}
+	</div>
+
+	<!-- WiFi -->
+	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
+		<div class="mb-3 flex items-center gap-2">
+			<FluentEmojiSatelliteAntenna class="h-5 w-5" />
+			<h2 class="font-semibold text-white">WiFi Hotspot</h2>
+		</div>
+		<div class="mb-2 flex items-center justify-between text-sm">
+			<span class="text-white/70">Available:</span>
+			<span class={getStatusColor(station.has_wifi)}>
+				{getStatusText(station.has_wifi)}
+			</span>
+		</div>
+		{#if station.has_wifi}
+			<div class="flex items-center justify-between text-sm">
+				<span class="text-white/70">Limited data:</span>
+				<span class={getStatusColor(station.wifi_has_limit)}>
+					{getStatusText(station.wifi_has_limit)}
+				</span>
+			</div>
+		{/if}
+		{#if station.wifi_notes}
+			<p class="text-sm text-white/60">{station.wifi_notes}</p>
 		{/if}
 	</div>
 </div>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/routes/+page.server.ts
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
@@ -166,7 +167,7 @@ function mergeStationData(dbStations: any[], photoMap: Map<string, any>): Statio
 	});
 }
 
-export const load: PageServerLoad = async ({ url, locals }) => {
+export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
 	const searchName = url.searchParams.get('name');
 	const filterOpen24h = url.searchParams.get('open24h') === 'true';
 	const filterWarmSleep = url.searchParams.get('warmSleep') === 'true';
@@ -229,8 +230,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	};
 };
 
-export const actions: Actions = {
-	search: async ({ request }) => {
+export const actions = {
+	search: async ({ request }: import('./$types').RequestEvent) => {
 		const formData = await request.formData();
 		const name = formData.get('name')?.toString() || '';
 		const filterOpen24h = formData.get('open24h') === 'on';
@@ -276,3 +277,4 @@ export const actions: Actions = {
 		};
 	}
 };
+;null as any as Actions;

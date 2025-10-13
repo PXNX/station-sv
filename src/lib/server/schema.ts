@@ -1,5 +1,14 @@
 // src/lib/server/schema.ts
-import { pgTable, varchar, boolean, integer, text, doublePrecision } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	varchar,
+	boolean,
+	integer,
+	text,
+	doublePrecision,
+	timestamp,
+	serial
+} from 'drizzle-orm/pg-core';
 
 export const stations = pgTable('stations', {
 	// Primary key: EVA number (European station identifier)
@@ -14,18 +23,23 @@ export const stations = pgTable('stations', {
 	country: varchar('country', { length: 2 }).notNull(),
 
 	// Amenities
-	hasWarmSleep: boolean('has_warm_sleep').default(false),
+	hasWarmSleep: boolean('has_warm_sleep'),
 	sleepNotes: text('sleep_notes'),
 
-	hasOutlets: boolean('has_outlets').default(false),
+	hasOutlets: boolean('has_outlets'),
 	outletNotes: text('outlet_notes'),
 
-	hasToilets: boolean('has_toilets').default(false),
+	hasToilets: boolean('has_toilets'),
 	toiletNotes: text('toilet_notes'),
-	toiletsOpenAtNight: boolean('toilets_open_at_night').default(false),
+	toiletsOpenAtNight: boolean('toilets_open_at_night'),
 
-	isOpen24h: boolean('is_open_24h').default(false),
+	isOpen24h: boolean('is_open_24h'),
 	openingHours: varchar('opening_hours', { length: 100 }),
+
+	// WiFi
+	hasWifi: boolean('has_wifi'),
+	wifiHasLimit: boolean('wifi_has_limit'),
+	wifiNotes: text('wifi_notes'),
 
 	// Location
 	latitude: doublePrecision('latitude').notNull(),
@@ -37,8 +51,6 @@ export const stations = pgTable('stations', {
 
 export type Station = typeof stations.$inferSelect;
 export type NewStation = typeof stations.$inferInsert;
-
-import { timestamp, serial } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
 	id: text('id').primaryKey(),
@@ -74,6 +86,9 @@ export const pendingEdits = pgTable('pending_edits', {
 	toiletsOpenAtNight: boolean('toilets_open_at_night'),
 	isOpen24h: boolean('is_open_24h'),
 	openingHours: text('opening_hours'),
+	hasWifi: boolean('has_wifi'),
+	wifiHasLimit: boolean('wifi_has_limit'),
+	wifiNotes: text('wifi_notes'),
 	additionalInfo: text('additional_info'),
 	status: text('status').notNull().default('pending'), // 'pending', 'approved', 'rejected'
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
