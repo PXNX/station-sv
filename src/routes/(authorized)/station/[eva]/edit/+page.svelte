@@ -11,6 +11,7 @@
 	import FluentEmojiThreeOClock from '~icons/fluent-emoji/three-oclock';
 	import FluentEmojiInformation from '~icons/fluent-emoji/information';
 	import FluentEmojiWarning from '~icons/fluent-emoji/warning';
+	import FluentEmojiSatelliteAntenna from '~icons/fluent-emoji/satellite-antenna';
 	import type { Station } from '$lib/types';
 
 	interface Props {
@@ -43,6 +44,9 @@
 		toilets_open_at_night: data.station.toilets_open_at_night,
 		is_open_24h: data.station.is_open_24h,
 		opening_hours: data.station.opening_hours || '',
+		has_wifi: data.station.has_wifi,
+		wifi_has_limit: data.station.wifi_has_limit,
+		wifi_notes: data.station.wifi_notes || '',
 		additional_info: data.station.additional_info || ''
 	};
 
@@ -57,6 +61,9 @@
 		toilets_open_at_night: data.station.toilets_open_at_night,
 		is_open_24h: data.station.is_open_24h,
 		opening_hours: data.station.opening_hours || '',
+		has_wifi: data.station.has_wifi,
+		wifi_has_limit: data.station.wifi_has_limit,
+		wifi_notes: data.station.wifi_notes || '',
 		additional_info: data.station.additional_info || ''
 	});
 
@@ -71,6 +78,9 @@
 			formState.toilets_open_at_night !== originalValues.toilets_open_at_night ||
 			formState.is_open_24h !== originalValues.is_open_24h ||
 			formState.opening_hours !== originalValues.opening_hours ||
+			formState.has_wifi !== originalValues.has_wifi ||
+			formState.wifi_has_limit !== originalValues.wifi_has_limit ||
+			formState.wifi_notes !== originalValues.wifi_notes ||
 			formState.additional_info !== originalValues.additional_info
 	);
 
@@ -258,6 +268,51 @@
 			</div>
 		</div>
 
+		<!-- WiFi Section -->
+		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
+				<FluentEmojiSatelliteAntenna class="h-6 w-6" />
+				<span>WiFi Hotspot</span>
+			</h2>
+
+			<label class="mb-4 flex cursor-pointer items-center gap-3">
+				<input
+					type="checkbox"
+					name="has_wifi"
+					bind:checked={formState.has_wifi}
+					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+				/>
+				<span class="text-white">WiFi available</span>
+			</label>
+
+			{#if formState.has_wifi}
+				<label class="mb-4 flex cursor-pointer items-center gap-3">
+					<input
+						type="checkbox"
+						name="wifi_has_limit"
+						bind:checked={formState.wifi_has_limit}
+						class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					/>
+					<span class="text-white">WiFi has data usage limit</span>
+				</label>
+			{/if}
+
+			<div>
+				<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">
+					WiFi Notes
+
+					<textarea
+						id="wifi_notes"
+						name="wifi_notes"
+						rows="3"
+						bind:value={formState.wifi_notes}
+						class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
+						placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
+					></textarea>
+				</label>
+			</div>
+		</div>
+
 		<!-- Toilets Section -->
 		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
@@ -275,15 +330,17 @@
 				<span class="text-white">Toilets available</span>
 			</label>
 
-			<label class="mb-4 flex cursor-pointer items-center gap-3">
-				<input
-					type="checkbox"
-					name="toilets_open_at_night"
-					bind:checked={formState.toilets_open_at_night}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
-				/>
-				<span class="text-white">Toilets open at night</span>
-			</label>
+			{#if formState.has_toilets}
+				<label class="mb-4 flex cursor-pointer items-center gap-3">
+					<input
+						type="checkbox"
+						name="toilets_open_at_night"
+						bind:checked={formState.toilets_open_at_night}
+						class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					/>
+					<span class="text-white">Toilets open at night</span>
+				</label>
+			{/if}
 
 			<div>
 				<label for="toilet_notes" class="mb-2 block text-sm font-medium text-white/80">

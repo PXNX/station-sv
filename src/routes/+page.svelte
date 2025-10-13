@@ -11,6 +11,7 @@
 	import FluentEmojiCrescentMoon from '~icons/fluent-emoji/crescent-moon';
 	import FluentEmojiRedCircle from '~icons/fluent-emoji/red-circle';
 	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
+	import FluentEmojiWifi from '~icons/fluent-emoji/antenna-bars';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import type { PageData, ActionData } from './$types';
 	import type { StationResult } from '$lib/types';
@@ -29,11 +30,12 @@
 	let stationLoading = $state(false);
 
 	// Station filters - initialize from URL params
-	let showFavoritesOnly = $state(false);
 	let filterOpen24h = $state(page.url.searchParams.get('open24h') === 'true');
 	let filterWarmSleep = $state(page.url.searchParams.get('warmSleep') === 'true');
 	let filterOutletAvailable = $state(page.url.searchParams.get('outlets') === 'true');
 	let filterToiletsAtNight = $state(page.url.searchParams.get('toiletsAtNight') === 'true');
+	let filterToilets = $state(page.url.searchParams.get('toilets') === 'true');
+	let filterWifi = $state(page.url.searchParams.get('wifi') === 'true');
 
 	// Autocomplete state
 	let stationSuggestions = $state<any[]>([]);
@@ -97,10 +99,10 @@
 </script>
 
 <svelte:head>
-	<title>Train Station & Route Search</title>
+	<title>Train Station Search</title>
 	<meta
 		name="description"
-		content="Search for train stations and routes in Germany. Find sleeping spots, outlets, toilets & station info"
+		content="Search for train stations in Germany. Find sleeping spots, outlets, toilets & station info"
 	/>
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
@@ -111,22 +113,56 @@
 		<FluentEmojiStation class="h-16 w-16" />
 	</div>
 	<h1 class="text-3xl font-bold text-white">Train Station Search</h1>
+	<p class="mt-2 text-sm text-white/70">
+		Find stations with amenities for travelers ·
+		<a
+			href="/about"
+			class="text-white/60 underline decoration-white/30 underline-offset-2 transition-colors hover:text-white/90 hover:decoration-white/50"
+		>
+			About
+		</a>
+	</p>
 </header>
 
+<!-- Construction Warning -->
+<div class="alert mb-6 border border-yellow-400/50 bg-yellow-400/20 shadow-lg">
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		class="h-6 w-6 flex-shrink-0 stroke-yellow-200"
+		fill="none"
+		viewBox="0 0 24 24"
+	>
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width="2"
+			d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+		/>
+	</svg>
+	<div>
+		<h3 class="font-bold text-yellow-100">Site Under Construction</h3>
+		<div class="text-sm text-yellow-100/90">
+			This site is still in development. All data will be reset periodically during testing.
+		</div>
+	</div>
+</div>
+
+<!-- Auth Navigation -->
 <div class="card mb-6 border border-white/30 bg-white/10 backdrop-blur-md">
 	<div class="card-body flex flex-row-reverse justify-between gap-x-2 p-1 md:p-2">
 		{#if data.session && data.user}
-			<a href="/auth/logout" class="btn btn-ghost"> Logout </a>
+			<a href="/auth/logout" class="btn btn-ghost btn-sm"> Logout </a>
 		{/if}
 
 		{#if !data.session || !data.user}
-			<a href="/auth/login" class="btn btn-ghost"> Login </a>
+			<a href="/auth/login" class="btn btn-ghost btn-sm"> Login </a>
 		{/if}
 
 		{#if data.session && data.user}
-			<a href="/pending" class="btn btn-ghost">
+			<a href="/pending" class="btn btn-ghost btn-sm">
 				{#if data.session && data.user && data.user.isAdmin}
-					Pending changes{:else}
+					Pending changes
+				{:else}
 					My pending changes
 				{/if}
 			</a>
@@ -183,50 +219,87 @@
 			</div>
 
 			<!-- Filters -->
-			<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
-					<input
-						type="checkbox"
-						name="open24h"
-						bind:checked={filterOpen24h}
-						class="checkbox checkbox-sm border-white/40"
-					/>
-					<FluentEmojiTwelveOclock class="h-5 w-5" />
-					<span class="text-sm text-white">Open 24/7</span>
-				</label>
+			<div class="space-y-2">
+				<h3 class="text-sm font-semibold text-white/90">Filter by amenities:</h3>
+				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="open24h"
+							bind:checked={filterOpen24h}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiTwelveOclock class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">Open 24/7</span>
+					</label>
 
-				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
-					<input
-						type="checkbox"
-						name="outlets"
-						bind:checked={filterOutletAvailable}
-						class="checkbox checkbox-sm border-white/40"
-					/>
-					<FluentEmojiHighVoltage class="h-5 w-5" />
-					<span class="text-sm text-white">Outlet available</span>
-				</label>
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="warmSleep"
+							bind:checked={filterWarmSleep}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiFire class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">Warm sleeping spots</span>
+					</label>
 
-				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
-					<input
-						type="checkbox"
-						name="warmSleep"
-						bind:checked={filterWarmSleep}
-						class="checkbox checkbox-sm border-white/40"
-					/>
-					<FluentEmojiFire class="h-5 w-5" />
-					<span class="text-sm text-white">Warm sleeping spots</span>
-				</label>
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="outlets"
+							bind:checked={filterOutletAvailable}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiHighVoltage class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">Power outlets</span>
+					</label>
 
-				<label class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3">
-					<input
-						type="checkbox"
-						name="toiletsAtNight"
-						bind:checked={filterToiletsAtNight}
-						class="checkbox checkbox-sm border-white/40"
-					/>
-					<FluentEmojiCrescentMoon class="h-5 w-5" />
-					<span class="text-sm text-white">Toilets at night</span>
-				</label>
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="toilets"
+							bind:checked={filterToilets}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiToilet class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">Toilets</span>
+					</label>
+
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="toiletsAtNight"
+							bind:checked={filterToiletsAtNight}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiCrescentMoon class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">Night toilets</span>
+					</label>
+
+					<label
+						class="flex cursor-pointer items-center gap-3 rounded-lg bg-white/5 p-3 transition-colors hover:bg-white/10"
+					>
+						<input
+							type="checkbox"
+							name="wifi"
+							bind:checked={filterWifi}
+							class="checkbox checkbox-sm border-white/40"
+						/>
+						<FluentEmojiWifi class="h-5 w-5 flex-shrink-0" />
+						<span class="text-sm text-white">WiFi</span>
+					</label>
+				</div>
 			</div>
 
 			<!-- Submit button -->
@@ -266,18 +339,19 @@
 	</div>
 {/if}
 
-<!-- Search Results -->
+<!-- Search Results Count -->
 {#if !stationLoading && searchResults.length > 0}
 	<div class="mb-4">
-		<p class="text-sm text-white/70">Found {searchResults.length} station(s)</p>
+		<p class="text-sm font-medium text-white/80">
+			Found <span class="text-white">{searchResults.length}</span> station{searchResults.length !==
+			1
+				? 's'
+				: ''}
+		</p>
 	</div>
 {/if}
 
-<!--{
-	$inspect(searchResults)
-} -->
-
-<!--  Station Card section -->
+<!-- Station Cards -->
 {#if searchResults.length > 0}
 	<div class="space-y-4">
 		{#each searchResults as station (station.eva)}
@@ -288,6 +362,7 @@
 			>
 				<div class="card-body p-0">
 					<div class="flex flex-1 items-start gap-4 p-4">
+						<!-- Station Photo/Icon -->
 						<div class="flex-shrink-0" style="view-transition-name: icon-{station.eva}">
 							<div
 								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 transition-all duration-300"
@@ -315,16 +390,31 @@
 							<div
 								class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
 							>
-								#{station.eva} ·
-
+								<span class="font-mono text-xs">#{station.eva}</span>
 								{#if station.city}
-									<span>{station.city}, </span>
+									<span> · {station.city}</span>
 								{/if}
-								{station.country.toUpperCase()}
+								<span> · {station.country.toUpperCase()}</span>
 							</div>
 
 							<!-- Amenities Tags -->
 							<div class="mt-3 flex flex-wrap gap-2">
+								{#if station.is_open_24h}
+									<span
+										class="badge badge-sm flex items-center gap-1 border-green-400/50 bg-green-400/20 text-green-100"
+									>
+										<FluentEmojiGreenCircle class="h-3 w-3" />
+										24/7
+									</span>
+								{:else}
+									<span
+										class="badge badge-sm flex items-center gap-1 border-red-400/50 bg-red-400/20 text-red-100"
+									>
+										<FluentEmojiRedCircle class="h-3 w-3" />
+										Limited Hours
+									</span>
+								{/if}
+
 								{#if station.has_warm_sleep}
 									<span
 										class="badge badge-sm flex items-center gap-1 border-orange-400/50 bg-orange-400/20 text-orange-100"
@@ -333,12 +423,22 @@
 										Warm Sleep
 									</span>
 								{/if}
+
 								{#if station.has_outlets}
 									<span
 										class="badge badge-sm flex items-center gap-1 border-yellow-400/50 bg-yellow-400/20 text-yellow-100"
 									>
 										<FluentEmojiHighVoltage class="h-3 w-3" />
 										Outlets
+									</span>
+								{/if}
+
+								{#if station.has_toilets}
+									<span
+										class="badge badge-sm flex items-center gap-1 border-purple-400/50 bg-purple-400/20 text-purple-100"
+									>
+										<FluentEmojiToilet class="h-3 w-3" />
+										Toilets
 									</span>
 								{/if}
 
@@ -350,19 +450,13 @@
 										Night Toilets
 									</span>
 								{/if}
-								{#if station.is_open_24h}
+
+								{#if station.has_wifi}
 									<span
-										class="badge badge-sm flex items-center gap-1 border-green-400/50 bg-green-400/20 text-green-100"
+										class="badge badge-sm flex items-center gap-1 border-cyan-400/50 bg-cyan-400/20 text-cyan-100"
 									>
-										<FluentEmojiGreenCircle class="h-3 w-3" />
-										24/7 Open
-									</span>
-								{:else}
-									<span
-										class="badge badge-sm flex items-center gap-1 border-red-400/50 bg-red-400/20 text-red-100"
-									>
-										<FluentEmojiRedCircle class="h-3 w-3" />
-										Limited Hours
+										<FluentEmojiWifi class="h-3 w-3" />
+										WiFi
 									</span>
 								{/if}
 							</div>

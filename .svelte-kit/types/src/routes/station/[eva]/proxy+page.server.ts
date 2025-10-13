@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/routes/station/[id]/+page.server.ts
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -32,7 +33,7 @@ function getStationPdfUrl(stationIdGer: number): string {
 	return `https://www.bahnhof.de/downloads/station-plans/${stationIdGer}.pdf`;
 }
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load = async ({ params }: Parameters<PageServerLoad>[0]) => {
 	const eva = parseInt(params.eva);
 	if (isNaN(eva)) {
 		throw error(400, 'Invalid EVA number');

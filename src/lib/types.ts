@@ -2,49 +2,44 @@
 
 export interface Station {
 	eva: number;
+	station_id_ger?: number | null;
 	name: string;
-	city?: string;
+	city?: string | null;
 	country: string;
-
-	// Sleeping information
-	has_warm_sleep: boolean;
-	sleep_notes?: string;
-
-	// Outlets
-	has_outlets: boolean;
-	outlet_notes?: string;
-
-	// Toilets
-	has_toilets: boolean;
-	toilets_open_at_night: boolean;
-	toilet_notes?: string;
-
-	// Opening hours
-	is_open_24h: boolean;
-	opening_hours?: string;
-
-	// Location
-	latitude?: number;
-	longitude?: number;
-
-	// Additional information
-	additional_info?: string;
+	has_warm_sleep?: boolean | null;
+	sleep_notes?: string | null;
+	has_outlets?: boolean | null;
+	outlet_notes?: string | null;
+	has_toilets?: boolean | null;
+	toilet_notes?: string | null;
+	toilets_open_at_night?: boolean | null;
+	is_open_24h?: boolean | null;
+	opening_hours?: string | null;
+	has_wifi?: boolean | null;
+	wifi_has_limit?: boolean | null;
+	wifi_notes?: string | null;
+	latitude: number;
+	longitude: number;
+	additional_info?: string | null;
 }
 
-export interface SearchParams {
-	name?: string;
-	country?: string;
-}
-
-export type StationResult = {
+export interface StationResult {
 	eva: number;
 	name: string;
-	city: string | null;
+	city?: string | null;
 	country: string;
-	has_warm_sleep: boolean;
-	has_outlets: boolean;
-	has_toilets: boolean;
-	toilets_open_at_night: boolean;
-	is_open_24h: boolean;
-	photoUrl: string | null;
-};
+	has_warm_sleep?: boolean | null;
+	has_outlets?: boolean | null;
+	has_toilets?: boolean | null;
+	toilets_open_at_night?: boolean | null;
+	is_open_24h?: boolean | null;
+	has_wifi?: boolean | null;
+	photoUrl?: string | null;
+}
+
+export interface StationPhoto {
+	path: string;
+	photographer: string;
+	createdAt?: string;
+	license?: string;
+}

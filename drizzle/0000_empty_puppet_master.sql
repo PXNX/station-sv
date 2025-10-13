@@ -11,6 +11,9 @@ CREATE TABLE "pending_edits" (
 	"toilets_open_at_night" boolean,
 	"is_open_24h" boolean,
 	"opening_hours" text,
+	"has_wifi" boolean,
+	"wifi_has_limit" boolean,
+	"wifi_notes" text,
 	"additional_info" text,
 	"status" text DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -22,6 +25,29 @@ CREATE TABLE "sessions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "stations" (
+	"eva" integer PRIMARY KEY NOT NULL,
+	"station_id_ger" integer,
+	"name" varchar(255) NOT NULL,
+	"city" varchar(255),
+	"country" varchar(2) NOT NULL,
+	"has_warm_sleep" boolean,
+	"sleep_notes" text,
+	"has_outlets" boolean,
+	"outlet_notes" text,
+	"has_toilets" boolean,
+	"toilet_notes" text,
+	"toilets_open_at_night" boolean,
+	"is_open_24h" boolean,
+	"opening_hours" varchar(100),
+	"has_wifi" boolean,
+	"wifi_has_limit" boolean,
+	"wifi_notes" text,
+	"latitude" double precision NOT NULL,
+	"longitude" double precision NOT NULL,
+	"additional_info" text
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
