@@ -110,6 +110,8 @@
 		if (pendingNavigation) {
 			pendingNavigation();
 			pendingNavigation = null;
+		} else {
+			goto('/');
 		}
 	}
 
@@ -307,15 +309,15 @@
 				<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">
 					WiFi Notes
 				</label>
-				<textarea
-					id="wifi_notes"
-					name="wifi_notes"
-					rows="3"
-					bind:value={formState.wifi_notes}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
-				></textarea>
 			</div>
+			<textarea
+				id="wifi_notes"
+				name="wifi_notes"
+				rows="3"
+				bind:value={formState.wifi_notes}
+				class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
+				placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
+			></textarea>
 		</div>
 
 		<!-- Toilets Section -->
@@ -436,13 +438,6 @@
 				{/if}
 			</button>
 		</div>
-
-		{#if hasChanges && !hasSubmitted}
-			<p class="flex items-center justify-center gap-2 text-center text-sm text-yellow-400/80">
-				<FluentEmojiWarning class="h-5 w-5" />
-				<span>You have unsaved changes</span>
-			</p>
-		{/if}
 	</form>
 </div>
 <!-- Unsaved Changes Dialog -->
