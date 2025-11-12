@@ -3,7 +3,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
-import { eq, and, or, sql } from 'drizzle-orm';
+import { eq, and, or, sql, asc, desc } from 'drizzle-orm';
 import type { StationResult } from '$lib/types';
 
 /**
@@ -15,7 +15,6 @@ async function fetchStationPhotoById(country: string, germanId: number) {
 		const response = await fetch(url);
 
 		if (!response.ok) {
-			console.log('Response not OK:', response.statusText);
 			return null;
 		}
 
@@ -33,7 +32,6 @@ async function fetchStationPhotoById(country: string, germanId: number) {
 		// Get the latest photo (last in array) - most recent upload
 		const latestPhoto = station.photos[station.photos.length - 1];
 
-		// Ensure photo path is valid
 		if (!latestPhoto.path) {
 			return null;
 		}
@@ -74,7 +72,7 @@ async function fetchStationPhotos(stationIds: { country: string; germanId: numbe
 }
 
 /**
- * Search stations in local database with filters
+ * Search stations with fuzzy matching and priority ranking
  */
 async function searchStationsInDB(
 	query: string,
@@ -90,14 +88,19 @@ async function searchStationsInDB(
 	try {
 		const conditions = [];
 
-		// Search by name or city (case-insensitive)
+		// Fuzzy search using pg_trgm similarity
 		if (query && query.length >= 2) {
 			const searchLower = query.toLowerCase();
-			const searchPattern = `%${searchLower}%`;
+
+			// Use pg_trgm's % operator for fuzzy matching
+			// This finds strings that are "similar" to the search query
 			conditions.push(
 				or(
-					sql`LOWER(${stations.name}) LIKE ${searchPattern}`,
-					sql`LOWER(${stations.city}) LIKE ${searchPattern}`
+					sql`${stations.name} % ${query}`,
+					sql`${stations.city} % ${query}`,
+					// Also keep the LIKE fallback for exact partial matches
+					sql`LOWER(${stations.name}) LIKE ${`%${searchLower}%`}`,
+					sql`LOWER(${stations.city}) LIKE ${`%${searchLower}%`}`
 				)
 			);
 		}
@@ -127,17 +130,80 @@ async function searchStationsInDB(
 			conditions.push(eq(stations.hasWifi, true));
 		}
 
-		// Execute query
+		// Execute query with priority ranking
 		const results = await db
-			.select()
+			.select({
+				eva: stations.eva,
+				stationIdGER: stations.stationIdGER,
+				name: stations.name,
+				city: stations.city,
+				country: stations.country,
+				category: stations.category,
+				priceCategory: stations.priceCategory,
+				hasWarmSleep: stations.hasWarmSleep,
+				sleepNotes: stations.sleepNotes,
+				hasOutlets: stations.hasOutlets,
+				outletNotes: stations.outletNotes,
+				hasToilets: stations.hasToilets,
+				toiletNotes: stations.toiletNotes,
+				toiletsOpenAtNight: stations.toiletsOpenAtNight,
+				isOpen24h: stations.isOpen24h,
+				openingHours: stations.openingHours,
+				hasWifi: stations.hasWifi,
+				wifiHasLimit: stations.wifiHasLimit,
+				wifiNotes: stations.wifiNotes,
+				latitude: stations.latitude,
+				longitude: stations.longitude,
+				additionalInfo: stations.additionalInfo,
+				// Calculate similarity score for ranking
+				similarityScore: sql<number>`
+					GREATEST(
+						similarity(${stations.name}, ${query}),
+						COALESCE(similarity(${stations.city}, ${query}), 0)
+					)
+				`.as('similarity_score')
+			})
 			.from(stations)
 			.where(conditions.length > 0 ? and(...conditions) : undefined)
+			.orderBy(
+				asc(stations.category), // Most important stations first (1 = major hub)
+				desc(sql`similarity_score`) // Then by how well they match the search
+			)
 			.limit(50);
 
 		return results;
 	} catch (error) {
 		console.error('Database query error:', error);
-		return [];
+		// Fallback to simple LIKE search if pg_trgm is not available
+		try {
+			const searchLower = query.toLowerCase();
+			const conditions = [
+				or(
+					sql`LOWER(${stations.name}) LIKE ${`%${searchLower}%`}`,
+					sql`LOWER(${stations.city}) LIKE ${`%${searchLower}%`}`
+				)
+			];
+
+			// Apply filters
+			if (filters?.open24h) conditions.push(eq(stations.isOpen24h, true));
+			if (filters?.warmSleep) conditions.push(eq(stations.hasWarmSleep, true));
+			if (filters?.toilets) conditions.push(eq(stations.hasToilets, true));
+			if (filters?.toiletsAtNight) conditions.push(eq(stations.toiletsOpenAtNight, true));
+			if (filters?.outlets) conditions.push(eq(stations.hasOutlets, true));
+			if (filters?.wifi) conditions.push(eq(stations.hasWifi, true));
+
+			const results = await db
+				.select()
+				.from(stations)
+				.where(and(...conditions))
+				.orderBy(asc(stations.category))
+				.limit(50);
+
+			return results.map((r) => ({ ...r, similarityScore: 0 }));
+		} catch (fallbackError) {
+			console.error('Fallback query error:', fallbackError);
+			return [];
+		}
 	}
 }
 
@@ -156,6 +222,7 @@ function mergeStationData(dbStations: any[], photoMap: Map<string, any>): Statio
 			name: dbStation.name,
 			city: dbStation.city,
 			country: dbStation.country,
+			category: dbStation.category,
 			has_warm_sleep: dbStation.hasWarmSleep,
 			has_outlets: dbStation.hasOutlets,
 			has_toilets: dbStation.hasToilets,
@@ -192,7 +259,7 @@ export const load = async ({ url, locals }: Parameters<PageServerLoad>[0]) => {
 		};
 	}
 
-	// Fetch from database
+	// Fetch from database with fuzzy search
 	const dbStations = await searchStationsInDB(searchName, {
 		open24h: filterOpen24h,
 		warmSleep: filterWarmSleep,
@@ -248,7 +315,7 @@ export const actions = {
 			};
 		}
 
-		// Fetch from database
+		// Fetch from database with fuzzy search
 		const dbStations = await searchStationsInDB(name, {
 			open24h: filterOpen24h,
 			warmSleep: filterWarmSleep,

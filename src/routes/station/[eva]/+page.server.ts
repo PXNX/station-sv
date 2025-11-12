@@ -79,6 +79,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			wifi_notes: station.wifiNotes,
 			latitude: station.latitude,
 			longitude: station.longitude,
+			category: station.category,
+
 			additional_info: station.additionalInfo
 		},
 		photos: photoData?.photos || [],
