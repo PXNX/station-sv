@@ -98,19 +98,10 @@
 	);
 </script>
 
-<svelte:head>
-	<title>Train Station Search</title>
-	<meta
-		name="description"
-		content="Search for train stations in Germany. Find sleeping spots, outlets, toilets & station info"
-	/>
-	<meta name="view-transition" content="same-origin" />
-</svelte:head>
-
 <!-- Header -->
 <header class="mb-10 text-center">
 	<div class="mb-4 flex justify-center">
-		<FluentEmojiStation class="h-16 w-16" />
+		<FluentEmojiStation class="size-16" />
 	</div>
 	<h1 class="text-3xl font-bold text-white">Train Station Search</h1>
 	<p class="mt-2 text-sm text-white/70">
@@ -128,7 +119,7 @@
 <div class="alert mb-6 border border-yellow-400/50 bg-yellow-400/20 shadow-lg">
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
-		class="h-6 w-6 flex-shrink-0 stroke-yellow-200"
+		class="h-6 w-6 shrink-0 stroke-yellow-200"
 		fill="none"
 		viewBox="0 0 24 24"
 	>
@@ -231,7 +222,7 @@
 							bind:checked={filterOpen24h}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiTwelveOclock class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiTwelveOclock class="size-5 shrink-0" />
 						<span class="text-sm text-white">Open 24/7</span>
 					</label>
 
@@ -244,7 +235,7 @@
 							bind:checked={filterWarmSleep}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiFire class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiFire class="size-5 shrink-0" />
 						<span class="text-sm text-white">Warm sleeping spots</span>
 					</label>
 
@@ -257,7 +248,7 @@
 							bind:checked={filterOutletAvailable}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiHighVoltage class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiHighVoltage class="size-5 shrink-0" />
 						<span class="text-sm text-white">Power outlets</span>
 					</label>
 
@@ -270,7 +261,7 @@
 							bind:checked={filterToilets}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiToilet class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiToilet class="size-5 shrink-0" />
 						<span class="text-sm text-white">Toilets</span>
 					</label>
 
@@ -283,7 +274,7 @@
 							bind:checked={filterToiletsAtNight}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiCrescentMoon class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiCrescentMoon class="size-5 shrink-0" />
 						<span class="text-sm text-white">Night toilets</span>
 					</label>
 
@@ -296,7 +287,7 @@
 							bind:checked={filterWifi}
 							class="checkbox checkbox-sm border-white/40"
 						/>
-						<FluentEmojiWifi class="h-5 w-5 flex-shrink-0" />
+						<FluentEmojiWifi class="size-5 shrink-0" />
 						<span class="text-sm text-white">WiFi</span>
 					</label>
 				</div>
@@ -313,7 +304,7 @@
 						<span class="loading loading-spinner loading-sm"></span>
 					{/if}
 					<span class="text-lg">Search Stations</span>
-					<FluentArrowRight24Regular class="h-5 w-5" />
+					<FluentArrowRight24Regular class="size-5" />
 				</button>
 			</div>
 		</form>
@@ -363,9 +354,9 @@
 				<div class="card-body p-0">
 					<div class="flex flex-1 items-start gap-4 p-4">
 						<!-- Station Photo/Icon -->
-						<div class="flex-shrink-0" style="view-transition-name: icon-{station.eva}">
+						<div class="shrink-0" style="view-transition-name: icon-{station.eva}">
 							<div
-								class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500 transition-all duration-300"
+								class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500 transition-all duration-300"
 							>
 								{#if station.photoUrl}
 									<img
@@ -463,7 +454,7 @@
 						</div>
 
 						<!-- Arrow -->
-						<div class="flex flex-shrink-0 items-center">
+						<div class="flex shrink-0 items-center">
 							<FluentArrowRight24Regular
 								class="size-8 text-white/60 transition-all duration-300 group-hover:translate-x-2 group-hover:scale-110 group-hover:text-white"
 							/>
@@ -479,7 +470,7 @@
 {#if showEmptyState}
 	<div class="card border border-white/30 bg-white/10 backdrop-blur-md">
 		<div class="card-body items-center justify-center gap-y-4 py-20">
-			<FluentEmojiFaceWithRaisedEyebrow class="h-16 w-16" />
+			<FluentEmojiFaceWithRaisedEyebrow class="size-16" />
 			<h3 class="text-2xl font-bold text-white">No stations found</h3>
 			<p class="text-center text-lg text-white/70">
 				Try adjusting your search or filters. Make sure to enter at least 2 characters.

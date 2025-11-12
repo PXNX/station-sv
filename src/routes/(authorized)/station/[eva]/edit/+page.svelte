@@ -17,41 +17,21 @@
 	interface Props {
 		data: {
 			station: Station;
-			originalStation: any;
 			isAdmin: boolean;
 			hasPendingEdit: boolean;
-			pendingEditId: number | null;
 		};
 	}
 
 	let { data }: Props = $props();
 	let isSubmitting = $state(false);
 	let hasSubmitted = $state(false);
-
-	// Dialog states
 	let showUnsavedDialog = $state(false);
 	let showConfirmSaveDialog = $state(false);
 	let pendingNavigation: (() => void) | null = null;
+	let formElement: HTMLFormElement;
 
-	// Store original values for comparison (from the station data which already includes pending edits)
-	const originalValues = {
-		has_warm_sleep: data.station.has_warm_sleep,
-		sleep_notes: data.station.sleep_notes || '',
-		has_outlets: data.station.has_outlets,
-		outlet_notes: data.station.outlet_notes || '',
-		has_toilets: data.station.has_toilets,
-		toilet_notes: data.station.toilet_notes || '',
-		toilets_open_at_night: data.station.toilets_open_at_night,
-		is_open_24h: data.station.is_open_24h,
-		opening_hours: data.station.opening_hours || '',
-		has_wifi: data.station.has_wifi,
-		wifi_has_limit: data.station.wifi_has_limit,
-		wifi_notes: data.station.wifi_notes || '',
-		additional_info: data.station.additional_info || ''
-	};
-
-	// Form state
-	let formState = $state({
+	// Initialize form state from station data
+	const initFormState = () => ({
 		has_warm_sleep: data.station.has_warm_sleep,
 		sleep_notes: data.station.sleep_notes || '',
 		has_outlets: data.station.has_outlets,
@@ -67,30 +47,37 @@
 		additional_info: data.station.additional_info || ''
 	});
 
+	const originalValues = initFormState();
+	let formState = $state(initFormState());
+
 	// Check if form has been modified
 	const hasChanges = $derived(
-		formState.has_warm_sleep !== originalValues.has_warm_sleep ||
-			formState.sleep_notes !== originalValues.sleep_notes ||
-			formState.has_outlets !== originalValues.has_outlets ||
-			formState.outlet_notes !== originalValues.outlet_notes ||
-			formState.has_toilets !== originalValues.has_toilets ||
-			formState.toilet_notes !== originalValues.toilet_notes ||
-			formState.toilets_open_at_night !== originalValues.toilets_open_at_night ||
-			formState.is_open_24h !== originalValues.is_open_24h ||
-			formState.opening_hours !== originalValues.opening_hours ||
-			formState.has_wifi !== originalValues.has_wifi ||
-			formState.wifi_has_limit !== originalValues.wifi_has_limit ||
-			formState.wifi_notes !== originalValues.wifi_notes ||
-			formState.additional_info !== originalValues.additional_info
+		Object.keys(formState).some((key) => formState[key] !== originalValues[key])
 	);
 
-	// Determine button text based on admin status and pending edit
-	// 'Update Pending Change' shows when user is editing their existing pending edit
 	const buttonText = $derived(
 		data.isAdmin ? 'Save Changes' : data.hasPendingEdit ? 'Update Pending Change' : 'Submit Changes'
 	);
 
+	const dialogTitle = $derived(
+		data.isAdmin
+			? 'Confirm Changes'
+			: data.hasPendingEdit
+				? 'Update Pending Changes'
+				: 'Submit for Review'
+	);
+
+	const dialogMessage = $derived(
+		data.isAdmin
+			? 'Are you sure you want to save these changes? They will be applied immediately.'
+			: data.hasPendingEdit
+				? 'Are you sure you want to update your pending changes? Your previous submission will be replaced with these new values.'
+				: 'Are you sure you want to submit these changes? An administrator will review them before they are applied.'
+	);
+
 	function goBack() {
+		console.log('goBack');
+
 		if (hasChanges && !hasSubmitted) {
 			pendingNavigation = () => goto(`/station/${data.station.eva}`);
 			showUnsavedDialog = true;
@@ -100,45 +87,35 @@
 	}
 
 	function confirmLeave() {
+		console.log('confirmLeave');
 		showUnsavedDialog = false;
-		if (pendingNavigation) {
-			pendingNavigation();
-			pendingNavigation = null;
-		}
-	}
-
-	function cancelLeave() {
-		showUnsavedDialog = false;
+		console.log('pendingNavigation', pendingNavigation);
+		pendingNavigation?.();
 		pendingNavigation = null;
 	}
 
-	// Intercept navigation to warn about unsaved changes
+	function cancelDialog() {
+		showUnsavedDialog = false;
+		showConfirmSaveDialog = false;
+		pendingNavigation = null;
+	}
+
 	beforeNavigate(({ cancel }) => {
 		if (hasChanges && !isSubmitting && !hasSubmitted) {
 			cancel();
-			pendingNavigation = null;
 			showUnsavedDialog = true;
 		}
 	});
 
-	let formElement: HTMLFormElement;
-
 	function initiateSubmit() {
-		if (!hasChanges || hasSubmitted) {
-			return;
+		if (hasChanges && !hasSubmitted) {
+			showConfirmSaveDialog = true;
 		}
-		showConfirmSaveDialog = true;
 	}
 
 	function confirmSave() {
 		showConfirmSaveDialog = false;
-		if (formElement) {
-			formElement.requestSubmit();
-		}
-	}
-
-	function cancelSave() {
-		showConfirmSaveDialog = false;
+		formElement?.requestSubmit();
 	}
 
 	function handleSubmit() {
@@ -148,12 +125,20 @@
 			hasSubmitted = true;
 			isSubmitting = false;
 
-			// Redirect on success
-			if (result.type === 'redirect') {
+			if (result.type === 'success' || result.type === 'redirect') {
+				goto(`/station/${data.station.eva}`);
+			} else if (result.location) {
 				goto(result.location);
 			}
 		};
 	}
+
+	// Reusable form field component props
+	const fieldClass =
+		'w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none';
+	const checkboxClass =
+		'h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400';
+	const sectionClass = 'rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm';
 </script>
 
 <svelte:head>
@@ -177,238 +162,210 @@
 		<h1 class="mb-2 text-3xl font-bold text-white">Edit Station Details</h1>
 		<p class="text-lg text-white/70">{data.station.name}</p>
 		<p class="text-sm text-white/50">
-			#{data.station.eva} ·
+			#{data.station.eva}
 			{#if data.station.city}
-				{data.station.city}, {data.station.country}
-			{/if}
+				· {data.station.city}, {data.station.country}{/if}
 		</p>
 		{#if !data.isAdmin}
-			{#if data.hasPendingEdit}
-				<div class="mt-4 rounded-lg border border-yellow-400/30 bg-yellow-500/10 p-3">
-					<p class="text-sm text-yellow-300">
+			<div
+				class="mt-4 rounded-lg border p-3 {data.hasPendingEdit
+					? 'border-yellow-400/30 bg-yellow-500/10'
+					: 'border-blue-400/30 bg-blue-500/10'}"
+			>
+				<p class="text-sm {data.hasPendingEdit ? 'text-yellow-300' : 'text-blue-300'}">
+					{#if data.hasPendingEdit}
 						<FluentEmojiWarning class="inline h-4 w-4" />
 						You are editing your pending changes. The form has been pre-filled with your previously submitted
 						values.
-					</p>
-				</div>
-			{:else}
-				<div class="mt-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-3">
-					<p class="text-sm text-blue-300">
+					{:else}
 						<FluentEmojiInformation class="inline h-4 w-4" />
 						Your changes will be reviewed by administrators before being applied to the station.
-					</p>
-				</div>
-			{/if}
+					{/if}
+				</p>
+			</div>
 		{/if}
 	</div>
 
 	<!-- Edit Form -->
 	<form bind:this={formElement} method="POST" use:enhance={handleSubmit} class="space-y-6">
 		<!-- Sleeping Section -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiBed class="h-6 w-6" />
+				<FluentEmojiBed class="size-6" />
 				<span>Sleeping Facilities</span>
 			</h2>
-
 			<label class="mb-4 flex cursor-pointer items-center gap-3">
 				<input
 					type="checkbox"
 					name="has_warm_sleep"
 					bind:checked={formState.has_warm_sleep}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					class={checkboxClass}
 				/>
 				<span class="text-white">Warm sleeping area available</span>
 			</label>
-
-			<div>
-				<label for="sleep_notes" class="mb-2 block text-sm font-medium text-white/80">
-					Sleep Notes
-				</label>
-				<textarea
-					id="sleep_notes"
-					name="sleep_notes"
-					rows="3"
-					bind:value={formState.sleep_notes}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="Describe sleeping conditions, bench locations, comfort level..."
-				></textarea>
-			</div>
+			<label for="sleep_notes" class="mb-2 block text-sm font-medium text-white/80"
+				>Sleep Notes</label
+			>
+			<textarea
+				id="sleep_notes"
+				name="sleep_notes"
+				rows="3"
+				bind:value={formState.sleep_notes}
+				class={fieldClass}
+				placeholder="Describe sleeping conditions, bench locations, comfort level..."
+			></textarea>
 		</div>
 
 		<!-- Outlets Section -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiHighVoltage class="h-6 w-6" />
+				<FluentEmojiHighVoltage class="size-6" />
 				<span>Power Outlets</span>
 			</h2>
-
 			<label class="mb-4 flex cursor-pointer items-center gap-3">
 				<input
 					type="checkbox"
 					name="has_outlets"
 					bind:checked={formState.has_outlets}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					class={checkboxClass}
 				/>
 				<span class="text-white">Outlets available</span>
 			</label>
-
-			<div>
-				<label for="outlet_notes" class="mb-2 block text-sm font-medium text-white/80">
-					Outlet Notes
-				</label>
-				<textarea
-					id="outlet_notes"
-					name="outlet_notes"
-					rows="3"
-					bind:value={formState.outlet_notes}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="Describe outlet locations, accessibility, charging conditions..."
-				></textarea>
-			</div>
+			<label for="outlet_notes" class="mb-2 block text-sm font-medium text-white/80"
+				>Outlet Notes</label
+			>
+			<textarea
+				id="outlet_notes"
+				name="outlet_notes"
+				rows="3"
+				bind:value={formState.outlet_notes}
+				class={fieldClass}
+				placeholder="Describe outlet locations, accessibility, charging conditions..."
+			></textarea>
 		</div>
 
 		<!-- WiFi Section -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiSatelliteAntenna class="h-6 w-6" />
+				<FluentEmojiSatelliteAntenna class="size-6" />
 				<span>WiFi Hotspot</span>
 			</h2>
-
 			<label class="mb-4 flex cursor-pointer items-center gap-3">
 				<input
 					type="checkbox"
 					name="has_wifi"
 					bind:checked={formState.has_wifi}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					class={checkboxClass}
 				/>
 				<span class="text-white">WiFi available</span>
 			</label>
-
 			{#if formState.has_wifi}
 				<label class="mb-4 flex cursor-pointer items-center gap-3">
 					<input
 						type="checkbox"
 						name="wifi_has_limit"
 						bind:checked={formState.wifi_has_limit}
-						class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+						class={checkboxClass}
 					/>
 					<span class="text-white">WiFi has data usage limit</span>
 				</label>
 			{/if}
-
-			<div>
-				<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">
-					WiFi Notes
-
-					<textarea
-						id="wifi_notes"
-						name="wifi_notes"
-						rows="3"
-						bind:value={formState.wifi_notes}
-						class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-						placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
-					></textarea>
-				</label>
-			</div>
+			<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">WiFi Notes</label
+			>
+			<textarea
+				id="wifi_notes"
+				name="wifi_notes"
+				rows="3"
+				bind:value={formState.wifi_notes}
+				class={fieldClass}
+				placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
+			></textarea>
 		</div>
 
 		<!-- Toilets Section -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiToilet class="h-6 w-6" />
+				<FluentEmojiToilet class="size-6" />
 				<span>Toilet Facilities</span>
 			</h2>
-
 			<label class="mb-3 flex cursor-pointer items-center gap-3">
 				<input
 					type="checkbox"
 					name="has_toilets"
 					bind:checked={formState.has_toilets}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					class={checkboxClass}
 				/>
 				<span class="text-white">Toilets available</span>
 			</label>
-
 			{#if formState.has_toilets}
 				<label class="mb-4 flex cursor-pointer items-center gap-3">
 					<input
 						type="checkbox"
 						name="toilets_open_at_night"
 						bind:checked={formState.toilets_open_at_night}
-						class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+						class={checkboxClass}
 					/>
 					<span class="text-white">Toilets open at night</span>
 				</label>
 			{/if}
-
-			<div>
-				<label for="toilet_notes" class="mb-2 block text-sm font-medium text-white/80">
-					Toilet Notes
-				</label>
-				<textarea
-					id="toilet_notes"
-					name="toilet_notes"
-					rows="3"
-					bind:value={formState.toilet_notes}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="Describe cleanliness, fees, location, accessibility..."
-				></textarea>
-			</div>
+			<label for="toilet_notes" class="mb-2 block text-sm font-medium text-white/80"
+				>Toilet Notes</label
+			>
+			<textarea
+				id="toilet_notes"
+				name="toilet_notes"
+				rows="3"
+				bind:value={formState.toilet_notes}
+				class={fieldClass}
+				placeholder="Describe cleanliness, fees, location, accessibility..."
+			></textarea>
 		</div>
 
 		<!-- Opening Hours Section -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiThreeOClock class="h-6 w-6" />
+				<FluentEmojiThreeOClock class="size-6" />
 				<span>Opening Hours</span>
 			</h2>
-
 			<label class="mb-4 flex cursor-pointer items-center gap-3">
 				<input
 					type="checkbox"
 					name="is_open_24h"
 					bind:checked={formState.is_open_24h}
-					class="h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400"
+					class={checkboxClass}
 				/>
 				<span class="text-white">Open 24/7</span>
 			</label>
-
-			<div>
-				<label for="opening_hours" class="mb-2 block text-sm font-medium text-white/80">
-					Opening Hours
-				</label>
-				<input
-					type="text"
-					id="opening_hours"
-					name="opening_hours"
-					bind:value={formState.opening_hours}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="e.g., 04:00 - 01:00 or Open 24 hours"
-				/>
-			</div>
+			<label for="opening_hours" class="mb-2 block text-sm font-medium text-white/80"
+				>Opening Hours</label
+			>
+			<input
+				type="text"
+				id="opening_hours"
+				name="opening_hours"
+				bind:value={formState.opening_hours}
+				class={fieldClass}
+				placeholder="e.g., 04:00 - 01:00 or Open 24 hours"
+			/>
 		</div>
 
 		<!-- Additional Information -->
-		<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+		<div class={sectionClass}>
 			<h2 class="mb-4 flex items-center gap-2 text-xl font-semibold text-white">
-				<FluentEmojiInformation class="h-6 w-6" />
+				<FluentEmojiInformation class="size-6" />
 				<span>Additional Information</span>
 			</h2>
-
-			<div>
-				<label for="additional_info" class="mb-2 block text-sm font-medium text-white/80">
-					Additional Notes
-				</label>
-				<textarea
-					id="additional_info"
-					name="additional_info"
-					rows="4"
-					bind:value={formState.additional_info}
-					class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
-					placeholder="Any other useful information about the station..."
-				></textarea>
-			</div>
+			<label for="additional_info" class="mb-2 block text-sm font-medium text-white/80"
+				>Additional Notes</label
+			>
+			<textarea
+				id="additional_info"
+				name="additional_info"
+				rows="4"
+				bind:value={formState.additional_info}
+				class={fieldClass}
+				placeholder="Any other useful information about the station..."
+			></textarea>
 		</div>
 
 		<!-- Action Buttons -->
@@ -447,44 +404,22 @@
 		<h3 class="text-lg font-bold">Unsaved Changes</h3>
 		<p class="py-4">You have unsaved changes. Are you sure you want to leave?</p>
 		<div class="modal-action">
-			<button onclick={cancelLeave} class="btn btn-ghost">Cancel</button>
+			<button onclick={cancelDialog} class="btn btn-ghost">Cancel</button>
 			<button onclick={confirmLeave} class="btn btn-error">Leave Without Saving</button>
 		</div>
 	</div>
-	<div class="modal-backdrop" onclick={cancelLeave}></div>
+	<div class="modal-backdrop" onclick={cancelDialog}></div>
 </dialog>
 
 <!-- Confirm Save Dialog -->
 <dialog class="modal" class:modal-open={showConfirmSaveDialog}>
 	<div class="modal-box bg-gray-800 text-white">
-		<h3 class="text-lg font-bold">
-			{data.isAdmin
-				? 'Confirm Changes'
-				: data.hasPendingEdit
-					? 'Update Pending Changes'
-					: 'Submit for Review'}
-		</h3>
-		<p class="py-4">
-			{#if data.isAdmin}
-				Are you sure you want to save these changes? They will be applied immediately.
-			{:else if data.hasPendingEdit}
-				Are you sure you want to update your pending changes? Your previous submission will be
-				replaced with these new values.
-			{:else}
-				Are you sure you want to submit these changes? An administrator will review them before they
-				are applied.
-			{/if}
-		</p>
+		<h3 class="text-lg font-bold">{dialogTitle}</h3>
+		<p class="py-4">{dialogMessage}</p>
 		<div class="modal-action">
-			<button onclick={cancelSave} class="btn btn-ghost">Cancel</button>
-			<button onclick={confirmSave} class="btn btn-primary">
-				{data.isAdmin
-					? 'Save Changes'
-					: data.hasPendingEdit
-						? 'Update Pending Changes'
-						: 'Submit for Review'}
-			</button>
+			<button onclick={cancelDialog} class="btn btn-ghost">Cancel</button>
+			<button onclick={confirmSave} class="btn btn-primary">{buttonText}</button>
 		</div>
 	</div>
-	<div class="modal-backdrop" onclick={cancelSave}></div>
+	<div class="modal-backdrop" onclick={cancelDialog}></div>
 </dialog>
