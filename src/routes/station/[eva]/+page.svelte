@@ -149,7 +149,7 @@
 				{station.name}
 			</h1>
 			<span
-				class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
+				class=" inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
 			>
 				{categoryBadge.label}
 			</span>
