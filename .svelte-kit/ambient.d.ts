@@ -26,35 +26,47 @@
  * ```
  */
 declare module '$env/static/private' {
-	export const DATABASE_URL: string;
-	export const GOOGLE_CLIENT_ID: string;
-	export const GOOGLE_CLIENT_SECRET: string;
-	export const GOOGLE_REDIRECT_URI: string;
 	export const ALLUSERSPROFILE: string;
 	export const APPDATA: string;
+	export const BASH_ENV: string;
 	export const BUN_INSPECT_CONNECT_TO: string;
 	export const BUN_WHICH_IGNORE_CWD: string;
+<<<<<<< HEAD
 	export const ChocolateyInstall: string;
 	export const ChocolateyLastPathUpdate: string;
+=======
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 	export const CHROME_CRASHPAD_PIPE_NAME: string;
 	export const COLORTERM: string;
 	export const CommonProgramFiles: string;
 	export const CommonProgramW6432: string;
 	export const COMPUTERNAME: string;
 	export const ComSpec: string;
+	export const DokanLibrary1: string;
+	export const DokanLibrary1_LibraryPath_x64: string;
+	export const DokanLibrary1_LibraryPath_x86: string;
 	export const DriverData: string;
+<<<<<<< HEAD
 	export const EFC_9752_1262719628: string;
 	export const EFC_9752_2283032206: string;
 	export const EFC_9752_3789132940: string;
 	export const FPS_BROWSER_APP_PROFILE_STRING: string;
 	export const FPS_BROWSER_USER_PROFILE_STRING: string;
+=======
+	export const flutter: string;
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 	export const GIT_ASKPASS: string;
+	export const GIT_SSH: string;
+	export const GRADLE_HOME: string;
 	export const HOMEDRIVE: string;
 	export const HOMEPATH: string;
 	export const INIT_CWD: string;
+<<<<<<< HEAD
+=======
+	export const JAVA_HOME: string;
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 	export const JOBS: string;
 	export const LANG: string;
-	export const LIBTORCH: string;
 	export const LOCALAPPDATA: string;
 	export const LOGONSERVER: string;
 	export const NODE: string;
@@ -69,11 +81,11 @@ declare module '$env/static/private' {
 	export const NVM_HOME: string;
 	export const NVM_SYMLINK: string;
 	export const OneDrive: string;
+	export const OneDriveConsumer: string;
 	export const ORIGINAL_XDG_CURRENT_DESKTOP: string;
 	export const OS: string;
 	export const Path: string;
 	export const PATHEXT: string;
-	export const PNPM_HOME: string;
 	export const PROCESSOR_ARCHITECTURE: string;
 	export const PROCESSOR_IDENTIFIER: string;
 	export const PROCESSOR_LEVEL: string;
@@ -83,20 +95,26 @@ declare module '$env/static/private' {
 	export const ProgramW6432: string;
 	export const PSModulePath: string;
 	export const PUBLIC: string;
+<<<<<<< HEAD
 	export const PYO3_USE_ABI3_FORWARD_COMPATIBILITY: string;
 	export const RUST_BACKTRACE: string;
+=======
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 	export const SESSIONNAME: string;
 	export const SystemDrive: string;
 	export const SystemRoot: string;
+	export const TD_AGENT_TOPDIR: string;
 	export const TEMP: string;
 	export const TERM_PROGRAM: string;
 	export const TERM_PROGRAM_VERSION: string;
 	export const TMP: string;
+	export const TZ: string;
+	export const USERDNSDOMAIN: string;
 	export const USERDOMAIN: string;
 	export const USERDOMAIN_ROAMINGPROFILE: string;
 	export const USERNAME: string;
 	export const USERPROFILE: string;
-	export const VBOX_HWVIRTEX_IGNORE_SVM_IN_USE: string;
+	export const VBOX_MSI_INSTALL_PATH: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 	export const VSCODE_GIT_ASKPASS_MAIN: string;
 	export const VSCODE_GIT_ASKPASS_NODE: string;
@@ -104,7 +122,8 @@ declare module '$env/static/private' {
 	export const VSCODE_INJECTION: string;
 	export const VSCODE_PYTHON_AUTOACTIVATE_GUARD: string;
 	export const windir: string;
-	export const __PSLockDownPolicy: string;
+	export const WSLENV: string;
+	export const ZES_ENABLE_SYSMAN: string;
 }
 
 /**
@@ -134,35 +153,47 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
-		DATABASE_URL: string;
-		GOOGLE_CLIENT_ID: string;
-		GOOGLE_CLIENT_SECRET: string;
-		GOOGLE_REDIRECT_URI: string;
 		ALLUSERSPROFILE: string;
 		APPDATA: string;
+		BASH_ENV: string;
 		BUN_INSPECT_CONNECT_TO: string;
 		BUN_WHICH_IGNORE_CWD: string;
+<<<<<<< HEAD
 		ChocolateyInstall: string;
 		ChocolateyLastPathUpdate: string;
+=======
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 		CHROME_CRASHPAD_PIPE_NAME: string;
 		COLORTERM: string;
 		CommonProgramFiles: string;
 		CommonProgramW6432: string;
 		COMPUTERNAME: string;
 		ComSpec: string;
+		DokanLibrary1: string;
+		DokanLibrary1_LibraryPath_x64: string;
+		DokanLibrary1_LibraryPath_x86: string;
 		DriverData: string;
+<<<<<<< HEAD
 		EFC_9752_1262719628: string;
 		EFC_9752_2283032206: string;
 		EFC_9752_3789132940: string;
 		FPS_BROWSER_APP_PROFILE_STRING: string;
 		FPS_BROWSER_USER_PROFILE_STRING: string;
+=======
+		flutter: string;
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 		GIT_ASKPASS: string;
+		GIT_SSH: string;
+		GRADLE_HOME: string;
 		HOMEDRIVE: string;
 		HOMEPATH: string;
 		INIT_CWD: string;
+<<<<<<< HEAD
+=======
+		JAVA_HOME: string;
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 		JOBS: string;
 		LANG: string;
-		LIBTORCH: string;
 		LOCALAPPDATA: string;
 		LOGONSERVER: string;
 		NODE: string;
@@ -177,11 +208,11 @@ declare module '$env/dynamic/private' {
 		NVM_HOME: string;
 		NVM_SYMLINK: string;
 		OneDrive: string;
+		OneDriveConsumer: string;
 		ORIGINAL_XDG_CURRENT_DESKTOP: string;
 		OS: string;
 		Path: string;
 		PATHEXT: string;
-		PNPM_HOME: string;
 		PROCESSOR_ARCHITECTURE: string;
 		PROCESSOR_IDENTIFIER: string;
 		PROCESSOR_LEVEL: string;
@@ -191,20 +222,26 @@ declare module '$env/dynamic/private' {
 		ProgramW6432: string;
 		PSModulePath: string;
 		PUBLIC: string;
+<<<<<<< HEAD
 		PYO3_USE_ABI3_FORWARD_COMPATIBILITY: string;
 		RUST_BACKTRACE: string;
+=======
+>>>>>>> f2dfb0441d40b3de7f9b1d0d74f3be6369bbe94a
 		SESSIONNAME: string;
 		SystemDrive: string;
 		SystemRoot: string;
+		TD_AGENT_TOPDIR: string;
 		TEMP: string;
 		TERM_PROGRAM: string;
 		TERM_PROGRAM_VERSION: string;
 		TMP: string;
+		TZ: string;
+		USERDNSDOMAIN: string;
 		USERDOMAIN: string;
 		USERDOMAIN_ROAMINGPROFILE: string;
 		USERNAME: string;
 		USERPROFILE: string;
-		VBOX_HWVIRTEX_IGNORE_SVM_IN_USE: string;
+		VBOX_MSI_INSTALL_PATH: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 		VSCODE_GIT_ASKPASS_MAIN: string;
 		VSCODE_GIT_ASKPASS_NODE: string;
@@ -212,7 +249,8 @@ declare module '$env/dynamic/private' {
 		VSCODE_INJECTION: string;
 		VSCODE_PYTHON_AUTOACTIVATE_GUARD: string;
 		windir: string;
-		__PSLockDownPolicy: string;
+		WSLENV: string;
+		ZES_ENABLE_SYSMAN: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
