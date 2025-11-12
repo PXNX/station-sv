@@ -17,7 +17,7 @@
 	],
 	"orientation": "portrait",
 	"display": "standalone",
-	"dir": "auto",
+	"dir": "ltr",
 	"lang": "en",
 	"name": "Train Stations",
 	"short_name": "Train Stations",
