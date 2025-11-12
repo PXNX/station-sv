@@ -110,7 +110,7 @@
 		onclick={goBack}
 		class="group inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
 	>
-		<FluentArrowLeft24Regular class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+		<FluentArrowLeft24Regular class="size-5 transition-transform group-hover:-translate-x-1" />
 		<span>Back</span>
 	</button>
 
@@ -118,7 +118,7 @@
 		onclick={goToEdit}
 		class="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
 	>
-		<FluentEdit24Regular class="h-5 w-5" />
+		<FluentEdit24Regular class="size-5" />
 		<span>Edit Details</span>
 	</button>
 </div>
@@ -138,13 +138,13 @@
 		</div>
 		<button
 			onclick={toggleFavorite}
-			class="flex-shrink-0 rounded-lg p-2 transition-colors hover:bg-white/10"
+			class="shrink-0 rounded-lg p-2 transition-colors hover:bg-white/10"
 			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
 		>
 			{#if isFavorite}
-				<FluentEmojiGlowingStar class="h-8 w-8" />
+				<FluentEmojiGlowingStar class="size-8" />
 			{:else}
-				<FluentEmojiStar class="h-8 w-8" />
+				<FluentEmojiStar class="size-8" />
 			{/if}
 		</button>
 	</div>
@@ -182,7 +182,7 @@
 
 				<!-- Photo Info -->
 				<div
-					class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4"
+					class="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/80 to-transparent p-4"
 				>
 					<p class="flex items-center gap-2 text-sm text-white/90">
 						<FluentEmojiCamera class="h-4 w-4" />
@@ -221,7 +221,7 @@
 {#if hasUnknownFields}
 	<div class="mb-6 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 backdrop-blur-sm">
 		<div class="flex items-start gap-3">
-			<FluentEmojiInformation class="mt-0.5 h-5 w-5 flex-shrink-0" />
+			<FluentEmojiInformation class="mt-0.5 size-5 shrink-0" />
 			<div>
 				<p class="text-sm text-white/80">
 					<strong>Missing information?</strong> Help improve this station's data by clicking the
@@ -237,7 +237,7 @@
 	<!-- Sleeping -->
 	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiBed class="h-5 w-5" />
+			<FluentEmojiBed class="size-5" />
 			<h2 class="font-semibold text-white">Sleeping</h2>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
@@ -254,7 +254,7 @@
 	<!-- Outlets -->
 	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiHighVoltage class="h-5 w-5" />
+			<FluentEmojiHighVoltage class="size-5" />
 			<h2 class="font-semibold text-white">Power Outlets</h2>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
@@ -271,7 +271,7 @@
 	<!-- Toilets -->
 	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiToilet class="h-5 w-5" />
+			<FluentEmojiToilet class="size-5" />
 			<h2 class="font-semibold text-white">Toilets</h2>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
@@ -294,7 +294,7 @@
 	<!-- Opening Hours -->
 	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiTwelveOclock class="h-5 w-5" />
+			<FluentEmojiTwelveOclock class="size-5" />
 			<h2 class="font-semibold text-white">Opening Hours</h2>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
@@ -311,7 +311,7 @@
 	<!-- WiFi -->
 	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiSatelliteAntenna class="h-5 w-5" />
+			<FluentEmojiSatelliteAntenna class="size-5" />
 			<h2 class="font-semibold text-white">WiFi Hotspot</h2>
 		</div>
 		<div class="mb-2 flex items-center justify-between text-sm">
@@ -338,7 +338,7 @@
 {#if station.additional_info}
 	<div class="mb-6 rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
 		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiInformation class="h-5 w-5" />
+			<FluentEmojiInformation class="size-5" />
 			<h2 class="font-semibold text-white">Additional Information</h2>
 		</div>
 		<p class="text-sm whitespace-pre-wrap text-white/70">{station.additional_info}</p>
@@ -353,7 +353,7 @@
 		rel="noopener noreferrer"
 		class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
 	>
-		<FluentEmojiWorldMap class="h-5 w-5" />
+		<FluentEmojiWorldMap class="size-5" />
 		Station Map (PDF)
 	</a>
 
@@ -364,7 +364,7 @@
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-green-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-500/30"
 		>
-			<FluentLocation24Regular class="h-5 w-5" />
+			<FluentLocation24Regular class="size-5" />
 			Google Maps
 		</a>
 
@@ -374,7 +374,7 @@
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-orange-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-500/30"
 		>
-			<FluentMap24Regular class="h-5 w-5" />
+			<FluentMap24Regular class="size-5" />
 			OpenStreetMap
 		</a>
 	{/if}

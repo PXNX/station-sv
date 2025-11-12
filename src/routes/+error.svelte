@@ -68,7 +68,7 @@
 		<!-- Error Icon -->
 		<div class="mb-6 flex justify-center">
 			<div
-				class="rounded-full bg-gradient-to-br from-red-400/20 to-orange-400/20 p-6 ring-4 ring-white/20"
+				class="rounded-full bg-linear-to-br from-red-400/20 to-orange-400/20 p-6 ring-4 ring-white/20"
 			>
 				<ErrorIcon class="h-20 w-20" />
 			</div>

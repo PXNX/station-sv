@@ -156,7 +156,7 @@
 							<form method="POST" action="?/reject" use:enhance>
 								<input type="hidden" name="editId" value={edit.id} />
 								<button type="submit" class="btn btn-error flex items-center gap-2">
-									<FluentEmojiCrossMark class="h-5 w-5" />
+									<FluentEmojiCrossMark class="size-5" />
 									Reject
 								</button>
 							</form>
@@ -164,7 +164,7 @@
 							<form method="POST" action="?/approve" use:enhance>
 								<input type="hidden" name="editId" value={edit.id} />
 								<button type="submit" class="btn btn-success flex items-center gap-2">
-									<FluentEmojiCheckMark class="h-5 w-5" />
+									<FluentEmojiCheckMark class="size-5" />
 									Approve
 								</button>
 							</form>
@@ -172,7 +172,7 @@
 							<form method="POST" action="?/remove" use:enhance>
 								<input type="hidden" name="editId" value={edit.id} />
 								<button type="submit" class="btn btn-error flex items-center gap-2">
-									<FluentEmojiCrossMark class="h-5 w-5" />
+									<FluentEmojiCrossMark class="size-5" />
 									Cancel Pending Edit
 								</button>
 							</form>
