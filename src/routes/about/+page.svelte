@@ -7,20 +7,13 @@
 	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
 	import FluentOpenRegular from '~icons/fluent/open-24-regular';
 	import FluentIcons24Regular from '~icons/fluent/icons-24-regular';
+	import FluentEmojiBaggageClaim from '~icons/fluent-emoji/baggage-claim';
 </script>
-
-<svelte:head>
-	<title>About - Train Station Search</title>
-	<meta
-		name="description"
-		content="Learn about the Train Station Search project and its data sources"
-	/>
-</svelte:head>
 
 <!-- Header -->
 <header class="mb-10 text-center">
 	<div class="mb-4 flex justify-center">
-		<FluentEmojiInformationSource class="h-16 w-16" />
+		<FluentEmojiInformationSource class="size-16" />
 	</div>
 	<h1 class="text-3xl font-bold text-white">About This Project</h1>
 	<p class="mt-2 text-sm text-white/70">Information about data sources and contributors</p>
@@ -65,6 +58,58 @@
 		</div>
 	</div>
 
+	<!-- Travel Rules -->
+	<div class="card border border-white/30 bg-white/10 backdrop-blur-md">
+		<div class="card-body p-6">
+			<div class="mb-4 flex items-center gap-3">
+				<FluentEmojiBaggageClaim class="size-8" />
+				<h2 class="text-2xl font-bold text-white">My rules for train adventures</h2>
+			</div>
+
+			<div class="space-y-2 text-white/90">
+				<strong>1.</strong> Always charge your electronic devices and powerbanks when you find an
+				outlet<br />
+
+				<strong>2.</strong> If needed, outlets are usually below doors or in the bathroom<br />
+
+				<strong>3.</strong> For trips over 2 hours: bring sleeping mat and sleeping bag or lots of
+				clothes against cold<br />
+
+				<strong>4.</strong> If you see an earlier train at the station: take it<br />
+
+				<strong>5.</strong> Always bring something to drink and eat, preferably nuts and food when
+				it's cold<br />
+
+				<strong>6.</strong> Peeing outside is life, but not on the train<br />
+
+				<strong>7.</strong> Sleeping during the ride is better than at night at the station<br />
+
+				<strong>8.</strong> Pack your backpack so you can hold it on your lap while sleeping,
+				leaning against the window causes headaches<br />
+
+				<strong>9.</strong> Don't go to stations with separate halls at night, usually closed from
+				11pm to 5am, especially when cold, windy or rainy<br />
+
+				<strong>10.</strong> Don't buy Doner at the station, just expensive and often garbage<br />
+
+				<strong>11.</strong> Find someone to talk to, makes the journey go faster<br />
+
+				<strong>12.</strong> Save the route in the train app and check regularly for changes,
+				especially 2 minutes before stops<br />
+
+				<strong>13.</strong> Look for alternative connections during the ride, sometimes there are
+				faster options<br />
+
+				<strong>14.</strong> Bring backup toilet paper<br />
+
+				<strong>15.</strong> Good music and headphones on board<br />
+
+				<strong>16.</strong> Put everything back in the backpack immediately after using your stuff,
+				so you can exit quickly and don't forgt anything
+			</div>
+		</div>
+	</div>
+
 	<!-- Data Sources -->
 	<div class="card border border-white/30 bg-white/10 backdrop-blur-md">
 		<div class="card-body p-6">
@@ -98,11 +143,11 @@
 				<!-- Railway Stations -->
 				<div class="flex items-start gap-4 rounded-lg bg-white/5 p-4">
 					<div
-						class="flex size-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-teal-500"
+						class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-400 to-teal-500"
 					>
 						<FluentCamera24Regular class="size-6 text-white" />
 					</div>
-					<div class="flex-grow">
+					<div class="grow">
 						<h3 class="mb-1 font-semibold text-white">Station Photos</h3>
 						<p class="mb-2 text-sm text-white/70">
 							Station photographs are provided by Railway-Stations.org, a community-driven project
