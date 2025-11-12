@@ -354,8 +354,10 @@
 		class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
 	>
 		<FluentEmojiWorldMap class="size-5" />
-		Station Map (PDF)
+		Location and platform plan (PDF)
 	</a>
+
+	<!-- todo: add link to bahnhof.de map for the currently selected station-->
 
 	{#if station.latitude && station.longitude}
 		<a
