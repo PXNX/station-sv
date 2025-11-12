@@ -1,6 +1,7 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { browser } from '$app/environment';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentEmojiFaceWithRaisedEyebrow from '~icons/fluent-emoji/face-with-raised-eyebrow';
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
@@ -24,23 +25,105 @@
 
 	let { data, form }: Props = $props();
 
+	// localStorage keys
+	const STORAGE_KEYS = {
+		searchTerm: 'station_search_term',
+		searchResults: 'station_search_results',
+		filters: 'station_search_filters'
+	};
+
+	// Helper functions for localStorage
+	function getFromStorage<T>(key: string, defaultValue: T): T {
+		if (!browser) return defaultValue;
+		try {
+			const item = localStorage.getItem(key);
+			return item ? JSON.parse(item) : defaultValue;
+		} catch {
+			return defaultValue;
+		}
+	}
+
+	function setToStorage(key: string, value: any): void {
+		if (!browser) return;
+		try {
+			localStorage.setItem(key, JSON.stringify(value));
+		} catch (error) {
+			console.error('Failed to save to localStorage:', error);
+		}
+	}
+
+	// Initialize from URL params, then fall back to localStorage
+	const urlSearchTerm = page.url.searchParams.get('name');
+	const hasUrlParams = urlSearchTerm !== null;
+
 	// Station search state
-	let stationSearchTerm = $state(page.url.searchParams.get('name') || '');
-	let searchResults: StationResult[] = $state(data.stations || []);
+	let stationSearchTerm = $state(urlSearchTerm || getFromStorage(STORAGE_KEYS.searchTerm, ''));
+
+	let searchResults: StationResult[] = $state(
+		data.stations?.length > 0 ? data.stations : getFromStorage(STORAGE_KEYS.searchResults, [])
+	);
+
 	let stationLoading = $state(false);
 
-	// Station filters - initialize from URL params
-	let filterOpen24h = $state(page.url.searchParams.get('open24h') === 'true');
-	let filterWarmSleep = $state(page.url.searchParams.get('warmSleep') === 'true');
-	let filterOutletAvailable = $state(page.url.searchParams.get('outlets') === 'true');
-	let filterToiletsAtNight = $state(page.url.searchParams.get('toiletsAtNight') === 'true');
-	let filterToilets = $state(page.url.searchParams.get('toilets') === 'true');
-	let filterWifi = $state(page.url.searchParams.get('wifi') === 'true');
+	// Station filters - initialize from URL params or localStorage
+	const savedFilters = getFromStorage(STORAGE_KEYS.filters, {});
+
+	let filterOpen24h = $state(
+		hasUrlParams ? page.url.searchParams.get('open24h') === 'true' : savedFilters.open24h || false
+	);
+
+	let filterWarmSleep = $state(
+		hasUrlParams
+			? page.url.searchParams.get('warmSleep') === 'true'
+			: savedFilters.warmSleep || false
+	);
+
+	let filterOutletAvailable = $state(
+		hasUrlParams ? page.url.searchParams.get('outlets') === 'true' : savedFilters.outlets || false
+	);
+
+	let filterToiletsAtNight = $state(
+		hasUrlParams
+			? page.url.searchParams.get('toiletsAtNight') === 'true'
+			: savedFilters.toiletsAtNight || false
+	);
+
+	let filterToilets = $state(
+		hasUrlParams ? page.url.searchParams.get('toilets') === 'true' : savedFilters.toilets || false
+	);
+
+	let filterWifi = $state(
+		hasUrlParams ? page.url.searchParams.get('wifi') === 'true' : savedFilters.wifi || false
+	);
 
 	// Autocomplete state
 	let stationSuggestions = $state<any[]>([]);
 	let showStationDropdown = $state(false);
 	let suggestionLoading = $state(false);
+
+	// Persist search term to localStorage
+	$effect(() => {
+		setToStorage(STORAGE_KEYS.searchTerm, stationSearchTerm);
+	});
+
+	// Persist search results to localStorage
+	$effect(() => {
+		if (searchResults.length > 0) {
+			setToStorage(STORAGE_KEYS.searchResults, searchResults);
+		}
+	});
+
+	// Persist filters to localStorage
+	$effect(() => {
+		setToStorage(STORAGE_KEYS.filters, {
+			open24h: filterOpen24h,
+			warmSleep: filterWarmSleep,
+			outlets: filterOutletAvailable,
+			toiletsAtNight: filterToiletsAtNight,
+			toilets: filterToilets,
+			wifi: filterWifi
+		});
+	});
 
 	// Update search results when form response comes back
 	$effect(() => {
@@ -51,7 +134,7 @@
 
 	// Update search results when page data changes
 	$effect(() => {
-		if (data?.stations) {
+		if (data?.stations && data.stations.length > 0) {
 			searchResults = data.stations;
 		}
 	});

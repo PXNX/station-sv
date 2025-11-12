@@ -30,25 +30,45 @@
 	let pendingNavigation: (() => void) | null = null;
 	let formElement: HTMLFormElement;
 
-	// Initialize form state from station data
-	const initFormState = () => ({
+	// Helper function to normalize values (null/undefined to empty string)
+	function normalize(value: any): string | boolean {
+		if (typeof value === 'boolean') return value;
+		return value ?? '';
+	}
+
+	// Store original values for comparison (from the station data which already includes pending edits)
+	const originalValues = {
 		has_warm_sleep: data.station.has_warm_sleep,
-		sleep_notes: data.station.sleep_notes || '',
+		sleep_notes: normalize(data.station.sleep_notes),
 		has_outlets: data.station.has_outlets,
-		outlet_notes: data.station.outlet_notes || '',
+		outlet_notes: normalize(data.station.outlet_notes),
 		has_toilets: data.station.has_toilets,
-		toilet_notes: data.station.toilet_notes || '',
+		toilet_notes: normalize(data.station.toilet_notes),
 		toilets_open_at_night: data.station.toilets_open_at_night,
 		is_open_24h: data.station.is_open_24h,
-		opening_hours: data.station.opening_hours || '',
+		opening_hours: normalize(data.station.opening_hours),
 		has_wifi: data.station.has_wifi,
 		wifi_has_limit: data.station.wifi_has_limit,
-		wifi_notes: data.station.wifi_notes || '',
-		additional_info: data.station.additional_info || ''
-	});
+		wifi_notes: normalize(data.station.wifi_notes),
+		additional_info: normalize(data.station.additional_info)
+	};
 
-	const originalValues = initFormState();
-	let formState = $state(initFormState());
+	// Form state
+	let formState = $state({
+		has_warm_sleep: data.station.has_warm_sleep,
+		sleep_notes: normalize(data.station.sleep_notes),
+		has_outlets: data.station.has_outlets,
+		outlet_notes: normalize(data.station.outlet_notes),
+		has_toilets: data.station.has_toilets,
+		toilet_notes: normalize(data.station.toilet_notes),
+		toilets_open_at_night: data.station.toilets_open_at_night,
+		is_open_24h: data.station.is_open_24h,
+		opening_hours: normalize(data.station.opening_hours),
+		has_wifi: data.station.has_wifi,
+		wifi_has_limit: data.station.wifi_has_limit,
+		wifi_notes: normalize(data.station.wifi_notes),
+		additional_info: normalize(data.station.additional_info)
+	});
 
 	// Check if form has been modified
 	const hasChanges = $derived(
@@ -89,14 +109,16 @@
 	function confirmLeave() {
 		console.log('confirmLeave');
 		showUnsavedDialog = false;
-		console.log('pendingNavigation', pendingNavigation);
-		pendingNavigation?.();
-		pendingNavigation = null;
+		if (pendingNavigation) {
+			pendingNavigation();
+			pendingNavigation = null;
+		} else {
+			goto('/');
+		}
 	}
 
-	function cancelDialog() {
+	function cancelLeave() {
 		showUnsavedDialog = false;
-		showConfirmSaveDialog = false;
 		pendingNavigation = null;
 	}
 
@@ -137,7 +159,7 @@
 	const fieldClass =
 		'w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none';
 	const checkboxClass =
-		'h-5 w-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400';
+		'size-5 rounded border-white/40 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-400';
 	const sectionClass = 'rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm';
 </script>
 
@@ -153,7 +175,7 @@
 		type="button"
 		class="group mb-6 inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
 	>
-		<FluentArrowLeft24Regular class="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+		<FluentArrowLeft24Regular class="size-5 transition-transform group-hover:-translate-x-1" />
 		<span>Back to Station</span>
 	</button>
 
@@ -174,11 +196,11 @@
 			>
 				<p class="text-sm {data.hasPendingEdit ? 'text-yellow-300' : 'text-blue-300'}">
 					{#if data.hasPendingEdit}
-						<FluentEmojiWarning class="inline h-4 w-4" />
+						<FluentEmojiWarning class="inlinesize-4" />
 						You are editing your pending changes. The form has been pre-filled with your previously submitted
 						values.
 					{:else}
-						<FluentEmojiInformation class="inline h-4 w-4" />
+						<FluentEmojiInformation class="inlinesize-4" />
 						Your changes will be reviewed by administrators before being applied to the station.
 					{/if}
 				</p>
@@ -270,14 +292,18 @@
 					<span class="text-white">WiFi has data usage limit</span>
 				</label>
 			{/if}
-			<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">WiFi Notes</label
-			>
+
+			<div>
+				<label for="wifi_notes" class="mb-2 block text-sm font-medium text-white/80">
+					WiFi Notes
+				</label>
+			</div>
 			<textarea
 				id="wifi_notes"
 				name="wifi_notes"
 				rows="3"
 				bind:value={formState.wifi_notes}
-				class={fieldClass}
+				class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 backdrop-blur-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-400/50 focus:outline-none"
 				placeholder="Describe WiFi network name, data limits (e.g., 100MB per day), speed, reliability..."
 			></textarea>
 		</div>
@@ -379,47 +405,71 @@
 			>
 				{#if isSubmitting}
 					<span
-						class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+						class="inline-block size-5 animate-spin rounded-full border-2 border-white border-t-transparent"
 					></span>
 					<span>Saving...</span>
 				{:else}
-					<FluentEmojiDownArrow class="h-5 w-5" />
+					<FluentEmojiDownArrow class="size-5" />
 					<span>{buttonText}</span>
 				{/if}
 			</button>
 		</div>
-
-		{#if hasChanges && !hasSubmitted}
-			<p class="flex items-center justify-center gap-2 text-center text-sm text-yellow-400/80">
-				<FluentEmojiWarning class="h-5 w-5" />
-				<span>You have unsaved changes</span>
-			</p>
-		{/if}
 	</form>
 </div>
-
 <!-- Unsaved Changes Dialog -->
-<dialog class="modal" class:modal-open={showUnsavedDialog}>
-	<div class="modal-box bg-gray-800 text-white">
-		<h3 class="text-lg font-bold">Unsaved Changes</h3>
-		<p class="py-4">You have unsaved changes. Are you sure you want to leave?</p>
-		<div class="modal-action">
-			<button onclick={cancelDialog} class="btn btn-ghost">Cancel</button>
-			<button onclick={confirmLeave} class="btn btn-error">Leave Without Saving</button>
+{#if showUnsavedDialog}
+	<dialog class="modal modal-open" open>
+		<div class="modal-box bg-gray-800 text-white">
+			<h3 class="text-lg font-bold">Unsaved Changes</h3>
+			<p class="py-4">You have unsaved changes. Are you sure you want to leave?</p>
+			<div class="modal-action">
+				<button onclick={cancelLeave} type="button" class="btn btn-ghost">Cancel</button>
+				<button onclick={confirmLeave} type="button" class="btn btn-error"
+					>Leave Without Saving</button
+				>
+			</div>
 		</div>
-	</div>
-	<div class="modal-backdrop" onclick={cancelDialog}></div>
-</dialog>
+		<form method="dialog" class="modal-backdrop">
+			<button onclick={cancelLeave} type="button">close</button>
+		</form>
+	</dialog>
+{/if}
 
 <!-- Confirm Save Dialog -->
-<dialog class="modal" class:modal-open={showConfirmSaveDialog}>
-	<div class="modal-box bg-gray-800 text-white">
-		<h3 class="text-lg font-bold">{dialogTitle}</h3>
-		<p class="py-4">{dialogMessage}</p>
-		<div class="modal-action">
-			<button onclick={cancelDialog} class="btn btn-ghost">Cancel</button>
-			<button onclick={confirmSave} class="btn btn-primary">{buttonText}</button>
+{#if showConfirmSaveDialog}
+	<dialog class="modal modal-open" open>
+		<div class="modal-box bg-gray-800 text-white">
+			<h3 class="text-lg font-bold">
+				{data.isAdmin
+					? 'Confirm Changes'
+					: data.hasPendingEdit
+						? 'Update Pending Changes'
+						: 'Submit for Review'}
+			</h3>
+			<p class="py-4">
+				{#if data.isAdmin}
+					Are you sure you want to save these changes? They will be applied immediately.
+				{:else if data.hasPendingEdit}
+					Are you sure you want to update your pending changes? Your previous submission will be
+					replaced with these new values.
+				{:else}
+					Are you sure you want to submit these changes? An administrator will review them before
+					they are applied.
+				{/if}
+			</p>
+			<div class="modal-action">
+				<button onclick={cancelLeave} type="button" class="btn btn-ghost">Cancel</button>
+				<button onclick={confirmSave} type="button" class="btn btn-primary">
+					{data.isAdmin
+						? 'Save Changes'
+						: data.hasPendingEdit
+							? 'Update Pending Changes'
+							: 'Submit for Review'}
+				</button>
+			</div>
 		</div>
-	</div>
-	<div class="modal-backdrop" onclick={cancelDialog}></div>
-</dialog>
+		<form method="dialog" class="modal-backdrop">
+			<button onclick={cancelLeave} type="button">close</button>
+		</form>
+	</dialog>
+{/if}
