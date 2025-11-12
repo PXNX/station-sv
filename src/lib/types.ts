@@ -26,16 +26,30 @@ export interface Station {
 export interface StationResult {
 	eva: number;
 	name: string;
-	city?: string | null;
+	city: string;
 	country: string;
-	has_warm_sleep?: boolean | null;
-	has_outlets?: boolean | null;
-	has_toilets?: boolean | null;
-	toilets_open_at_night?: boolean | null;
-	is_open_24h?: boolean | null;
-	has_wifi?: boolean | null;
-	photoUrl?: string | null;
+	category: StationCategory; // 1-7, where 1 is most important (major hubs)
+	has_warm_sleep: boolean | null;
+	has_outlets: boolean | null;
+	has_toilets: boolean | null;
+	toilets_open_at_night: boolean | null;
+	is_open_24h: boolean | null;
+	has_wifi: boolean | null;
+	photoUrl: string | null;
 }
+
+// Category descriptions for reference
+export const STATION_CATEGORIES = {
+	1: 'Major traffic hub (e.g., München Hbf, Berlin Hbf)',
+	2: 'Important junction or airport connection',
+	3: 'Regional hub',
+	4: 'Medium-sized station',
+	5: 'Small station',
+	6: 'Very small station',
+	7: 'Minimal service station'
+} as const;
+
+export type StationCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface StationPhoto {
 	path: string;

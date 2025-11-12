@@ -96,6 +96,24 @@
 			selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
 		}
 	}
+
+	const categoryBadge = $derived.by(() => {
+		switch (station.category) {
+			case 1:
+				return {
+					label: 'Major Hub',
+					color: 'border-purple-400/50 bg-purple-400/20 text-purple-100'
+				};
+			case 2:
+				return { label: 'Important', color: 'border-blue-400/50 bg-blue-400/20 text-blue-100' };
+			case 3:
+				return { label: 'Regional Hub', color: 'border-cyan-400/50 bg-cyan-400/20 text-cyan-100' };
+			case 4:
+				return { label: 'Medium', color: 'border-green-400/50 bg-green-400/20 text-green-100' };
+			default:
+				return { label: 'Station', color: 'border-gray-400/50 bg-gray-400/20 text-gray-100' };
+		}
+	});
 </script>
 
 <svelte:head>
@@ -130,9 +148,14 @@
 			<h1 class="mb-2 text-3xl font-bold text-white">
 				{station.name}
 			</h1>
+			<span
+				class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
+			>
+				{categoryBadge.label}
+			</span>
 			{#if station.city}
 				<p class="text-lg text-white/70">
-					{station.city}, {station.country}
+					{station.city}, {station.country.toUpperCase()}
 				</p>
 			{/if}
 		</div>
