@@ -240,6 +240,106 @@ class DBStationCrawler {
 		};
 	}
 
+	private sqlEscape(value: any): string {
+		if (value === null || value === undefined) {
+			return 'NULL';
+		}
+		if (typeof value === 'boolean') {
+			return value ? 'TRUE' : 'FALSE';
+		}
+		if (typeof value === 'number') {
+			return value.toString();
+		}
+		if (typeof value === 'string') {
+			// Escape single quotes by doubling them
+			return `'${value.replace(/'/g, "''")}'`;
+		}
+		return 'NULL';
+	}
+
+	private generateInsertSQL(stations: Station[]): string {
+		const lines: string[] = [];
+
+		lines.push('-- Generated SQL INSERT statements for stations');
+		lines.push('-- Total stations: ' + stations.length);
+		lines.push('-- Instructions: Select all statements and run in Neon SQL Console');
+		lines.push('-- Neon will automatically wrap them in a transaction');
+		lines.push('');
+
+		lines.push('-- Enable required PostgreSQL extensions');
+		lines.push('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
+		lines.push('');
+
+		lines.push('-- Insert all stations');
+		lines.push('INSERT INTO stations (');
+		lines.push('  eva, station_id_ger, name, city, country, category, price_category,');
+		lines.push('  has_warm_sleep, sleep_notes, has_outlets, outlet_notes,');
+		lines.push('  has_toilets, toilet_notes, toilets_open_at_night,');
+		lines.push('  is_open_24h, opening_hours,');
+		lines.push('  has_wifi, wifi_has_limit, wifi_notes,');
+		lines.push('  latitude, longitude, additional_info');
+		lines.push(') VALUES');
+
+		const values = stations.map((station) => {
+			return `  (${this.sqlEscape(station.eva)}, ${this.sqlEscape(station.stationIdGER)}, ${this.sqlEscape(station.name)}, ${this.sqlEscape(station.city)}, ${this.sqlEscape(station.country)}, ${this.sqlEscape(station.category)}, ${this.sqlEscape(station.priceCategory)}, ${this.sqlEscape(station.hasWarmSleep)}, ${this.sqlEscape(station.sleepNotes)}, ${this.sqlEscape(station.hasOutlets)}, ${this.sqlEscape(station.outletNotes)}, ${this.sqlEscape(station.hasToilets)}, ${this.sqlEscape(station.toiletNotes)}, ${this.sqlEscape(station.toiletsOpenAtNight)}, ${this.sqlEscape(station.isOpen24h)}, ${this.sqlEscape(station.openingHours)}, ${this.sqlEscape(station.hasWifi)}, ${this.sqlEscape(station.wifiHasLimit)}, ${this.sqlEscape(station.wifiNotes)}, ${this.sqlEscape(station.latitude)}, ${this.sqlEscape(station.longitude)}, ${this.sqlEscape(station.additionalInfo)})`;
+		});
+
+		lines.push(values.join(',\n'));
+		lines.push('ON CONFLICT (eva) DO UPDATE SET');
+		lines.push('  station_id_ger = EXCLUDED.station_id_ger,');
+		lines.push('  name = EXCLUDED.name,');
+		lines.push('  city = EXCLUDED.city,');
+		lines.push('  country = EXCLUDED.country,');
+		lines.push('  category = EXCLUDED.category,');
+		lines.push('  price_category = EXCLUDED.price_category,');
+		lines.push('  has_wifi = EXCLUDED.has_wifi,');
+		lines.push('  wifi_notes = EXCLUDED.wifi_notes,');
+		lines.push('  has_toilets = EXCLUDED.has_toilets,');
+		lines.push('  toilet_notes = EXCLUDED.toilet_notes,');
+		lines.push('  is_open_24h = EXCLUDED.is_open_24h,');
+		lines.push('  opening_hours = EXCLUDED.opening_hours,');
+		lines.push('  latitude = EXCLUDED.latitude,');
+		lines.push('  longitude = EXCLUDED.longitude,');
+		lines.push('  additional_info = EXCLUDED.additional_info;');
+		lines.push('');
+
+		lines.push('-- Create standard B-tree indexes');
+		lines.push('CREATE INDEX IF NOT EXISTS category_idx ON stations(category);');
+		lines.push('CREATE INDEX IF NOT EXISTS category_name_idx ON stations(category, name);');
+		lines.push('CREATE INDEX IF NOT EXISTS name_idx ON stations(name);');
+		lines.push('CREATE INDEX IF NOT EXISTS city_idx ON stations(city);');
+		lines.push('CREATE INDEX IF NOT EXISTS country_idx ON stations(country);');
+		lines.push('CREATE INDEX IF NOT EXISTS open_24h_idx ON stations(is_open_24h);');
+		lines.push('CREATE INDEX IF NOT EXISTS warm_sleep_idx ON stations(has_warm_sleep);');
+		lines.push('CREATE INDEX IF NOT EXISTS toilets_idx ON stations(has_toilets);');
+		lines.push(
+			'CREATE INDEX IF NOT EXISTS toilets_at_night_idx ON stations(toilets_open_at_night);'
+		);
+		lines.push('CREATE INDEX IF NOT EXISTS outlets_idx ON stations(has_outlets);');
+		lines.push('CREATE INDEX IF NOT EXISTS wifi_idx ON stations(has_wifi);');
+		lines.push('');
+
+		lines.push('-- Create trigram indexes for fuzzy search (requires pg_trgm extension)');
+		lines.push(
+			'CREATE INDEX IF NOT EXISTS stations_name_trgm_idx ON stations USING GIN (name gin_trgm_ops);'
+		);
+		lines.push(
+			'CREATE INDEX IF NOT EXISTS stations_city_trgm_idx ON stations USING GIN (city gin_trgm_ops);'
+		);
+		lines.push(
+			'CREATE INDEX IF NOT EXISTS stations_name_similarity_idx ON stations USING GIST (name gist_trgm_ops);'
+		);
+		lines.push(
+			'CREATE INDEX IF NOT EXISTS stations_city_similarity_idx ON stations USING GIST (city gist_trgm_ops);'
+		);
+		lines.push('');
+
+		lines.push('-- Done! All stations inserted and indexes created.');
+		lines.push('-- Fuzzy search is now enabled using pg_trgm extension.');
+
+		return lines.join('\n');
+	}
+
 	async crawlAndSave(): Promise<void> {
 		console.log('🚂 Starting Deutsche Bahn station crawler...\n');
 
@@ -261,13 +361,22 @@ class DBStationCrawler {
 			const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 			const outputFile = `stations-${timestamp}.json`;
 			const outputFilePretty = `stations-latest.json`;
+			const sqlFile = `stations-${timestamp}.sql`;
+			const sqlFileLatest = `stations-latest.sql`;
 
 			await Bun.write(outputFile, JSON.stringify(stations));
 			await Bun.write(outputFilePretty, JSON.stringify(stations, null, 2));
 
+			// Generate and save SQL
+			const sql = this.generateInsertSQL(stations);
+			await Bun.write(sqlFile, sql);
+			await Bun.write(sqlFileLatest, sql);
+
 			console.log(`💾 Saved to:`);
-			console.log(`   - ${outputFile} (compact)`);
-			console.log(`   - ${outputFilePretty} (formatted)\n`);
+			console.log(`   - ${outputFile} (compact JSON)`);
+			console.log(`   - ${outputFilePretty} (formatted JSON)`);
+			console.log(`   - ${sqlFile} (SQL)`);
+			console.log(`   - ${sqlFileLatest} (SQL latest)\n`);
 
 			// Print some stats
 			const withWifi = stations.filter((s) => s.hasWifi).length;

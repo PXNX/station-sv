@@ -72,7 +72,7 @@ async function fetchStationPhotos(stationIds: { country: string; germanId: numbe
 }
 
 /**
- * Search stations with fuzzy matching and priority ranking
+ * Search stations with enhanced fuzzy matching and priority ranking
  */
 async function searchStationsInDB(
 	query: string,
@@ -92,13 +92,16 @@ async function searchStationsInDB(
 		if (query && query.length >= 2) {
 			const searchLower = query.toLowerCase();
 
-			// Use pg_trgm's % operator for fuzzy matching
-			// This finds strings that are "similar" to the search query
+			// Combined fuzzy and exact matching with improved scoring
 			conditions.push(
 				or(
+					// Trigram similarity matching (finds typos, misspellings)
 					sql`${stations.name} % ${query}`,
 					sql`${stations.city} % ${query}`,
-					// Also keep the LIKE fallback for exact partial matches
+					// Exact prefix matches (prioritized)
+					sql`LOWER(${stations.name}) LIKE ${`${searchLower}%`}`,
+					sql`LOWER(${stations.city}) LIKE ${`${searchLower}%`}`,
+					// Contains matches (lower priority)
 					sql`LOWER(${stations.name}) LIKE ${`%${searchLower}%`}`,
 					sql`LOWER(${stations.city}) LIKE ${`%${searchLower}%`}`
 				)
@@ -106,31 +109,14 @@ async function searchStationsInDB(
 		}
 
 		// Apply filters
-		if (filters?.open24h) {
-			conditions.push(eq(stations.isOpen24h, true));
-		}
+		if (filters?.open24h) conditions.push(eq(stations.isOpen24h, true));
+		if (filters?.warmSleep) conditions.push(eq(stations.hasWarmSleep, true));
+		if (filters?.toilets) conditions.push(eq(stations.hasToilets, true));
+		if (filters?.toiletsAtNight) conditions.push(eq(stations.toiletsOpenAtNight, true));
+		if (filters?.outlets) conditions.push(eq(stations.hasOutlets, true));
+		if (filters?.wifi) conditions.push(eq(stations.hasWifi, true));
 
-		if (filters?.warmSleep) {
-			conditions.push(eq(stations.hasWarmSleep, true));
-		}
-
-		if (filters?.toilets) {
-			conditions.push(eq(stations.hasToilets, true));
-		}
-
-		if (filters?.toiletsAtNight) {
-			conditions.push(eq(stations.toiletsOpenAtNight, true));
-		}
-
-		if (filters?.outlets) {
-			conditions.push(eq(stations.hasOutlets, true));
-		}
-
-		if (filters?.wifi) {
-			conditions.push(eq(stations.hasWifi, true));
-		}
-
-		// Execute query with priority ranking
+		// Execute query with enhanced priority ranking
 		const results = await db
 			.select({
 				eva: stations.eva,
@@ -155,25 +141,39 @@ async function searchStationsInDB(
 				latitude: stations.latitude,
 				longitude: stations.longitude,
 				additionalInfo: stations.additionalInfo,
-				// Calculate similarity score for ranking
+				// Enhanced similarity scoring with multiple factors
 				similarityScore: sql<number>`
 					GREATEST(
-						similarity(${stations.name}, ${query}),
-						COALESCE(similarity(${stations.city}, ${query}), 0)
+						-- Trigram similarity (0-1 scale)
+						similarity(${stations.name}, ${query}) * 2.0,
+						COALESCE(similarity(${stations.city}, ${query}), 0) * 1.5,
+						-- Exact prefix match bonus
+						CASE 
+							WHEN LOWER(${stations.name}) LIKE ${`${query.toLowerCase()}%`} THEN 2.0
+							WHEN LOWER(${stations.city}) LIKE ${`${query.toLowerCase()}%`} THEN 1.8
+							ELSE 0
+						END,
+						-- Contains match bonus (lower than prefix)
+						CASE 
+							WHEN LOWER(${stations.name}) LIKE ${`%${query.toLowerCase()}%`} THEN 1.0
+							WHEN LOWER(${stations.city}) LIKE ${`%${query.toLowerCase()}%`} THEN 0.8
+							ELSE 0
+						END
 					)
 				`.as('similarity_score')
 			})
 			.from(stations)
 			.where(conditions.length > 0 ? and(...conditions) : undefined)
 			.orderBy(
-				asc(stations.category), // Most important stations first (1 = major hub)
-				desc(sql`similarity_score`) // Then by how well they match the search
+				desc(sql`similarity_score`), // Best matches first
+				asc(stations.category) // Then by station importance
 			)
-			.limit(50);
+			.limit(30);
 
 		return results;
 	} catch (error) {
 		console.error('Database query error:', error);
+
 		// Fallback to simple LIKE search if pg_trgm is not available
 		try {
 			const searchLower = query.toLowerCase();
