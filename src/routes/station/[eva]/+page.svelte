@@ -1,7 +1,7 @@
 <!-- src/routes/station/[id]/+page.svelte -->
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
 	import FluentEdit24Regular from '~icons/fluent/edit-24-regular';
 	import FluentEmojiBed from '~icons/fluent-emoji/bed';
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
@@ -17,6 +17,8 @@
 	import FluentMap24Regular from '~icons/fluent/map-24-regular';
 	import FluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
 	import FluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 
 	import type { PageData } from './$types';
 
@@ -26,6 +28,8 @@
 
 	let { data }: Props = $props();
 	const { station, photos, photoBaseUrl, imageUrl, pdfUrl } = data;
+
+	const FAVORITES_KEY = 'station_favorites';
 
 	let isFavorite = $state(false);
 	let selectedPhotoIndex = $state(0);
@@ -61,6 +65,28 @@
 			station.has_wifi === undefined
 	);
 
+	function loadFavorites() {
+		if (!browser) return;
+		try {
+			const stored = localStorage.getItem(FAVORITES_KEY);
+			if (stored) {
+				favorites = JSON.parse(stored);
+			}
+		} catch (error) {
+			console.error('Failed to load favorites:', error);
+			favorites = [];
+		}
+	}
+
+	function saveFavorites() {
+		if (!browser) return;
+		try {
+			localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+		} catch (error) {
+			console.error('Failed to save favorites:', error);
+		}
+	}
+
 	function toggleFavorite() {
 		const index = favorites.indexOf(station.eva);
 
@@ -71,19 +97,13 @@
 			favorites.push(station.eva);
 			isFavorite = true;
 		}
+		saveFavorites();
 	}
 
 	$effect(() => {
+		loadFavorites();
 		isFavorite = favorites.includes(station.eva);
 	});
-
-	function goBack() {
-		goto('/');
-	}
-
-	function goToEdit() {
-		goto(`/station/${station.eva}/edit`);
-	}
 
 	function nextPhoto() {
 		if (photos && photos.length > 0) {
@@ -124,32 +144,40 @@
 
 <!-- Navigation Buttons -->
 <div class="mb-6 flex items-center justify-between gap-4">
-	<button
-		onclick={goBack}
-		class="group inline-flex items-center gap-2 text-white/80 transition-colors hover:text-white"
-	>
-		<FluentArrowLeft24Regular class="size-5 transition-transform group-hover:-translate-x-1" />
-		<span>Back</span>
-	</button>
+	<BackButton href="/" label="Back" />
 
-	<button
-		onclick={goToEdit}
-		class="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
-	>
-		<FluentEdit24Regular class="size-5" />
-		<span>Edit Details</span>
-	</button>
+	<div class="flex gap-2">
+		<button
+			onclick={toggleFavorite}
+			class="btn btn-ghost btn-sm"
+			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+		>
+			{#if isFavorite}
+				<FluentEmojiGlowingStar class="size-6" />
+			{:else}
+				<FluentEmojiStar class="size-6" />
+			{/if}
+		</button>
+
+		<a
+			href={`/station/${station.eva}/edit`}
+			class="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
+		>
+			<FluentEdit24Regular class="size-5" />
+			<span>Edit Details</span>
+		</a>
+	</div>
 </div>
 
 <!-- Station Header -->
 <div class="mb-8" style="view-transition-name: station-{station.eva}">
-	<div class="mb-4 flex items-start justify-between gap-4">
-		<div>
-			<h1 class="mb-2 text-3xl font-bold text-white">
-				{station.name}
-			</h1>
+	<div class="mb-4">
+		<h1 class="mb-2 text-3xl font-bold text-white">
+			{station.name}
+		</h1>
+		<div class="flex items-center gap-2">
 			<span
-				class=" inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
+				class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
 			>
 				{categoryBadge.label}
 			</span>
@@ -159,17 +187,6 @@
 				</p>
 			{/if}
 		</div>
-		<button
-			onclick={toggleFavorite}
-			class="shrink-0 rounded-lg p-2 transition-colors hover:bg-white/10"
-			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-		>
-			{#if isFavorite}
-				<FluentEmojiGlowingStar class="size-8" />
-			{:else}
-				<FluentEmojiStar class="size-8" />
-			{/if}
-		</button>
 	</div>
 
 	<!-- Community Photos -->
@@ -179,11 +196,14 @@
 			<div
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 			>
-				<img
-					src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
-					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-					class="h-80 w-full object-cover"
-				/>
+				<div class="h-80 w-full">
+					<OptimizedLocationImage
+						src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
+						alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+						priority={selectedPhotoIndex === 0}
+						class="h-80"
+					/>
+				</div>
 
 				<!-- Photo Navigation Arrows -->
 				{#if photos.length > 1}
@@ -207,10 +227,19 @@
 				<div
 					class="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/80 to-transparent p-4"
 				>
-					<p class="flex items-center gap-2 text-sm text-white/90">
+					<a
+						href="https://map.railway-stations.org/photo/{photos[selectedPhotoIndex].id}"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
+					>
 						<FluentEmojiCamera class="h-4 w-4" />
-						<span>Photo by {photos[selectedPhotoIndex].photographer}</span>
-					</p>
+						<span
+							class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white"
+						>
+							Photo by {photos[selectedPhotoIndex].photographer}
+						</span>
+					</a>
 					{#if photos[selectedPhotoIndex].createdAt}
 						<p class="text-xs text-white/60">
 							{(() => {
@@ -224,6 +253,20 @@
 					{/if}
 				</div>
 			</div>
+
+			<!-- Photo Contribution Hint -->
+			<div class="mt-3 rounded-lg bg-white/5 p-3 backdrop-blur-sm">
+				<p class="text-center text-sm text-white/70">
+					Help improve this station! <a
+						href="https://map.railway-stations.org/upload.php?countryCode={station.country.toLowerCase()}&stationId=Z{station.station_id_ger}"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300 hover:decoration-blue-300/60"
+					>
+						Contribute your own photos
+					</a> to help other travelers.
+				</p>
+			</div>
 		</div>
 	{:else}
 		<!-- Fallback message when no photos available -->
@@ -233,8 +276,12 @@
 			<p class="mt-1 text-sm text-white/40">
 				Be the first to <a
 					href="https://map.railway-stations.org/upload.php?countryCode={station.country.toLowerCase()}&stationId=Z{station.station_id_ger}"
-					class="text-blue-500">contribute</a
-				> a photo!
+					target="_blank"
+					rel="noopener noreferrer"
+					class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300"
+				>
+					contribute a photo
+				</a>!
 			</p>
 		</div>
 	{/if}
@@ -379,8 +426,6 @@
 		<FluentEmojiWorldMap class="size-5" />
 		Location and platform plan (PDF)
 	</a>
-
-	<!-- todo: add link to bahnhof.de map for the currently selected station-->
 
 	{#if station.latitude && station.longitude}
 		<a
