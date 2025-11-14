@@ -13,7 +13,6 @@
 	import FluentEmojiRedCircle from '~icons/fluent-emoji/red-circle';
 	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
 	import FluentEmojiWifi from '~icons/fluent-emoji/antenna-bars';
-	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 	import type { PageData, ActionData } from './$types';
@@ -196,23 +195,46 @@
 		stationSearchTerm = station.name;
 		showStationDropdown = false;
 		stationSuggestions = [];
+
+		// Trigger the search by submitting the form
+		const form = document.getElementById('station-search-form') as HTMLFormElement;
+		if (form) {
+			form.requestSubmit();
+		}
 	}
 
-	function getCategoryBadge(category: number) {
+	function getCategoryStyles(category: number) {
 		switch (category) {
 			case 1:
 				return {
 					label: 'Major Hub',
-					color: 'badge-primary'
+					cardClass:
+						'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/70'
 				};
 			case 2:
-				return { label: 'Important', color: 'badge-secondary' };
+				return {
+					label: 'Important',
+					cardClass:
+						'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 hover:from-blue-500/30 hover:to-cyan-500/30 hover:border-blue-400/70'
+				};
 			case 3:
-				return { label: 'Regional Hub', color: 'badge-accent' };
+				return {
+					label: 'Regional Hub',
+					cardClass:
+						'bg-gradient-to-br from-green-500/20 to-teal-500/20 border-green-400/50 hover:from-green-500/30 hover:to-teal-500/30 hover:border-green-400/70'
+				};
 			case 4:
-				return { label: 'Medium', color: 'badge-info' };
+				return {
+					label: 'Medium',
+					cardClass:
+						'bg-gradient-to-br from-orange-500/20 to-amber-500/20 border-orange-400/50 hover:from-orange-500/30 hover:to-amber-500/30 hover:border-orange-400/70'
+				};
 			default:
-				return { label: 'Station', color: 'badge-ghost' };
+				return {
+					label: 'Station',
+					cardClass:
+						'bg-gradient-to-br from-gray-500/20 to-slate-500/20 border-gray-400/50 hover:from-gray-500/30 hover:to-slate-500/30 hover:border-gray-400/70'
+				};
 		}
 	}
 
@@ -276,7 +298,6 @@
 
 		<div class="flex gap-2">
 			<a href="/favorites" class="btn btn-ghost btn-sm">
-				<FluentEmojiGlowingStar class="size-5" />
 				Favorites
 				{#if favoritesCount > 0}
 					<span class="badge badge-sm badge-primary">{favoritesCount}</span>
@@ -300,6 +321,7 @@
 <div class="card mb-6 border border-white/30 bg-white/10 backdrop-blur-md">
 	<div class="card-body p-4 md:p-6">
 		<form
+			id="station-search-form"
 			method="POST"
 			action="?/search"
 			use:enhance={handleStationFormSubmit}
@@ -316,6 +338,7 @@
 					bind:value={stationSearchTerm}
 					oninput={() => fetchStationSuggestions(stationSearchTerm)}
 					onfocus={() => stationSuggestions.length > 0 && (showStationDropdown = true)}
+					onblur={() => setTimeout(() => (showStationDropdown = false), 200)}
 					disabled={stationLoading}
 					autocomplete="off"
 				/>
@@ -332,7 +355,7 @@
 								onclick={() => selectStationSuggestion(suggestion)}
 							>
 								<div class="flex items-center gap-2 font-semibold text-gray-800">
-									<FluentLocation24Regular class="h-4 w-4" />
+									<FluentLocation24Regular class="size-4" />
 									{suggestion.name}
 								</div>
 								{#if suggestion.id}
@@ -469,10 +492,10 @@
 {#if searchResults.length > 0}
 	<div class="space-y-4">
 		{#each searchResults as station (station.eva)}
-			{@const categoryBadge = getCategoryBadge(station.category)}
+			{@const categoryStyles = getCategoryStyles(station.category)}
 			<a
 				href={`/station/${station.eva}`}
-				class="card group overflow-hidden border border-white/30 bg-white/10 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-white/50 hover:bg-white/20"
+				class="card group overflow-hidden border backdrop-blur-md transition-all duration-300 hover:scale-[1.02] {categoryStyles.cardClass}"
 				style="view-transition-name: station-{station.eva}"
 			>
 				<div class="card-body p-0">
@@ -488,7 +511,7 @@
 									/>
 								{:else}
 									<div
-										class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500"
+										class="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500"
 									>
 										<FluentEmojiStation class="h-10 w-10" />
 									</div>
@@ -504,8 +527,8 @@
 								>
 									{station.name}
 								</h3>
-								<span class="badge badge-sm {categoryBadge.color}">
-									{categoryBadge.label}
+								<span class="badge badge-sm badge-ghost opacity-70">
+									{categoryStyles.label}
 								</span>
 							</div>
 							<div

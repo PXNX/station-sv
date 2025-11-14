@@ -1,5 +1,6 @@
 <!-- src/routes/about/+page.svelte -->
 <script lang="ts">
+	import BackButton from './../../lib/components/BackButton.svelte';
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
 	import FluentEmojiInformationSource from '~icons/fluent-emoji/information';
 	import FluentBranchFork24Regular from '~icons/fluent/branch-fork-24-regular';
@@ -21,13 +22,7 @@
 
 <!-- Back Button -->
 <div class="mb-6">
-	<a
-		href="/"
-		class="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-md transition-all hover:bg-white/20"
-	>
-		<FluentArrowLeft24Regular class="size-4" />
-		Back to Search
-	</a>
+	<BackButton href="/" />
 </div>
 
 <!-- Main Content -->
