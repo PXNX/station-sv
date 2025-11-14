@@ -1,7 +1,7 @@
 <!-- src/routes/station/[id]/+page.svelte -->
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+
 	import FluentEdit24Regular from '~icons/fluent/edit-24-regular';
 	import FluentEmojiBed from '~icons/fluent-emoji/bed';
 	import FluentEmojiHighVoltage from '~icons/fluent-emoji/high-voltage';
@@ -21,18 +21,21 @@
 	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 
 	import type { PageData } from './$types';
+	import { getCategoryStyles } from '$lib/server/categories';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-	const { station, photos, photoBaseUrl, imageUrl, pdfUrl } = data;
+	const { station, photos, photoBaseUrl, pdfUrl } = data;
 
 	const FAVORITES_KEY = 'station_favorites';
 
 	let isFavorite = $state(false);
 	let selectedPhotoIndex = $state(0);
+	let isImageLoading = $state(true);
+	let imageError = $state(false);
 
 	// In-memory favorites storage
 	let favorites = $state<number[]>([]);
@@ -63,6 +66,11 @@
 			station.is_open_24h === undefined ||
 			station.has_wifi === null ||
 			station.has_wifi === undefined
+	);
+
+	// Build contribution URL
+	const contributionUrl = $derived(
+		`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger || '1020'}`
 	);
 
 	function loadFavorites() {
@@ -107,33 +115,41 @@
 
 	function nextPhoto() {
 		if (photos && photos.length > 0) {
+			isImageLoading = true;
+			imageError = false;
 			selectedPhotoIndex = (selectedPhotoIndex + 1) % photos.length;
 		}
 	}
 
 	function prevPhoto() {
 		if (photos && photos.length > 0) {
+			isImageLoading = true;
+			imageError = false;
 			selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
 		}
 	}
 
-	const categoryBadge = $derived.by(() => {
-		switch (station.category) {
-			case 1:
-				return {
-					label: 'Major Hub',
-					color: 'border-purple-400/50 bg-purple-400/20 text-purple-100'
-				};
-			case 2:
-				return { label: 'Important', color: 'border-blue-400/50 bg-blue-400/20 text-blue-100' };
-			case 3:
-				return { label: 'Regional Hub', color: 'border-cyan-400/50 bg-cyan-400/20 text-cyan-100' };
-			case 4:
-				return { label: 'Medium', color: 'border-green-400/50 bg-green-400/20 text-green-100' };
-			default:
-				return { label: 'Station', color: 'border-gray-400/50 bg-gray-400/20 text-gray-100' };
+	function handleImageLoad() {
+		isImageLoading = false;
+		imageError = false;
+	}
+
+	function handleImageError() {
+		isImageLoading = false;
+		imageError = true;
+	}
+
+	// Reset loading state when photo changes
+	$effect(() => {
+		if (photos && photos.length > 0) {
+			isImageLoading = true;
+			imageError = false;
 		}
+		// Track selectedPhotoIndex to trigger effect
+		void selectedPhotoIndex;
 	});
+
+	const categoryBadge = $derived.by(() => getCategoryStyles(station.category));
 </script>
 
 <svelte:head>
@@ -196,27 +212,46 @@
 			<div
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 			>
-				<div class="h-80 w-full">
-					<OptimizedLocationImage
-						src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
-						alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-						priority={selectedPhotoIndex === 0}
-						class="h-80"
-					/>
+				<div class="relative h-80 w-full">
+					{#if isImageLoading && !imageError}
+						<div
+							class="absolute inset-0 flex items-center justify-center bg-white/5"
+							aria-label="Loading image"
+						>
+							<div class="loading loading-spinner loading-lg text-white/50"></div>
+						</div>
+					{/if}
+
+					{#if imageError}
+						<div class="flex h-full items-center justify-center bg-white/5">
+							<p class="text-white/50">Failed to load image</p>
+						</div>
+					{:else}
+						<OptimizedLocationImage
+							src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
+							alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+							priority={selectedPhotoIndex === 0}
+							class="h-80"
+							onload={handleImageLoad}
+							onerror={handleImageError}
+						/>
+					{/if}
 				</div>
 
 				<!-- Photo Navigation Arrows -->
 				{#if photos.length > 1}
 					<button
 						onclick={prevPhoto}
-						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
+						disabled={isImageLoading}
+						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
 						aria-label="Previous photo"
 					>
 						<FluentChevronLeft24Regular class="h-6 w-6" />
 					</button>
 					<button
 						onclick={nextPhoto}
-						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
+						disabled={isImageLoading}
+						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
 						aria-label="Next photo"
 					>
 						<FluentChevronRight24Regular class="h-6 w-6" />
@@ -258,7 +293,7 @@
 			<div class="mt-3 rounded-lg bg-white/5 p-3 backdrop-blur-sm">
 				<p class="text-center text-sm text-white/70">
 					Help improve this station! <a
-						href="https://map.railway-stations.org/upload.php?countryCode={station.country.toLowerCase()}&stationId=Z{station.station_id_ger}"
+						href={contributionUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300 hover:decoration-blue-300/60"
@@ -275,7 +310,7 @@
 			<p class="text-white/60">No photos available for this station yet</p>
 			<p class="mt-1 text-sm text-white/40">
 				Be the first to <a
-					href="https://map.railway-stations.org/upload.php?countryCode={station.country.toLowerCase()}&stationId=Z{station.station_id_ger}"
+					href={contributionUrl}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300"
@@ -417,19 +452,21 @@
 
 <!-- Action Links -->
 <div class="flex flex-col gap-3 sm:flex-row">
-	<a
-		href={pdfUrl}
-		target="_blank"
-		rel="noopener noreferrer"
-		class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
-	>
-		<FluentEmojiWorldMap class="size-5" />
-		Location and platform plan (PDF)
-	</a>
+	{#if pdfUrl}
+		<a
+			href={pdfUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
+		>
+			<FluentEmojiWorldMap class="size-5" />
+			Location and platform plan (PDF)
+		</a>
+	{/if}
 
 	{#if station.latitude && station.longitude}
 		<a
-			href={`https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}`}
+			href="https://www.google.com/maps/search/?api=1&query={station.latitude},{station.longitude}"
 			target="_blank"
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-green-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-500/30"
@@ -439,7 +476,7 @@
 		</a>
 
 		<a
-			href={`https://www.openstreetmap.org/?mlat=${station.latitude}&mlon=${station.longitude}&zoom=17`}
+			href="https://www.openstreetmap.org/?mlat={station.latitude}&mlon={station.longitude}&zoom=17"
 			target="_blank"
 			rel="noopener noreferrer"
 			class="flex items-center justify-center gap-2 rounded-lg bg-orange-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-500/30"

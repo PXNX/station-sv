@@ -520,16 +520,13 @@
 						</div>
 
 						<!-- Station Info -->
-						<div class="flex-grow">
+						<div class="grow">
 							<div class="mb-1 flex items-center gap-2">
 								<h3
 									class="text-lg font-bold text-white transition-colors duration-200 group-hover:text-blue-100"
 								>
 									{station.name}
 								</h3>
-								<span class="badge badge-sm badge-ghost opacity-70">
-									{categoryStyles.label}
-								</span>
 							</div>
 							<div
 								class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
