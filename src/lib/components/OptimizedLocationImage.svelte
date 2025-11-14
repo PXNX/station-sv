@@ -68,7 +68,7 @@
 
 	{#if error || !shouldShowImage}
 		<div
-			class="from-primary/20 via-secondary/10 to-accent/10 absolute inset-0 flex items-center justify-center bg-gradient-to-br"
+			class="from-primary/20 via-secondary/10 to-accent/10 absolute inset-0 flex items-center justify-center bg-linear-to-br"
 		>
 			<IconImageOff class="text-error/40 size-20" />
 		</div>
