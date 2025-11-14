@@ -13,7 +13,9 @@
 	import FluentEmojiRedCircle from '~icons/fluent-emoji/red-circle';
 	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
 	import FluentEmojiWifi from '~icons/fluent-emoji/antenna-bars';
+	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
+	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 	import type { PageData, ActionData } from './$types';
 	import type { StationResult } from '$lib/types';
 	import { page } from '$app/state';
@@ -29,7 +31,8 @@
 	const STORAGE_KEYS = {
 		searchTerm: 'station_search_term',
 		searchResults: 'station_search_results',
-		filters: 'station_search_filters'
+		filters: 'station_search_filters',
+		favorites: 'station_favorites'
 	};
 
 	// Helper functions for localStorage
@@ -64,6 +67,9 @@
 	);
 
 	let stationLoading = $state(false);
+
+	// Favorites count
+	let favoritesCount = $state(0);
 
 	// Station filters - initialize from URL params or localStorage
 	const savedFilters = getFromStorage(STORAGE_KEYS.filters, {});
@@ -100,6 +106,12 @@
 	let stationSuggestions = $state<any[]>([]);
 	let showStationDropdown = $state(false);
 	let suggestionLoading = $state(false);
+
+	// Update favorites count
+	function updateFavoritesCount() {
+		const favorites = getFromStorage<number[]>(STORAGE_KEYS.favorites, []);
+		favoritesCount = favorites.length;
+	}
 
 	// Persist search term to localStorage
 	$effect(() => {
@@ -139,6 +151,16 @@
 		}
 	});
 
+	// Check favorites count on mount
+	$effect(() => {
+		if (browser) {
+			updateFavoritesCount();
+			// Update count periodically in case it changes
+			const interval = setInterval(updateFavoritesCount, 1000);
+			return () => clearInterval(interval);
+		}
+	});
+
 	function handleStationFormSubmit() {
 		stationLoading = true;
 		return async ({ update }) => {
@@ -174,6 +196,24 @@
 		stationSearchTerm = station.name;
 		showStationDropdown = false;
 		stationSuggestions = [];
+	}
+
+	function getCategoryBadge(category: number) {
+		switch (category) {
+			case 1:
+				return {
+					label: 'Major Hub',
+					color: 'badge-primary'
+				};
+			case 2:
+				return { label: 'Important', color: 'badge-secondary' };
+			case 3:
+				return { label: 'Regional Hub', color: 'badge-accent' };
+			case 4:
+				return { label: 'Medium', color: 'badge-info' };
+			default:
+				return { label: 'Station', color: 'badge-ghost' };
+		}
 	}
 
 	const showEmptyState = $derived(
@@ -224,23 +264,35 @@
 <!-- Auth Navigation -->
 <div class="card mb-6 border border-white/30 bg-white/10 backdrop-blur-md">
 	<div class="card-body flex flex-row-reverse justify-between gap-x-2 p-1 md:p-2">
-		{#if data.session && data.user}
-			<a href="/auth/logout" class="btn btn-ghost btn-sm"> Logout </a>
-		{/if}
+		<div class="flex gap-2">
+			{#if data.session && data.user}
+				<a href="/auth/logout" class="btn btn-ghost btn-sm"> Logout </a>
+			{/if}
 
-		{#if !data.session || !data.user}
-			<a href="/auth/login" class="btn btn-ghost btn-sm"> Login </a>
-		{/if}
+			{#if !data.session || !data.user}
+				<a href="/auth/login" class="btn btn-ghost btn-sm"> Login </a>
+			{/if}
+		</div>
 
-		{#if data.session && data.user}
-			<a href="/pending" class="btn btn-ghost btn-sm">
-				{#if data.session && data.user && data.user.isAdmin}
-					Pending changes
-				{:else}
-					My pending changes
+		<div class="flex gap-2">
+			<a href="/favorites" class="btn btn-ghost btn-sm">
+				<FluentEmojiGlowingStar class="size-5" />
+				Favorites
+				{#if favoritesCount > 0}
+					<span class="badge badge-sm badge-primary">{favoritesCount}</span>
 				{/if}
 			</a>
-		{/if}
+
+			{#if data.session && data.user}
+				<a href="/pending" class="btn btn-ghost btn-sm">
+					{#if data.session && data.user && data.user.isAdmin}
+						Pending changes
+					{:else}
+						My pending changes
+					{/if}
+				</a>
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -394,18 +446,6 @@
 	</div>
 </div>
 
-<!-- Loading State -->
-{#if stationLoading}
-	<div class="mb-8 flex justify-center py-8">
-		<div
-			class="flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-6 py-3 backdrop-blur-md"
-		>
-			<span class="loading loading-ring loading-md"></span>
-			<span class="font-medium text-white">Searching stations...</span>
-		</div>
-	</div>
-{/if}
-
 <!-- Error Message -->
 {#if form?.error}
 	<div class="alert alert-warning mb-4">
@@ -429,6 +469,7 @@
 {#if searchResults.length > 0}
 	<div class="space-y-4">
 		{#each searchResults as station (station.eva)}
+			{@const categoryBadge = getCategoryBadge(station.category)}
 			<a
 				href={`/station/${station.eva}`}
 				class="card group overflow-hidden border border-white/30 bg-white/10 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-white/50 hover:bg-white/20"
@@ -438,29 +479,35 @@
 					<div class="flex flex-1 items-start gap-4 p-4">
 						<!-- Station Photo/Icon -->
 						<div class="shrink-0" style="view-transition-name: icon-{station.eva}">
-							<div
-								class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500 transition-all duration-300"
-							>
+							<div class="size-16 overflow-hidden rounded-2xl">
 								{#if station.photoUrl}
-									<img
+									<OptimizedLocationImage
 										src={station.photoUrl}
 										alt={station.name}
-										class="h-full w-full rounded-2xl object-cover transition-transform duration-300 group-hover:scale-110"
-										style="view-transition-name: photo-{station.eva}"
+										class="size-16"
 									/>
 								{:else}
-									<FluentEmojiStation class="h-10 w-10" />
+									<div
+										class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500"
+									>
+										<FluentEmojiStation class="h-10 w-10" />
+									</div>
 								{/if}
 							</div>
 						</div>
 
 						<!-- Station Info -->
 						<div class="flex-grow">
-							<h3
-								class="mb-1 text-lg font-bold text-white transition-colors duration-200 group-hover:text-blue-100"
-							>
-								{station.name}
-							</h3>
+							<div class="mb-1 flex items-center gap-2">
+								<h3
+									class="text-lg font-bold text-white transition-colors duration-200 group-hover:text-blue-100"
+								>
+									{station.name}
+								</h3>
+								<span class="badge badge-sm {categoryBadge.color}">
+									{categoryBadge.label}
+								</span>
+							</div>
 							<div
 								class="text-sm text-white/70 transition-colors duration-200 group-hover:text-white/90"
 							>
