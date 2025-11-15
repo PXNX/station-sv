@@ -1,11 +1,10 @@
 <!-- src/routes/about/+page.svelte -->
 <script lang="ts">
-	import BackButton from './../../lib/components/BackButton.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
 	import FluentEmojiInformationSource from '~icons/fluent-emoji/information';
 	import FluentBranchFork24Regular from '~icons/fluent/branch-fork-24-regular';
 	import FluentCamera24Regular from '~icons/fluent/camera-24-regular';
-	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
 	import FluentOpenRegular from '~icons/fluent/open-24-regular';
 	import FluentIcons24Regular from '~icons/fluent/icons-24-regular';
 	import FluentEmojiBaggageClaim from '~icons/fluent-emoji/baggage-claim';

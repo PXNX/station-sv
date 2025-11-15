@@ -18,11 +18,11 @@
 	import FluentHeart24Regular from '~icons/fluent/heart-24-regular';
 	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
 	import BackButton from '$lib/components/BackButton.svelte';
-	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 
 	import type { PageData } from './$types';
 	import { getCategoryStyles } from '$lib/client/categories';
 	import { formatDate } from '$lib/utils/format';
+	import DetailImage from '$lib/components/DetailImage.svelte';
 
 	interface Props {
 		data: PageData;
@@ -183,14 +183,13 @@
 			<div
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 			>
-				<div class="relative h-80 w-full">
-					<OptimizedLocationImage
-						src={`${photoBaseUrl}${photos[selectedPhotoIndex].path}`}
-						alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-						priority={selectedPhotoIndex === 0}
-						class="h-80"
-					/>
-				</div>
+				<DetailImage
+					src={`${photoBaseUrl}${photos[selectedPhotoIndex].path}`}
+					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+					photographer={photos[selectedPhotoIndex].photographer}
+					priority={selectedPhotoIndex === 0}
+					class="h-80 w-full"
+				/>
 
 				<!-- Photo Navigation Arrows -->
 				{#if photos.length > 1}
