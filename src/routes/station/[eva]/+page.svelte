@@ -22,6 +22,7 @@
 
 	import type { PageData } from './$types';
 	import { getCategoryStyles } from '$lib/server/categories';
+	import { formatDate } from '$lib/utils/format';
 
 	interface Props {
 		data: PageData;
@@ -66,11 +67,6 @@
 			station.is_open_24h === undefined ||
 			station.has_wifi === null ||
 			station.has_wifi === undefined
-	);
-
-	// Build contribution URL
-	const contributionUrl = $derived(
-		`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger || '1020'}`
 	);
 
 	function loadFavorites() {
@@ -246,7 +242,7 @@
 						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
 						aria-label="Previous photo"
 					>
-						<FluentChevronLeft24Regular class="h-6 w-6" />
+						<FluentChevronLeft24Regular class="size-6" />
 					</button>
 					<button
 						onclick={nextPhoto}
@@ -254,7 +250,7 @@
 						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
 						aria-label="Next photo"
 					>
-						<FluentChevronRight24Regular class="h-6 w-6" />
+						<FluentChevronRight24Regular class="size-6" />
 					</button>
 				{/if}
 
@@ -263,12 +259,14 @@
 					class="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/80 to-transparent p-4"
 				>
 					<a
-						href="https://map.railway-stations.org/photo/{photos[selectedPhotoIndex].id}"
+						href="https://map.railway-stations.org/station.php?countryCode=de&stationId={photos[
+							selectedPhotoIndex
+						].id}"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
 					>
-						<FluentEmojiCamera class="h-4 w-4" />
+						<FluentEmojiCamera class="size-4" />
 						<span
 							class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white"
 						>
@@ -277,13 +275,7 @@
 					</a>
 					{#if photos[selectedPhotoIndex].createdAt}
 						<p class="text-xs text-white/60">
-							{(() => {
-								const date = new Date(photos[selectedPhotoIndex].createdAt);
-								const day = String(date.getDate()).padStart(2, '0');
-								const month = String(date.getMonth() + 1).padStart(2, '0');
-								const year = date.getFullYear();
-								return `${day}.${month}.${year}`;
-							})()}
+							{formatDate(photos[selectedPhotoIndex].createdAt)}
 						</p>
 					{/if}
 				</div>
@@ -293,7 +285,7 @@
 			<div class="mt-3 rounded-lg bg-white/5 p-3 backdrop-blur-sm">
 				<p class="text-center text-sm text-white/70">
 					Help improve this station! <a
-						href={contributionUrl}
+						href={`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300 hover:decoration-blue-300/60"
@@ -310,7 +302,7 @@
 			<p class="text-white/60">No photos available for this station yet</p>
 			<p class="mt-1 text-sm text-white/40">
 				Be the first to <a
-					href={contributionUrl}
+					href={`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300"

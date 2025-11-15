@@ -94,7 +94,7 @@
 				onclick={goBack}
 				class="inline-flex items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/5 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
 			>
-				<FluentArrowLeft24Regular class="h-5 w-5" />
+				<FluentArrowLeft24Regular class="size-5" />
 				<span>Go Back</span>
 			</button>
 
@@ -102,7 +102,7 @@
 				onclick={goHome}
 				class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600"
 			>
-				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"

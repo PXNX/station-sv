@@ -264,7 +264,7 @@
 <div class="alert mb-6 border border-yellow-400/50 bg-yellow-400/20 shadow-lg">
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
-		class="h-6 w-6 shrink-0 stroke-yellow-200"
+		class="size-6 shrink-0 stroke-yellow-200"
 		fill="none"
 		viewBox="0 0 24 24"
 	>
