@@ -15,8 +15,8 @@
 	import FluentEmojiWifi from '~icons/fluent-emoji/antenna-bars';
 	import FluentDelete24Regular from '~icons/fluent/delete-24-regular';
 	import BackButton from '$lib/components/BackButton.svelte';
-	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 	import type { PageData } from './$types';
+	import PreviewImage from '$lib/components/PreviewImage.svelte';
 
 	interface Props {
 		data: PageData;
@@ -104,7 +104,7 @@
 
 <!-- Header -->
 <div class="mb-6 flex items-center justify-between">
-	<BackButton />
+	<BackButton href="/" />
 
 	{#if stations.length > 0}
 		<button onclick={clearAllFavorites} class="btn btn-error btn-sm btn-outline">
@@ -153,11 +153,7 @@
 						>
 							<div class="size-16 overflow-hidden rounded-2xl">
 								{#if station.photoUrl}
-									<OptimizedLocationImage
-										src={station.photoUrl}
-										alt={station.name}
-										class="size-16"
-									/>
+									<PreviewImage src={station.photoUrl} alt={station.name} class="size-16" />
 								{:else}
 									<div
 										class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500"
@@ -169,7 +165,7 @@
 						</a>
 
 						<!-- Station Info -->
-						<div class="flex-grow">
+						<div class="grow">
 							<a href={`/station/${station.eva}`}>
 								<div class="mb-1 flex items-center gap-2">
 									<h3
