@@ -185,7 +185,7 @@
 			>
 				<div class="relative h-80 w-full">
 					<OptimizedLocationImage
-						src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
+						src={`${photoBaseUrl}${photos[selectedPhotoIndex].path}`}
 						alt="Station photo by {photos[selectedPhotoIndex].photographer}"
 						priority={selectedPhotoIndex === 0}
 						class="h-80"
