@@ -30,27 +30,38 @@
 
 	// Derive the current source to use
 	const currentSrc = $derived.by(() => {
-		// If we've tried fallback and have one, use it
 		if (triedFallback && fallbackSrc) {
 			return fallbackSrc;
 		}
-		// Otherwise use the original src
 		return src;
 	});
 
 	// Reset state when src changes
 	$effect(() => {
-		void src; // Track src changes
+		void src;
 		loaded = false;
 		error = false;
 		triedFallback = false;
 	});
 
-	// Check if image is already loaded (cached)
+	// Check if image is already loaded (cached) - run after imgElement is bound
 	$effect(() => {
-		if (imgElement && imgElement.complete && imgElement.naturalHeight !== 0) {
-			loaded = true;
-			error = false;
+		if (imgElement) {
+			// Check immediately if already complete
+			if (imgElement.complete && imgElement.naturalHeight !== 0) {
+				loaded = true;
+				error = false;
+			}
+			// Also check after a short delay for race conditions
+			else {
+				const timeoutId = setTimeout(() => {
+					if (imgElement && imgElement.complete && imgElement.naturalHeight !== 0) {
+						loaded = true;
+						error = false;
+					}
+				}, 0);
+				return () => clearTimeout(timeoutId);
+			}
 		}
 	});
 
@@ -61,10 +72,8 @@
 	}
 
 	function handleError() {
-		// Try fallback if available and not yet tried
 		if (fallbackSrc && !triedFallback) {
 			triedFallback = true;
-			// Reset states to try again with fallback
 			loaded = false;
 			error = false;
 			return;
@@ -75,7 +84,6 @@
 		onerror?.();
 	}
 
-	// Determine if we should show the image
 	const shouldShowImage = $derived(!error && currentSrc !== null && currentSrc !== undefined);
 </script>
 
@@ -93,20 +101,18 @@
 			<IconImageOff class="text-error/40 size-20" />
 		</div>
 	{:else}
-		{#key currentSrc}
-			<img
-				bind:this={imgElement}
-				src={currentSrc}
-				{alt}
-				loading={priority ? 'eager' : 'lazy'}
-				decoding="async"
-				fetchpriority={priority ? 'high' : 'auto'}
-				class="h-full w-full object-cover transition-opacity duration-300 {loaded
-					? 'opacity-100'
-					: 'opacity-0'}"
-				onload={handleLoad}
-				onerror={handleError}
-			/>
-		{/key}
+		<img
+			bind:this={imgElement}
+			src={currentSrc}
+			{alt}
+			loading={priority ? 'eager' : 'lazy'}
+			decoding="async"
+			fetchpriority={priority ? 'high' : 'auto'}
+			class="h-full w-full object-cover transition-opacity duration-300 {loaded
+				? 'opacity-100'
+				: 'opacity-0'}"
+			onload={handleLoad}
+			onerror={handleError}
+		/>
 	{/if}
 </div>
