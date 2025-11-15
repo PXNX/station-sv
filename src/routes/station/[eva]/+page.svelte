@@ -34,10 +34,7 @@
 	const FAVORITES_KEY = 'station_favorites';
 
 	let isFavorite = $state(false);
-	let isTogglingFavorite = $state(false);
 	let selectedPhotoIndex = $state(0);
-	let isImageLoading = $state(true);
-	let imageError = $state(false);
 
 	// In-memory favorites storage
 	let favorites = $state<number[]>([]);
@@ -93,23 +90,16 @@
 	}
 
 	function toggleFavorite() {
-		// Simulate async behavior like the locations page
-		isTogglingFavorite = true;
+		const index = favorites.indexOf(station.eva);
 
-		// Use setTimeout to simulate the loading state
-		setTimeout(() => {
-			const index = favorites.indexOf(station.eva);
-
-			if (index > -1) {
-				favorites.splice(index, 1);
-				isFavorite = false;
-			} else {
-				favorites.push(station.eva);
-				isFavorite = true;
-			}
-			saveFavorites();
-			isTogglingFavorite = false;
-		}, 300);
+		if (index > -1) {
+			favorites.splice(index, 1);
+			isFavorite = false;
+		} else {
+			favorites.push(station.eva);
+			isFavorite = true;
+		}
+		saveFavorites();
 	}
 
 	$effect(() => {
@@ -119,39 +109,15 @@
 
 	function nextPhoto() {
 		if (photos && photos.length > 0) {
-			isImageLoading = true;
-			imageError = false;
 			selectedPhotoIndex = (selectedPhotoIndex + 1) % photos.length;
 		}
 	}
 
 	function prevPhoto() {
 		if (photos && photos.length > 0) {
-			isImageLoading = true;
-			imageError = false;
 			selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
 		}
 	}
-
-	function handleImageLoad() {
-		isImageLoading = false;
-		imageError = false;
-	}
-
-	function handleImageError() {
-		isImageLoading = false;
-		imageError = true;
-	}
-
-	// Reset loading state when photo changes
-	$effect(() => {
-		if (photos && photos.length > 0) {
-			isImageLoading = true;
-			imageError = false;
-		}
-		// Track selectedPhotoIndex to trigger effect
-		void selectedPhotoIndex;
-	});
 
 	const categoryBadge = $derived.by(() => getCategoryStyles(station.category));
 </script>
@@ -170,17 +136,13 @@
 		<!-- Favorite Button matching locations page style -->
 		<button
 			onclick={toggleFavorite}
-			disabled={isTogglingFavorite}
 			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
-			class:loading={isTogglingFavorite}
 			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
 		>
-			{#if !isTogglingFavorite}
-				{#if isFavorite}
-					<FluentHeart24Filled class="text-error size-6" />
-				{:else}
-					<FluentHeart24Regular class="size-6" />
-				{/if}
+			{#if isFavorite}
+				<FluentHeart24Filled class="text-error size-6" />
+			{:else}
+				<FluentHeart24Regular class="size-6" />
 			{/if}
 		</button>
 
@@ -222,45 +184,26 @@
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 			>
 				<div class="relative h-80 w-full">
-					{#if isImageLoading && !imageError}
-						<div
-							class="absolute inset-0 flex items-center justify-center bg-white/5"
-							aria-label="Loading image"
-						>
-							<div class="loading loading-spinner loading-lg text-white/50"></div>
-						</div>
-					{/if}
-
-					{#if imageError}
-						<div class="flex h-full items-center justify-center bg-white/5">
-							<p class="text-white/50">Failed to load image</p>
-						</div>
-					{:else}
-						<OptimizedLocationImage
-							src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
-							alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-							priority={selectedPhotoIndex === 0}
-							class="h-80"
-							onload={handleImageLoad}
-							onerror={handleImageError}
-						/>
-					{/if}
+					<OptimizedLocationImage
+						src="{photoBaseUrl}{photos[selectedPhotoIndex].path}"
+						alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+						priority={selectedPhotoIndex === 0}
+						class="h-80"
+					/>
 				</div>
 
 				<!-- Photo Navigation Arrows -->
 				{#if photos.length > 1}
 					<button
 						onclick={prevPhoto}
-						disabled={isImageLoading}
-						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
+						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
 						aria-label="Previous photo"
 					>
 						<FluentChevronLeft24Regular class="size-6" />
 					</button>
 					<button
 						onclick={nextPhoto}
-						disabled={isImageLoading}
-						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-50"
+						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
 						aria-label="Next photo"
 					>
 						<FluentChevronRight24Regular class="size-6" />
