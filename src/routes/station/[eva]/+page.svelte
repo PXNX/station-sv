@@ -10,13 +10,13 @@
 	import FluentEmojiInformation from '~icons/fluent-emoji/information';
 	import FluentEmojiSatelliteAntenna from '~icons/fluent-emoji/satellite-antenna';
 	import FluentEmojiWorldMap from '~icons/fluent-emoji/world-map';
-	import FluentEmojiStar from '~icons/fluent-emoji/star';
-	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentEmojiCamera from '~icons/fluent-emoji/camera';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentMap24Regular from '~icons/fluent/map-24-regular';
 	import FluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
 	import FluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
+	import FluentHeart24Regular from '~icons/fluent/heart-24-regular';
+	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
 	import BackButton from '$lib/components/BackButton.svelte';
 	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 
@@ -34,6 +34,7 @@
 	const FAVORITES_KEY = 'station_favorites';
 
 	let isFavorite = $state(false);
+	let isTogglingFavorite = $state(false);
 	let selectedPhotoIndex = $state(0);
 	let isImageLoading = $state(true);
 	let imageError = $state(false);
@@ -92,16 +93,23 @@
 	}
 
 	function toggleFavorite() {
-		const index = favorites.indexOf(station.eva);
+		// Simulate async behavior like the locations page
+		isTogglingFavorite = true;
 
-		if (index > -1) {
-			favorites.splice(index, 1);
-			isFavorite = false;
-		} else {
-			favorites.push(station.eva);
-			isFavorite = true;
-		}
-		saveFavorites();
+		// Use setTimeout to simulate the loading state
+		setTimeout(() => {
+			const index = favorites.indexOf(station.eva);
+
+			if (index > -1) {
+				favorites.splice(index, 1);
+				isFavorite = false;
+			} else {
+				favorites.push(station.eva);
+				isFavorite = true;
+			}
+			saveFavorites();
+			isTogglingFavorite = false;
+		}, 300);
 	}
 
 	$effect(() => {
@@ -159,24 +167,29 @@
 	<BackButton href="/" label="Back" />
 
 	<div class="flex gap-2">
+		<!-- Favorite Button matching locations page style -->
 		<button
 			onclick={toggleFavorite}
-			class="btn btn-ghost btn-sm"
+			disabled={isTogglingFavorite}
+			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
+			class:loading={isTogglingFavorite}
 			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
 		>
-			{#if isFavorite}
-				<FluentEmojiGlowingStar class="size-6" />
-			{:else}
-				<FluentEmojiStar class="size-6" />
+			{#if !isTogglingFavorite}
+				{#if isFavorite}
+					<FluentHeart24Filled class="text-error size-6" />
+				{:else}
+					<FluentHeart24Regular class="size-6" />
+				{/if}
 			{/if}
 		</button>
 
 		<a
 			href={`/station/${station.eva}/edit`}
-			class="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
+			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
+			aria-label="Edit station details"
 		>
-			<FluentEdit24Regular class="size-5" />
-			<span>Edit Details</span>
+			<FluentEdit24Regular class="size-6" />
 		</a>
 	</div>
 </div>
@@ -189,7 +202,7 @@
 		</h1>
 		<div class="flex items-center gap-2">
 			<span
-				class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.color}"
+				class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.badgeClass}"
 			>
 				{categoryBadge.label}
 			</span>
