@@ -26,6 +26,7 @@
 	let loaded = $state(false);
 	let error = $state(false);
 	let triedFallback = $state(false);
+	let imgElement: HTMLImageElement | undefined = $state();
 
 	// Derive the current source to use
 	const currentSrc = $derived.by(() => {
@@ -43,6 +44,14 @@
 		loaded = false;
 		error = false;
 		triedFallback = false;
+	});
+
+	// Check if image is already loaded (cached)
+	$effect(() => {
+		if (imgElement && imgElement.complete && imgElement.naturalHeight !== 0) {
+			loaded = true;
+			error = false;
+		}
 	});
 
 	function handleLoad() {
@@ -86,10 +95,12 @@
 	{:else}
 		{#key currentSrc}
 			<img
+				bind:this={imgElement}
 				src={currentSrc}
 				{alt}
 				loading={priority ? 'eager' : 'lazy'}
 				decoding="async"
+				fetchpriority={priority ? 'high' : 'auto'}
 				class="h-full w-full object-cover transition-opacity duration-300 {loaded
 					? 'opacity-100'
 					: 'opacity-0'}"
