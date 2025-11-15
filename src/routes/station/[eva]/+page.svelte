@@ -21,7 +21,7 @@
 	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 
 	import type { PageData } from './$types';
-	import { getCategoryStyles } from '$lib/server/categories';
+	import { getCategoryStyles } from '$lib/client/categories';
 	import { formatDate } from '$lib/utils/format';
 
 	interface Props {
