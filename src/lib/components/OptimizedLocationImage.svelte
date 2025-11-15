@@ -25,15 +25,24 @@
 
 	let loaded = $state(false);
 	let error = $state(false);
-	let currentSrc = $state(src);
 	let triedFallback = $state(false);
+
+	// Derive the current source to use
+	const currentSrc = $derived.by(() => {
+		// If we've tried fallback and have one, use it
+		if (triedFallback && fallbackSrc) {
+			return fallbackSrc;
+		}
+		// Otherwise use the original src
+		return src;
+	});
 
 	// Reset state when src changes
 	$effect(() => {
+		void src; // Track src changes
 		loaded = false;
 		error = false;
 		triedFallback = false;
-		currentSrc = src;
 	});
 
 	function handleLoad() {
@@ -44,9 +53,11 @@
 
 	function handleError() {
 		// Try fallback if available and not yet tried
-		if (fallbackSrc && !triedFallback && currentSrc !== fallbackSrc) {
+		if (fallbackSrc && !triedFallback) {
 			triedFallback = true;
-			currentSrc = fallbackSrc;
+			// Reset states to try again with fallback
+			loaded = false;
+			error = false;
 			return;
 		}
 
@@ -73,16 +84,18 @@
 			<IconImageOff class="text-error/40 size-20" />
 		</div>
 	{:else}
-		<img
-			src={currentSrc}
-			{alt}
-			loading={priority ? 'eager' : 'lazy'}
-			decoding="async"
-			class="h-full w-full object-cover transition-opacity duration-300 {loaded
-				? 'opacity-100'
-				: 'opacity-0'}"
-			onload={handleLoad}
-			onerror={handleError}
-		/>
+		{#key currentSrc}
+			<img
+				src={currentSrc}
+				{alt}
+				loading={priority ? 'eager' : 'lazy'}
+				decoding="async"
+				class="h-full w-full object-cover transition-opacity duration-300 {loaded
+					? 'opacity-100'
+					: 'opacity-0'}"
+				onload={handleLoad}
+				onerror={handleError}
+			/>
+		{/key}
 	{/if}
 </div>

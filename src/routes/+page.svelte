@@ -18,6 +18,7 @@
 	import type { PageData, ActionData } from './$types';
 	import type { StationResult } from '$lib/types';
 	import { page } from '$app/state';
+	import { getCategoryStyles } from '$lib/client/categories';
 
 	interface Props {
 		data: PageData;
@@ -200,41 +201,6 @@
 		const form = document.getElementById('station-search-form') as HTMLFormElement;
 		if (form) {
 			form.requestSubmit();
-		}
-	}
-
-	function getCategoryStyles(category: number) {
-		switch (category) {
-			case 1:
-				return {
-					label: 'Major Hub',
-					cardClass:
-						'bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/50 hover:from-purple-500/30 hover:to-pink-500/30 hover:border-purple-400/70'
-				};
-			case 2:
-				return {
-					label: 'Important',
-					cardClass:
-						'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-400/50 hover:from-blue-500/30 hover:to-cyan-500/30 hover:border-blue-400/70'
-				};
-			case 3:
-				return {
-					label: 'Regional Hub',
-					cardClass:
-						'bg-gradient-to-br from-green-500/20 to-teal-500/20 border-green-400/50 hover:from-green-500/30 hover:to-teal-500/30 hover:border-green-400/70'
-				};
-			case 4:
-				return {
-					label: 'Medium',
-					cardClass:
-						'bg-gradient-to-br from-orange-500/20 to-amber-500/20 border-orange-400/50 hover:from-orange-500/30 hover:to-amber-500/30 hover:border-orange-400/70'
-				};
-			default:
-				return {
-					label: 'Station',
-					cardClass:
-						'bg-gradient-to-br from-gray-500/20 to-slate-500/20 border-gray-400/50 hover:from-gray-500/30 hover:to-slate-500/30 hover:border-gray-400/70'
-				};
 		}
 	}
 
@@ -511,7 +477,7 @@
 									/>
 								{:else}
 									<div
-										class="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-teal-500"
+										class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500"
 									>
 										<FluentEmojiStation class="h-10 w-10" />
 									</div>
