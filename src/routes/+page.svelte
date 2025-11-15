@@ -14,11 +14,11 @@
 	import FluentEmojiGreenCircle from '~icons/fluent-emoji/green-circle';
 	import FluentEmojiWifi from '~icons/fluent-emoji/antenna-bars';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
-	import OptimizedLocationImage from '$lib/components/OptimizedLocationImage.svelte';
 	import type { PageData, ActionData } from './$types';
 	import type { StationResult } from '$lib/types';
 	import { page } from '$app/state';
 	import { getCategoryStyles } from '$lib/client/categories';
+	import PreviewImage from '$lib/components/PreviewImage.svelte';
 
 	interface Props {
 		data: PageData;
@@ -468,23 +468,8 @@
 					<div class="flex flex-1 items-start gap-4 p-4">
 						<!-- Station Photo/Icon -->
 						<div class="shrink-0" style="view-transition-name: icon-{station.eva}">
-							<div class="size-16 overflow-hidden rounded-2xl">
-								{#if station.photoUrl}
-									<OptimizedLocationImage
-										src={station.photoUrl}
-										alt={station.name}
-										class="size-16"
-									/>
-								{:else}
-									<div
-										class="flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-400 to-teal-500"
-									>
-										<FluentEmojiStation class="h-10 w-10" />
-									</div>
-								{/if}
-							</div>
+							<PreviewImage src={station.photoUrl} alt={station.name} class="size-16" />
 						</div>
-
 						<!-- Station Info -->
 						<div class="grow">
 							<div class="mb-1 flex items-center gap-2">
