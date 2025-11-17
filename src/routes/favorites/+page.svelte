@@ -17,6 +17,7 @@
 	import BackButton from '$lib/components/BackButton.svelte';
 	import type { PageData } from './$types';
 	import PreviewImage from '$lib/components/PreviewImage.svelte';
+	import { getCategoryStyles } from '$lib/client/categories';
 
 	interface Props {
 		data: PageData;
@@ -29,21 +30,6 @@
 	let favorites = $state<number[]>([]);
 	let isLoading = $state(true);
 	let stations = $state(data.stations || []);
-
-	function getCategoryBadge(category: number) {
-		switch (category) {
-			case 1:
-				return { label: 'Major Hub', color: 'badge-primary' };
-			case 2:
-				return { label: 'Important', color: 'badge-secondary' };
-			case 3:
-				return { label: 'Regional Hub', color: 'badge-accent' };
-			case 4:
-				return { label: 'Medium', color: 'badge-info' };
-			default:
-				return { label: 'Station', color: 'badge-ghost' };
-		}
-	}
 
 	function loadFavorites() {
 		if (!browser) return;
@@ -140,7 +126,7 @@
 {#if !isLoading && stations.length > 0}
 	<div class="space-y-4">
 		{#each stations as station (station.eva)}
-			{@const categoryBadge = getCategoryBadge(station.category)}
+			{@const categoryStyle = getCategoryStyles(station.category)}
 			<div
 				class="card group overflow-hidden border border-white/30 bg-white/10 backdrop-blur-md transition-all duration-300"
 			>
@@ -173,8 +159,8 @@
 									>
 										{station.name}
 									</h3>
-									<span class="badge badge-sm {categoryBadge.color}">
-										{categoryBadge.label}
+									<span class="badge badge-sm {categoryStyle.badgeClass}">
+										{categoryStyle.label}
 									</span>
 								</div>
 								<div class="text-sm text-white/70">
