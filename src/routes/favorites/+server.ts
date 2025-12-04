@@ -1,5 +1,6 @@
-// src/routes/favorites/+page.server.ts
-import type { PageServerLoad } from './$types';
+// src/routes/favorites/+server.ts
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
 import { inArray } from 'drizzle-orm';
@@ -24,12 +25,12 @@ async function fetchStationPhoto(stationIdGer: number) {
 	}
 }
 
-export const load: PageServerLoad = async ({ url }) => {
-	// Get favorite EVA numbers from URL params (sent from client)
+export const GET: RequestHandler = async ({ url }) => {
+	// Get favorite EVA numbers from URL params
 	const evaParam = url.searchParams.get('evas');
 
 	if (!evaParam) {
-		return { stations: [] };
+		return json({ stations: [] });
 	}
 
 	const evaNumbers = evaParam
@@ -38,7 +39,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		.filter((eva) => !isNaN(eva));
 
 	if (evaNumbers.length === 0) {
-		return { stations: [] };
+		return json({ stations: [] });
 	}
 
 	// Fetch stations from database
@@ -69,7 +70,5 @@ export const load: PageServerLoad = async ({ url }) => {
 		})
 	);
 
-	return {
-		stations: stationsWithPhotos
-	};
+	return json({ stations: stationsWithPhotos });
 };

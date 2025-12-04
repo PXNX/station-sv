@@ -20,7 +20,7 @@ export const stations = pgTable(
 		// German station ID - used for railway-stations.org API photo lookups
 		stationIdGER: integer('station_id_ger'),
 		name: varchar('name', { length: 255 }).notNull(),
-		city: varchar('city', { length: 255 }),
+		city: varchar('city', { length: 255 }).notNull(),
 		country: varchar('country', { length: 2 }).notNull(),
 
 		// Station importance (1-7, where 1 is most important)
