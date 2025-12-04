@@ -1,7 +1,7 @@
 <!-- src/lib/components/PreviewImage.svelte -->
 <script lang="ts">
-	import IconLocation from '~icons/fluent/location-24-regular';
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
+	import FluentImage24Regular from '~icons/fluent/image-24-regular';
 
 	interface Props {
 		src: string | null | undefined;
@@ -40,13 +40,17 @@
 			{alt}
 			loading="lazy"
 			decoding="async"
-			class="size-full object-cover {loaded ? 'opacity-100' : 'opacity-0'}"
+			class="size-full object-cover transition-opacity duration-300 {loaded
+				? 'opacity-100'
+				: 'opacity-0'}"
 			onload={() => (loaded = true)}
 			onerror={() => (error = true)}
 		/>
 		{#if !loaded}
-			<div class="absolute inset-0 flex items-center justify-center bg-white/5">
-				<IconLocation class="size-8 opacity-30" />
+			<div
+				class="absolute inset-0 flex items-center justify-center bg-linear-to-br from-blue-500/20 to-teal-500/20 backdrop-blur-sm"
+			>
+				<FluentImage24Regular class="size-12 animate-pulse" />
 			</div>
 		{/if}
 	{:else}

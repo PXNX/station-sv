@@ -1,5 +1,6 @@
 <!-- src/routes/station/[id]/+page.svelte -->
 <script lang="ts">
+	import DetailImage from '$lib/components/DetailImage.svelte';
 	import { browser } from '$app/environment';
 
 	import FluentEdit24Regular from '~icons/fluent/edit-24-regular';
@@ -17,12 +18,13 @@
 	import FluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
 	import FluentHeart24Regular from '~icons/fluent/heart-24-regular';
 	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
+	import FluentShare24Regular from '~icons/fluent/share-24-regular';
 	import BackButton from '$lib/components/BackButton.svelte';
 
 	import type { PageData } from './$types';
 	import { getCategoryStyles } from '$lib/client/categories';
 	import { formatDate } from '$lib/utils/format';
-	import DetailImage from '$lib/components/DetailImage.svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -93,17 +95,46 @@
 		const index = favorites.indexOf(station.eva);
 
 		if (index > -1) {
-			favorites.splice(index, 1);
+			favorites = favorites.filter((id) => id !== station.eva);
 			isFavorite = false;
 		} else {
-			favorites.push(station.eva);
+			favorites = [...favorites, station.eva];
 			isFavorite = true;
 		}
 		saveFavorites();
 	}
 
+	async function shareStation() {
+		if (!browser) return;
+
+		const shareData = {
+			title: `${station.name} - Station Details`,
+			text: `Check out ${station.name} station`,
+			url: window.location.href
+		};
+
+		try {
+			if (navigator.share) {
+				await navigator.share(shareData);
+			} else {
+				// Fallback: copy to clipboard
+				await navigator.clipboard.writeText(window.location.href);
+				alert('Link copied to clipboard!');
+			}
+		} catch (error) {
+			if (error instanceof Error && error.name !== 'AbortError') {
+				console.error('Error sharing:', error);
+			}
+		}
+	}
+
 	$effect(() => {
-		loadFavorites();
+		if (browser) {
+			loadFavorites();
+		}
+	});
+
+	$effect(() => {
 		isFavorite = favorites.includes(station.eva);
 	});
 
@@ -120,6 +151,9 @@
 	}
 
 	const categoryBadge = $derived.by(() => getCategoryStyles(station.category));
+	const currentPhotoUrl = $derived(
+		photos && photos.length > 0 ? `${photoBaseUrl}${photos[selectedPhotoIndex].path}` : null
+	);
 </script>
 
 <svelte:head>
@@ -130,10 +164,19 @@
 
 <!-- Navigation Buttons -->
 <div class="mb-6 flex items-center justify-between gap-4">
-	<BackButton href="/" label="Back" />
+	<BackButton href={resolve('/')} label="Back" />
 
 	<div class="flex gap-2">
-		<!-- Favorite Button matching locations page style -->
+		<!-- Share Button -->
+		<button
+			onclick={shareStation}
+			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
+			aria-label="Share station"
+		>
+			<FluentShare24Regular class="size-6" />
+		</button>
+
+		<!-- Favorite Button -->
 		<button
 			onclick={toggleFavorite}
 			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
@@ -147,7 +190,7 @@
 		</button>
 
 		<a
-			href={`/station/${station.eva}/edit`}
+			href={resolve(`/station/${station.eva}/edit`)}
 			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
 			aria-label="Edit station details"
 		>
@@ -184,10 +227,8 @@
 				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
 			>
 				<DetailImage
-					src={`${photoBaseUrl}${photos[selectedPhotoIndex].path}`}
+					src={currentPhotoUrl}
 					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-					photographer={photos[selectedPhotoIndex].photographer}
-					priority={selectedPhotoIndex === 0}
 					class="h-80 w-full"
 				/>
 
@@ -211,7 +252,7 @@
 
 				<!-- Photo Info -->
 				<div
-					class="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/80 to-transparent p-4"
+					class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4"
 				>
 					<a
 						href="https://map.railway-stations.org/station.php?countryCode=de&stationId={photos[
