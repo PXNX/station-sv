@@ -27,7 +27,8 @@
 	let hasSubmitted = $state(false);
 	let showUnsavedDialog = $state(false);
 	let showConfirmSaveDialog = $state(false);
-	let pendingNavigation: (() => void) | null = null;
+	let pendingNavigationUrl: string | null = null;
+	let allowNavigation = $state(false);
 	let formElement: HTMLFormElement;
 
 	// Helper function to normalize values (null/undefined to empty string)
@@ -99,7 +100,7 @@
 		console.log('goBack');
 
 		if (hasChanges && !hasSubmitted) {
-			pendingNavigation = () => goto(`/station/${data.station.eva}`);
+			pendingNavigationUrl = `/station/${data.station.eva}`;
 			showUnsavedDialog = true;
 		} else {
 			goto(`/station/${data.station.eva}`);
@@ -107,24 +108,34 @@
 	}
 
 	function confirmLeave() {
-		console.log('confirmLeave');
+		console.log('confirmLeave', pendingNavigationUrl);
 		showUnsavedDialog = false;
-		if (pendingNavigation) {
-			pendingNavigation();
-			pendingNavigation = null;
-		} else {
-			goto('/');
+		allowNavigation = true;
+
+		if (pendingNavigationUrl) {
+			const url = pendingNavigationUrl;
+			pendingNavigationUrl = null;
+			goto(url);
 		}
 	}
 
 	function cancelLeave() {
+		console.log('cancelLeave');
 		showUnsavedDialog = false;
-		pendingNavigation = null;
+		pendingNavigationUrl = null;
 	}
 
-	beforeNavigate(({ cancel }) => {
-		if (hasChanges && !isSubmitting && !hasSubmitted) {
+	beforeNavigate(({ cancel, to }) => {
+		// Allow navigation if we've submitted or explicitly allowed it
+		if (hasSubmitted || allowNavigation || isSubmitting) {
+			allowNavigation = false; // Reset for next navigation
+			return;
+		}
+
+		// If there are changes, block and show dialog
+		if (hasChanges) {
 			cancel();
+			pendingNavigationUrl = to?.url.pathname || '/';
 			showUnsavedDialog = true;
 		}
 	});
@@ -142,6 +153,7 @@
 
 	function handleSubmit() {
 		isSubmitting = true;
+		allowNavigation = true; // Allow navigation after submit
 		return async ({ result, update }: any) => {
 			await update();
 			hasSubmitted = true;

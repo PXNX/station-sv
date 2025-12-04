@@ -91,95 +91,94 @@
 	}
 </script>
 
-<div class="container mx-auto max-w-6xl px-4 py-8">
-	<h1 class="mb-8 text-3xl font-bold text-white">
-		{data.isAdmin ? 'Pending Edits' : 'My Pending Edits'}
-	</h1>
+<BackButton href="/" label="Back" />
 
-	{#if data.pendingEdits.length === 0}
-		<p class="text-white/70">
-			{data.isAdmin ? 'No pending edits to review.' : 'You have no pending edits awaiting review.'}
-		</p>
-	{:else}
-		<div class="space-y-6">
-			{#each data.pendingEdits as { edit, station, user }}
-				{@const changes = getChanges(edit, station)}
-				<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
-					<div class="mb-4 flex items-start justify-between">
-						<div>
-							<h3 class="text-xl font-semibold text-white">{station.name}</h3>
-							<p class="text-sm text-white/60">
-								{#if data.isAdmin}
-									Submitted by {user.name} ({user.email}) on {formatDate(edit.createdAt)}
-								{:else}
-									Submitted on {formatDate(edit.createdAt)}
-								{/if}
-							</p>
-							{#if !data.isAdmin}
-								<p class="mt-1 text-sm font-medium text-yellow-400">⏳ Awaiting admin review</p>
+<h1 class="mb-8 text-3xl font-bold text-white">
+	{data.isAdmin ? 'Pending Edits' : 'My Pending Edits'}
+</h1>
+
+{#if data.pendingEdits.length === 0}
+	<p class="text-white/70">
+		{data.isAdmin ? 'No pending edits to review.' : 'You have no pending edits awaiting review.'}
+	</p>
+{:else}
+	<div class="space-y-6">
+		{#each data.pendingEdits as { edit, station, user }}
+			{@const changes = getChanges(edit, station)}
+			<div class="rounded-lg border border-white/20 bg-white/5 p-6 backdrop-blur-sm">
+				<div class="mb-4 flex items-start justify-between">
+					<div>
+						<h3 class="text-xl font-semibold text-white">{station.name}</h3>
+						<p class="text-sm text-white/60">
+							{#if data.isAdmin}
+								Submitted by {user.name} ({user.email}) on {formatDate(edit.createdAt)}
+							{:else}
+								Submitted on {formatDate(edit.createdAt)}
 							{/if}
-							<p class="text-sm font-medium text-blue-400">
-								{changes.length}
-								{changes.length === 1 ? 'change' : 'changes'} proposed
-							</p>
-						</div>
-						<a href="/station/{station.eva}" class="text-blue-400 hover:text-blue-300">
-							View Station
-						</a>
+						</p>
+						{#if !data.isAdmin}
+							<p class="mt-1 text-sm font-medium text-yellow-400">⏳ Awaiting admin review</p>
+						{/if}
+						<p class="text-sm font-medium text-blue-400">
+							{changes.length}
+							{changes.length === 1 ? 'change' : 'changes'} proposed
+						</p>
 					</div>
+					<a href="/station/{station.eva}" class="text-blue-400 hover:text-blue-300">
+						View Station
+					</a>
+				</div>
 
-					<div class="mb-6 space-y-3">
-						{#each changes as change}
-							<div class="rounded-lg border border-white/10 bg-black/20 p-4">
-								<h4 class="mb-3 font-semibold text-white">{change.label}</h4>
-								<div class="space-y-2">
-									<div
-										class="flex items-start gap-3 rounded border-l-4 border-red-500 bg-red-950/40 px-3 py-2"
-									>
-										<span class="font-mono text-xs text-red-400">−</span>
-										<span class="flex-1 text-sm text-red-200">{formatValue(change.oldValue)}</span>
-									</div>
-									<div
-										class="flex items-start gap-3 rounded border-l-4 border-green-500 bg-green-950/40 px-3 py-2"
-									>
-										<span class="font-mono text-xs text-green-400">+</span>
-										<span class="flex-1 text-sm text-green-200">{formatValue(change.newValue)}</span
-										>
-									</div>
+				<div class="mb-6 space-y-3">
+					{#each changes as change}
+						<div class="rounded-lg border border-white/10 bg-black/20 p-4">
+							<h4 class="mb-3 font-semibold text-white">{change.label}</h4>
+							<div class="space-y-2">
+								<div
+									class="flex items-start gap-3 rounded border-l-4 border-red-500 bg-red-950/40 px-3 py-2"
+								>
+									<span class="font-mono text-xs text-red-400">−</span>
+									<span class="flex-1 text-sm text-red-200">{formatValue(change.oldValue)}</span>
+								</div>
+								<div
+									class="flex items-start gap-3 rounded border-l-4 border-green-500 bg-green-950/40 px-3 py-2"
+								>
+									<span class="font-mono text-xs text-green-400">+</span>
+									<span class="flex-1 text-sm text-green-200">{formatValue(change.newValue)}</span>
 								</div>
 							</div>
-						{/each}
-					</div>
-
-					<div class="flex flex-row-reverse justify-between gap-2">
-						{#if data.isAdmin}
-							<form method="POST" action="?/reject" use:enhance>
-								<input type="hidden" name="editId" value={edit.id} />
-								<button type="submit" class="btn btn-error flex items-center gap-2">
-									<FluentEmojiCrossMark class="size-5" />
-									Reject
-								</button>
-							</form>
-
-							<form method="POST" action="?/approve" use:enhance>
-								<input type="hidden" name="editId" value={edit.id} />
-								<button type="submit" class="btn btn-success flex items-center gap-2">
-									<FluentEmojiCheckMark class="size-5" />
-									Approve
-								</button>
-							</form>
-						{:else}
-							<form method="POST" action="?/remove" use:enhance>
-								<input type="hidden" name="editId" value={edit.id} />
-								<button type="submit" class="btn btn-error flex items-center gap-2">
-									<FluentEmojiCrossMark class="size-5" />
-									Cancel Pending Edit
-								</button>
-							</form>
-						{/if}
-					</div>
+						</div>
+					{/each}
 				</div>
-			{/each}
-		</div>
-	{/if}
-</div>
+
+				<div class="flex flex-row-reverse justify-between gap-2">
+					{#if data.isAdmin}
+						<form method="POST" action="?/reject" use:enhance>
+							<input type="hidden" name="editId" value={edit.id} />
+							<button type="submit" class="btn btn-error flex items-center gap-2">
+								<FluentEmojiCrossMark class="size-5" />
+								Reject
+							</button>
+						</form>
+
+						<form method="POST" action="?/approve" use:enhance>
+							<input type="hidden" name="editId" value={edit.id} />
+							<button type="submit" class="btn btn-success flex items-center gap-2">
+								<FluentEmojiCheckMark class="size-5" />
+								Approve
+							</button>
+						</form>
+					{:else}
+						<form method="POST" action="?/remove" use:enhance>
+							<input type="hidden" name="editId" value={edit.id} />
+							<button type="submit" class="btn btn-error flex items-center gap-2">
+								<FluentEmojiCrossMark class="size-5" />
+								Cancel Pending Edit
+							</button>
+						</form>
+					{/if}
+				</div>
+			</div>
+		{/each}
+	</div>
+{/if}
