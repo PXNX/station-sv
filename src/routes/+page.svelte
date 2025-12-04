@@ -16,6 +16,7 @@
 	import type { StationResult } from '$lib/types';
 	import { page } from '$app/state';
 	import StationCard from '$lib/components/StationCard.svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		data: PageData;
@@ -251,11 +252,11 @@
 	<div class="card-body flex flex-row-reverse justify-between gap-x-2 p-1 md:p-2">
 		<div class="flex gap-2">
 			{#if data.session && data.user}
-				<a href="/auth/logout" class="btn btn-ghost btn-sm"> Logout </a>
+				<a href={resolve('/auth/logout')} class="btn btn-ghost btn-sm"> Logout </a>
 			{/if}
 
 			{#if !data.session || !data.user}
-				<a href="/auth/login" class="btn btn-ghost btn-sm"> Login </a>
+				<a href={resolve('/auth/login')} class="btn btn-ghost btn-sm"> Login </a>
 			{/if}
 		</div>
 

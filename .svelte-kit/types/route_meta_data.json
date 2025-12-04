@@ -16,7 +16,7 @@
 		"src/routes/(authorized)/auth/logout/+server.ts"
 	],
 	"/favorites": [
-		"src/routes/favorites/+page.server.ts"
+		"src/routes/favorites/+server.ts"
 	],
 	"/(admin)/pending": [
 		"src/routes/(admin)/pending/+page.server.ts"

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import FluentEmojiCheckMark from '~icons/fluent-emoji/check-mark';
 	import FluentEmojiCrossMark from '~icons/fluent-emoji/cross-mark';
 
