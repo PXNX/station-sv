@@ -26,6 +26,8 @@ export {};
 
 
 declare module "$app/types" {
+	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
+
 	export interface AppTypes {
 		RouteId(): "/(authorized)" | "/(admin)" | "/" | "/about" | "/auth" | "/(authorized)/auth" | "/auth/callback" | "/auth/callback/google" | "/auth/login" | "/auth/login/google" | "/(authorized)/auth/logout" | "/favorites" | "/(admin)/pending" | "/privacy-policy" | "/station" | "/(authorized)/station" | "/station/[eva]" | "/(authorized)/station/[eva]" | "/(authorized)/station/[eva]/edit";
 		RouteParams(): {
@@ -54,7 +56,7 @@ declare module "$app/types" {
 			"/(authorized)/station/[eva]": { eva: string };
 			"/(authorized)/station/[eva]/edit": { eva: string }
 		};
-		Pathname(): "/" | "/about" | "/about/" | "/auth" | "/auth/" | "/auth/callback" | "/auth/callback/" | "/auth/callback/google" | "/auth/callback/google/" | "/auth/login" | "/auth/login/" | "/auth/login/google" | "/auth/login/google/" | "/auth/logout" | "/auth/logout/" | "/favorites" | "/favorites/" | "/pending" | "/pending/" | "/privacy-policy" | "/privacy-policy/" | "/station" | "/station/" | `/station/${string}` & {} | `/station/${string}/` & {} | `/station/${string}/edit` & {} | `/station/${string}/edit/` & {};
+		Pathname(): "/" | "/about" | "/auth/callback/google" | "/auth/login" | "/auth/login/google" | "/auth/logout" | "/favorites" | "/pending" | "/privacy-policy" | `/station/${string}` & {} | `/station/${string}/edit` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/favicon.png" | "/fonts/HPSimplified.ttf" | "/icon-512.png" | "/manifest.json" | string & {};
 	}
