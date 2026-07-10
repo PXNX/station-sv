@@ -36,9 +36,9 @@ declare module "$app/types" {
 			"/(authorized)/station/[eva]/edit": { eva: string }
 		};
 		LayoutParams(): {
-			"/(authorized)": { eva?: string };
+			"/(authorized)": { eva?: string | undefined };
 			"/(admin)": Record<string, never>;
-			"/": { eva?: string };
+			"/": { eva?: string | undefined };
 			"/about": Record<string, never>;
 			"/auth": Record<string, never>;
 			"/(authorized)/auth": Record<string, never>;
@@ -50,8 +50,8 @@ declare module "$app/types" {
 			"/favorites": Record<string, never>;
 			"/(admin)/pending": Record<string, never>;
 			"/privacy-policy": Record<string, never>;
-			"/station": { eva?: string };
-			"/(authorized)/station": { eva?: string };
+			"/station": { eva?: string | undefined };
+			"/(authorized)/station": { eva?: string | undefined };
 			"/station/[eva]": { eva: string };
 			"/(authorized)/station/[eva]": { eva: string };
 			"/(authorized)/station/[eva]/edit": { eva: string }
