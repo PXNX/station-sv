@@ -1,4 +1,4 @@
-<!-- src/routes/station/[id]/+page.svelte -->
+<!-- src/routes/station/[eva]/+page.svelte -->
 <script lang="ts">
 	import DetailImage from '$lib/components/DetailImage.svelte';
 	import { browser } from '$app/environment';
@@ -20,6 +20,8 @@
 	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
 	import FluentShare24Regular from '~icons/fluent/share-24-regular';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import { Alert, Badge, Button, Card, IconButton, StatusRow } from '$lib/components/ui';
+	import { favorites } from '$lib/client/favorites.svelte';
 
 	import type { PageData } from './$types';
 	import { getCategoryStyles } from '$lib/client/categories';
@@ -33,76 +35,21 @@
 	let { data }: Props = $props();
 	const { station, photos, photoBaseUrl, pdfUrl } = data;
 
-	const FAVORITES_KEY = 'station_favorites';
-
-	let isFavorite = $state(false);
 	let selectedPhotoIndex = $state(0);
 
-	// In-memory favorites storage
-	let favorites = $state<number[]>([]);
+	const isFavorite = $derived(favorites.has(station.eva));
 
-	// Helper function to get status color class
-	function getStatusColor(value: boolean | null | undefined): string {
-		if (value === null || value === undefined) return 'text-blue-400';
-		return value ? 'text-green-300' : 'text-red-300';
-	}
-
-	// Helper function to get status text
-	function getStatusText(value: boolean | null | undefined): string {
-		if (value === null || value === undefined) return 'Unknown';
-		return value ? 'Yes' : 'No';
-	}
-
-	// Check if any field is unknown
-	const hasUnknownFields = $derived(
-		station.has_warm_sleep === null ||
-			station.has_warm_sleep === undefined ||
-			station.has_outlets === null ||
-			station.has_outlets === undefined ||
-			station.has_toilets === null ||
-			station.has_toilets === undefined ||
-			station.toilets_open_at_night === null ||
-			station.toilets_open_at_night === undefined ||
-			station.is_open_24h === null ||
-			station.is_open_24h === undefined ||
-			station.has_wifi === null ||
-			station.has_wifi === undefined
+	// Fields nobody has filled in yet, so we can nudge visitors towards the edit form.
+	const unknownFields = $derived(
+		[
+			station.has_warm_sleep,
+			station.has_outlets,
+			station.has_toilets,
+			station.toilets_open_at_night,
+			station.is_open_24h,
+			station.has_wifi
+		].filter((value) => value === null || value === undefined).length
 	);
-
-	function loadFavorites() {
-		if (!browser) return;
-		try {
-			const stored = localStorage.getItem(FAVORITES_KEY);
-			if (stored) {
-				favorites = JSON.parse(stored);
-			}
-		} catch (error) {
-			console.error('Failed to load favorites:', error);
-			favorites = [];
-		}
-	}
-
-	function saveFavorites() {
-		if (!browser) return;
-		try {
-			localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-		} catch (error) {
-			console.error('Failed to save favorites:', error);
-		}
-	}
-
-	function toggleFavorite() {
-		const index = favorites.indexOf(station.eva);
-
-		if (index > -1) {
-			favorites = favorites.filter((id) => id !== station.eva);
-			isFavorite = false;
-		} else {
-			favorites = [...favorites, station.eva];
-			isFavorite = true;
-		}
-		saveFavorites();
-	}
 
 	async function shareStation() {
 		if (!browser) return;
@@ -129,13 +76,7 @@
 	}
 
 	$effect(() => {
-		if (browser) {
-			loadFavorites();
-		}
-	});
-
-	$effect(() => {
-		isFavorite = favorites.includes(station.eva);
+		favorites.load();
 	});
 
 	function nextPhoto() {
@@ -154,6 +95,9 @@
 	const currentPhotoUrl = $derived(
 		photos && photos.length > 0 ? `${photoBaseUrl}${photos[selectedPhotoIndex].path}` : null
 	);
+	const uploadUrl = $derived(
+		`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`
+	);
 </script>
 
 <svelte:head>
@@ -162,315 +106,210 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-<!-- Navigation Buttons -->
+<!-- Toolbar -->
 <div class="mb-6 flex items-center justify-between gap-4">
-	<BackButton href={resolve('/')} label="Back" />
+	<BackButton href={resolve('/')} />
 
 	<div class="flex gap-2">
-		<!-- Share Button -->
-		<button
-			onclick={shareStation}
-			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
-			aria-label="Share station"
-		>
-			<FluentShare24Regular class="size-6" />
-		</button>
-
-		<!-- Favorite Button -->
-		<button
-			onclick={toggleFavorite}
-			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
-			aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-		>
-			{#if isFavorite}
-				<FluentHeart24Filled class="text-error size-6" />
-			{:else}
-				<FluentHeart24Regular class="size-6" />
-			{/if}
-		</button>
-
-		<a
+		<IconButton icon={FluentShare24Regular} label="Share station" onclick={shareStation} />
+		<IconButton
+			icon={isFavorite ? FluentHeart24Filled : FluentHeart24Regular}
+			label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+			active={isFavorite}
+			onclick={() => favorites.toggle(station.eva)}
+		/>
+		<IconButton
+			icon={FluentEdit24Regular}
+			label="Edit station details"
 			href={resolve(`/station/${station.eva}/edit`)}
-			class="btn btn-circle border-0 bg-white/5 hover:bg-white/10"
-			aria-label="Edit station details"
-		>
-			<FluentEdit24Regular class="size-6" />
-		</a>
+		/>
 	</div>
 </div>
 
-<!-- Station Header -->
-<div class="mb-8" style="view-transition-name: station-{station.eva}">
-	<div class="mb-4">
-		<h1 class="mb-2 text-3xl font-bold text-white">
-			{station.name}
-		</h1>
-		<div class="flex items-center gap-2">
-			<span
-				class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {categoryBadge.badgeClass}"
-			>
-				{categoryBadge.label}
-			</span>
-			{#if station.city}
-				<p class="text-lg text-white/70">
-					{station.city}, {station.country.toUpperCase()}
-				</p>
-			{/if}
-		</div>
+<!-- Station header -->
+<div class="mb-6" style="view-transition-name: station-{station.eva}">
+	<h1 class="mb-2 text-3xl font-bold text-white">{station.name}</h1>
+	<div class="flex flex-wrap items-center gap-2">
+		<Badge class={categoryBadge.badgeClass}>{categoryBadge.label}</Badge>
+		{#if station.city}
+			<p class="text-white/60">{station.city}, {station.country.toUpperCase()}</p>
+		{/if}
 	</div>
+</div>
 
-	<!-- Community Photos -->
-	{#if photos && photos.length > 0}
-		<div class="mb-4">
-			<!-- Main Photo Display -->
-			<div
-				class="relative overflow-hidden rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm"
-			>
-				<DetailImage
-					src={currentPhotoUrl}
-					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-					class="h-80 w-full"
+<!-- Community photos -->
+{#if photos && photos.length > 0}
+	<div class="mb-6 space-y-3">
+		<div class="relative overflow-hidden rounded-2xl border border-white/12 bg-white/5">
+			<DetailImage
+				src={currentPhotoUrl}
+				alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+				class="h-80 w-full"
+			/>
+
+			{#if photos.length > 1}
+				<IconButton
+					icon={FluentChevronLeft24Regular}
+					label="Previous photo"
+					class="absolute top-1/2 left-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
+					onclick={prevPhoto}
 				/>
+				<IconButton
+					icon={FluentChevronRight24Regular}
+					label="Next photo"
+					class="absolute top-1/2 right-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
+					onclick={nextPhoto}
+				/>
+			{/if}
 
-				<!-- Photo Navigation Arrows -->
-				{#if photos.length > 1}
-					<button
-						onclick={prevPhoto}
-						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
-						aria-label="Previous photo"
-					>
-						<FluentChevronLeft24Regular class="size-6" />
-					</button>
-					<button
-						onclick={nextPhoto}
-						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-black/70"
-						aria-label="Next photo"
-					>
-						<FluentChevronRight24Regular class="size-6" />
-					</button>
-				{/if}
-
-				<!-- Photo Info -->
-				<div
-					class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-4"
-				>
-					<a
-						href="https://map.railway-stations.org/station.php?countryCode=de&stationId={photos[
-							selectedPhotoIndex
-						].id}"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
-					>
-						<FluentEmojiCamera class="size-4" />
-						<span
-							class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white"
-						>
-							Photo by {photos[selectedPhotoIndex].photographer}
-						</span>
-					</a>
-					{#if photos[selectedPhotoIndex].createdAt}
-						<p class="text-xs text-white/60">
-							{formatDate(photos[selectedPhotoIndex].createdAt)}
-						</p>
-					{/if}
-				</div>
-			</div>
-
-			<!-- Photo Contribution Hint -->
-			<div class="mt-3 rounded-lg bg-white/5 p-3 backdrop-blur-sm">
-				<p class="text-center text-sm text-white/70">
-					Help improve this station! <a
-						href={`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300 hover:decoration-blue-300/60"
-					>
-						Contribute your own photos
-					</a> to help other travelers.
-				</p>
-			</div>
-		</div>
-	{:else}
-		<!-- Fallback message when no photos available -->
-		<div class="mb-4 rounded-lg border border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
-			<FluentEmojiCamera class="mx-auto mb-3 h-12 w-12 opacity-50" />
-			<p class="text-white/60">No photos available for this station yet</p>
-			<p class="mt-1 text-sm text-white/40">
-				Be the first to <a
-					href={`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`}
+			<!-- Photo credit -->
+			<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 to-transparent p-4">
+				<a
+					href="https://map.railway-stations.org/station.php?countryCode=de&stationId={photos[
+						selectedPhotoIndex
+					].id}"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="font-medium text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:text-blue-300"
+					class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
 				>
-					contribute a photo
-				</a>!
-			</p>
+					<FluentEmojiCamera class="size-4" />
+					<span class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white">
+						Photo by {photos[selectedPhotoIndex].photographer}
+					</span>
+				</a>
+				{#if photos[selectedPhotoIndex].createdAt}
+					<p class="mt-0.5 text-xs text-white/50">
+						{formatDate(photos[selectedPhotoIndex].createdAt)}
+					</p>
+				{/if}
+			</div>
+
+			{#if photos.length > 1}
+				<div class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white">
+					{selectedPhotoIndex + 1} / {photos.length}
+				</div>
+			{/if}
 		</div>
+
+		<Card variant="inset" padding="sm">
+			<p class="text-center text-sm text-white/60">
+				Help improve this station!
+				<a
+					href={uploadUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="font-medium text-sky-300 underline decoration-sky-300/40 underline-offset-2 transition-colors hover:text-sky-200"
+				>
+					Contribute your own photos
+				</a>
+				to help other travelers.
+			</p>
+		</Card>
+	</div>
+{:else}
+	<Card variant="inset" padding="lg" class="mb-6 text-center">
+		<FluentEmojiCamera class="mx-auto mb-3 size-12 opacity-50" />
+		<p class="text-white/60">No photos available for this station yet</p>
+		<p class="mt-1 text-sm text-white/40">
+			Be the first to
+			<a
+				href={uploadUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="font-medium text-sky-300 underline decoration-sky-300/40 underline-offset-2 transition-colors hover:text-sky-200"
+			>
+				contribute a photo
+			</a>!
+		</p>
+	</Card>
+{/if}
+
+{#if unknownFields > 0}
+	<Alert tone="info" class="mb-6">
+		<strong>Missing information?</strong>
+		{unknownFields} of this station's details are still unknown. Use the edit button above to fill in
+		what you know.
+	</Alert>
+{/if}
+
+<!-- Amenities -->
+<div class="mb-6 grid gap-4 sm:grid-cols-2">
+	<Card variant="inset" title="Sleeping" icon={FluentEmojiBed}>
+		<StatusRow label="Warm area" value={station.has_warm_sleep} />
+		{#if station.sleep_notes}
+			<p class="mt-2 text-sm text-white/60">{station.sleep_notes}</p>
+		{/if}
+	</Card>
+
+	<Card variant="inset" title="Power outlets" icon={FluentEmojiHighVoltage}>
+		<StatusRow label="Available" value={station.has_outlets} />
+		{#if station.outlet_notes}
+			<p class="mt-2 text-sm text-white/60">{station.outlet_notes}</p>
+		{/if}
+	</Card>
+
+	<Card variant="inset" title="Toilets" icon={FluentEmojiToilet}>
+		<div class="space-y-1">
+			<StatusRow label="Available" value={station.has_toilets} />
+			<StatusRow label="Open at night" value={station.toilets_open_at_night} />
+		</div>
+		{#if station.toilet_notes}
+			<p class="mt-2 text-sm text-white/60">{station.toilet_notes}</p>
+		{/if}
+	</Card>
+
+	<Card variant="inset" title="Opening hours" icon={FluentEmojiTwelveOclock}>
+		<StatusRow label="24/7 access" value={station.is_open_24h} />
+		{#if station.opening_hours}
+			<p class="mt-2 text-sm text-white/60">{station.opening_hours}</p>
+		{/if}
+	</Card>
+
+	<Card variant="inset" title="WiFi hotspot" icon={FluentEmojiSatelliteAntenna}>
+		<div class="space-y-1">
+			<StatusRow label="Available" value={station.has_wifi} />
+			{#if station.has_wifi}
+				<StatusRow label="Limited data" value={station.wifi_has_limit} />
+			{/if}
+		</div>
+		{#if station.wifi_notes}
+			<p class="mt-2 text-sm text-white/60">{station.wifi_notes}</p>
+		{/if}
+	</Card>
+
+	{#if station.additional_info}
+		<Card variant="inset" title="Additional information" icon={FluentEmojiInformation}>
+			<p class="text-sm whitespace-pre-wrap text-white/60">{station.additional_info}</p>
+		</Card>
 	{/if}
 </div>
 
-<!-- Help Hint for Unknown Fields -->
-{#if hasUnknownFields}
-	<div class="mb-6 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 backdrop-blur-sm">
-		<div class="flex items-start gap-3">
-			<FluentEmojiInformation class="mt-0.5 size-5 shrink-0" />
-			<div>
-				<p class="text-sm text-white/80">
-					<strong>Missing information?</strong> Help improve this station's data by clicking the
-					<strong>Edit Details</strong> button above to add any unknown information.
-				</p>
-			</div>
-		</div>
-	</div>
-{/if}
-
-<!-- Amenities Grid -->
-<div class="mb-6 grid gap-4 sm:grid-cols-2">
-	<!-- Sleeping -->
-	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiBed class="size-5" />
-			<h2 class="font-semibold text-white">Sleeping</h2>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">Warm area:</span>
-			<span class={getStatusColor(station.has_warm_sleep)}>
-				{getStatusText(station.has_warm_sleep)}
-			</span>
-		</div>
-		{#if station.sleep_notes}
-			<p class="text-sm text-white/60">{station.sleep_notes}</p>
-		{/if}
-	</div>
-
-	<!-- Outlets -->
-	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiHighVoltage class="size-5" />
-			<h2 class="font-semibold text-white">Power Outlets</h2>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">Available:</span>
-			<span class={getStatusColor(station.has_outlets)}>
-				{getStatusText(station.has_outlets)}
-			</span>
-		</div>
-		{#if station.outlet_notes}
-			<p class="text-sm text-white/60">{station.outlet_notes}</p>
-		{/if}
-	</div>
-
-	<!-- Toilets -->
-	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiToilet class="size-5" />
-			<h2 class="font-semibold text-white">Toilets</h2>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">Available:</span>
-			<span class={getStatusColor(station.has_toilets)}>
-				{getStatusText(station.has_toilets)}
-			</span>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">Open at night:</span>
-			<span class={getStatusColor(station.toilets_open_at_night)}>
-				{getStatusText(station.toilets_open_at_night)}
-			</span>
-		</div>
-		{#if station.toilet_notes}
-			<p class="text-sm text-white/60">{station.toilet_notes}</p>
-		{/if}
-	</div>
-
-	<!-- Opening Hours -->
-	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiTwelveOclock class="size-5" />
-			<h2 class="font-semibold text-white">Opening Hours</h2>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">24/7 Access:</span>
-			<span class={getStatusColor(station.is_open_24h)}>
-				{getStatusText(station.is_open_24h)}
-			</span>
-		</div>
-		{#if station.opening_hours}
-			<p class="text-sm text-white/60">{station.opening_hours}</p>
-		{/if}
-	</div>
-
-	<!-- WiFi -->
-	<div class="rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiSatelliteAntenna class="size-5" />
-			<h2 class="font-semibold text-white">WiFi Hotspot</h2>
-		</div>
-		<div class="mb-2 flex items-center justify-between text-sm">
-			<span class="text-white/70">Available:</span>
-			<span class={getStatusColor(station.has_wifi)}>
-				{getStatusText(station.has_wifi)}
-			</span>
-		</div>
-		{#if station.has_wifi}
-			<div class="flex items-center justify-between text-sm">
-				<span class="text-white/70">Limited data:</span>
-				<span class={getStatusColor(station.wifi_has_limit)}>
-					{getStatusText(station.wifi_has_limit)}
-				</span>
-			</div>
-		{/if}
-		{#if station.wifi_notes}
-			<p class="text-sm text-white/60">{station.wifi_notes}</p>
-		{/if}
-	</div>
-</div>
-
-<!-- Additional Information -->
-{#if station.additional_info}
-	<div class="mb-6 rounded-lg border border-white/20 bg-white/5 p-4 backdrop-blur-sm">
-		<div class="mb-3 flex items-center gap-2">
-			<FluentEmojiInformation class="size-5" />
-			<h2 class="font-semibold text-white">Additional Information</h2>
-		</div>
-		<p class="text-sm whitespace-pre-wrap text-white/70">{station.additional_info}</p>
-	</div>
-{/if}
-
-<!-- Action Links -->
-<div class="flex flex-col gap-3 sm:flex-row">
+<!-- External links -->
+<div class="grid gap-3 sm:grid-cols-2">
 	{#if pdfUrl}
-		<a
-			href={pdfUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="flex items-center justify-center gap-2 rounded-lg bg-blue-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-500/30"
-		>
+		<Button variant="secondary" href={pdfUrl} external>
 			<FluentEmojiWorldMap class="size-5" />
-			Location and platform plan (PDF)
-		</a>
+			Location and platform plan
+		</Button>
 	{/if}
 
 	{#if station.latitude && station.longitude}
-		<a
+		<Button
+			variant="secondary"
 			href="https://www.google.com/maps/search/?api=1&query={station.latitude},{station.longitude}"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="flex items-center justify-center gap-2 rounded-lg bg-green-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-green-500/30"
+			external
 		>
 			<FluentLocation24Regular class="size-5" />
 			Google Maps
-		</a>
+		</Button>
 
-		<a
+		<Button
+			variant="secondary"
 			href="https://www.openstreetmap.org/?mlat={station.latitude}&mlon={station.longitude}&zoom=17"
-			target="_blank"
-			rel="noopener noreferrer"
-			class="flex items-center justify-center gap-2 rounded-lg bg-orange-500/20 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-orange-500/30"
+			external
 		>
 			<FluentMap24Regular class="size-5" />
 			OpenStreetMap
-		</a>
+		</Button>
 	{/if}
 </div>

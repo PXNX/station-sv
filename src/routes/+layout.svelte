@@ -13,8 +13,8 @@
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-<div class="flex min-h-dvh w-dvw items-center justify-center p-4">
-	<div class="flex w-full flex-col sm:w-3xl">
+<div class="flex min-h-dvh w-full justify-center px-4 py-6 md:py-10">
+	<div class="flex w-full max-w-3xl flex-col">
 		{@render children()}
 	</div>
 </div>

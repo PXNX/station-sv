@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin '@tailwindcss/typography';
 @plugin 'daisyui' {
 	themes: dark --default;
 }
@@ -15,5 +16,38 @@
 		font-weight: 400;
 		font-style: normal;
 		font-display: swap;
+	}
+
+	/* The frosted-glass surfaces need something behind them to read as glass. */
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: #0a1020;
+		background-image:
+			radial-gradient(60rem 40rem at 15% -10%, rgb(56 189 248 / 0.16), transparent 60%),
+			radial-gradient(50rem 35rem at 100% 0%, rgb(129 140 248 / 0.14), transparent 55%),
+			radial-gradient(45rem 45rem at 50% 110%, rgb(20 184 166 / 0.12), transparent 60%);
+		background-attachment: fixed;
+		background-repeat: no-repeat;
+		color: rgb(255 255 255 / 0.9);
+	}
+
+	::selection {
+		background-color: rgb(56 189 248 / 0.35);
+	}
+
+	/* Match scrollbars to the dark surfaces instead of the OS default. */
+	* {
+		scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+	}
+}
+
+@layer components {
+	/* Keyboard focus is otherwise invisible on the translucent surfaces. */
+	:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+		outline: 2px solid rgb(125 211 252 / 0.8);
+		outline-offset: 2px;
 	}
 }
