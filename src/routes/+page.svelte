@@ -166,23 +166,15 @@
 	);
 </script>
 
-<PageHeader title="Train Station Search" icon={FluentEmojiStation}>
-	Find stations with amenities for travelers ·
-	<a
-		href={resolve('/about')}
-		class="underline decoration-white/30 underline-offset-2 transition-colors hover:text-white hover:decoration-white/60"
-	>
-		About
-	</a>
-</PageHeader>
+	<PageHeader title="Find a better station" description="Find stations with practical amenities for travelers." icon={FluentEmojiStation} />
 
-<Alert tone="warning" title="Site under construction" class="mb-6">
-	This site is still in development. All data will be reset periodically during testing.
-</Alert>
+	<Alert tone="info" title="Community data, made useful" class="mb-6">
+		Station details are community-maintained. Add what you know and help the next traveler.
+	</Alert>
 
 <!-- Account and library navigation -->
-<Card padding="sm" class="mb-6">
-	<div class="flex flex-wrap items-center justify-between gap-2">
+	<Card padding="sm" class="mb-6 border-white/10 bg-white/4">
+		<div class="flex flex-wrap items-center justify-between gap-3">
 		<div class="flex flex-wrap items-center gap-1">
 			<Button variant="ghost" size="sm" href={resolve('/favorites')}>
 				<FluentHeart24Regular class="size-4" />
@@ -199,10 +191,10 @@
 			{/if}
 		</div>
 
-		{#if data.session && data.user}
-			<Button variant="ghost" size="sm" href={resolve('/auth/logout')}>Logout</Button>
-		{:else}
-			<Button variant="secondary" size="sm" href={resolve('/auth/login')}>Login</Button>
+			{#if data.session && data.user}
+				<Button variant="ghost" size="sm" href={resolve('/auth/logout')}>Sign out</Button>
+			{:else}
+				<Button variant="secondary" size="sm" href={resolve('/auth/login')}>Sign in</Button>
 		{/if}
 	</div>
 </Card>

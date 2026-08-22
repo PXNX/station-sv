@@ -1,0 +1,7 @@
+- [x] Bildquellen und zugeordnete Urheber in Stationsdaten prüfen.
+- [x] Urheberzuordnung für Stationsbilder gegen die tatsächliche Bildquelle korrigieren.
+- [x] Navigation und zentrale Oberflächenbereiche gestalterisch überarbeiten.
+- [x] Datenkorrektur, Tests, Build und GitHub-Übertragung prüfen.
+- [x] Offene Datenquellen für deutsche Bahnhöfe und ihre Nutzungsbedingungen prüfen.
+- [x] Stationsinformationen in klaren, fachlich getrennten Datenbereichen strukturieren.
+- [x] Bestehende DB-Stationen nur mit überprüften offenen Quelldaten vorbefüllen.

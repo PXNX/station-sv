@@ -8,7 +8,8 @@ import {
 	doublePrecision,
 	timestamp,
 	serial,
-	index
+	index,
+	jsonb
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -75,6 +76,35 @@ export const stations = pgTable(
 
 export type Station = typeof stations.$inferSelect;
 export type NewStation = typeof stations.$inferInsert;
+
+/**
+ * Machine-sourced directory metadata. This deliberately stays separate from
+ * community-maintained traveller amenities on `stations` so source updates do
+ * not overwrite human observations.
+ */
+export const stationOperations = pgTable(
+	'station_operations',
+	{
+		stationEva: integer('station_eva')
+			.primaryKey()
+			.references(() => stations.eva, { onDelete: 'cascade' }),
+		ds100: varchar('ds100', { length: 16 }),
+		isActiveRis: boolean('is_active_ris'),
+		isActiveIris: boolean('is_active_iris'),
+		metaEvas: jsonb('meta_evas').$type<number[]>().notNull().default(sql`'[]'::jsonb`),
+		availableTransports: jsonb('available_transports')
+			.$type<string[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
+		sourceName: varchar('source_name', { length: 80 }).notNull(),
+		sourceUrl: text('source_url').notNull(),
+		importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow()
+	},
+	(table) => ({
+		ds100Idx: index('station_operations_ds100_idx').on(table.ds100),
+		activeRisIdx: index('station_operations_active_ris_idx').on(table.isActiveRis)
+	})
+);
 
 // Custom function to set up pg_trgm extension and create trigram indexes
 // Call this once after your schema is set up
