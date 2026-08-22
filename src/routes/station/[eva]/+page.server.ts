@@ -2,7 +2,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { stations } from '$lib/server/schema';
+import { stations, stationOperations } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
 
 async function fetchStationPhotos(stationIdGer: number) {
@@ -47,6 +47,12 @@ export const load: PageServerLoad = async ({ params }) => {
 		throw error(404, 'Station not found in database. Please add it first.');
 	}
 
+	const [operations] = await db
+		.select()
+		.from(stationOperations)
+		.where(eq(stationOperations.stationEva, eva))
+		.limit(1);
+
 	// Fetch photos if we have a stationIdGer
 	let photoData = null;
 	let imageUrl = null;
@@ -83,6 +89,17 @@ export const load: PageServerLoad = async ({ params }) => {
 
 			additional_info: station.additionalInfo
 		},
+		operations: operations
+			? {
+				ds100: operations.ds100,
+				isActiveRis: operations.isActiveRis,
+				isActiveIris: operations.isActiveIris,
+				metaEvas: operations.metaEvas,
+				availableTransports: operations.availableTransports,
+				sourceName: operations.sourceName,
+				importedAt: operations.importedAt
+			}
+			: null,
 		photos: photoData?.photos || [],
 		photoBaseUrl: photoData?.photoBaseUrl || 'https://api.railway-stations.org/photos/',
 		imageUrl: imageUrl,

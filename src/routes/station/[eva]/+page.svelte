@@ -33,7 +33,7 @@
 	}
 
 	let { data }: Props = $props();
-	const { station, photos, photoBaseUrl, pdfUrl } = data;
+	const { station, photos, photoBaseUrl, pdfUrl, operations } = data;
 
 	let selectedPhotoIndex = $state(0);
 
@@ -138,6 +138,26 @@
 </div>
 
 <!-- Community photos -->
+{#if operations}
+	<Card variant="inset" padding="sm" class="mb-6">
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<div>
+				<p class="text-xs font-semibold tracking-wide text-white/45 uppercase">Rail operations</p>
+				<div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-white/80">
+					{#if operations.ds100}<span class="rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs">DS100 {operations.ds100}</span>{/if}
+					{#if operations.availableTransports.length > 0}<span>{operations.availableTransports.join(' · ')}</span>{/if}
+				</div>
+			</div>
+			<div class="flex gap-1.5">
+				<Badge tone={operations.isActiveRis ? 'success' : 'neutral'}>{operations.isActiveRis ? 'RIS active' : 'RIS inactive'}</Badge>
+				<Badge tone={operations.isActiveIris ? 'success' : 'neutral'}>{operations.isActiveIris ? 'IRIS active' : 'IRIS inactive'}</Badge>
+			</div>
+		</div>
+		<p class="mt-2 text-xs text-white/40">Directory data from {operations.sourceName}.</p>
+	</Card>
+{/if}
+
+<!-- Community photos -->
 {#if photos && photos.length > 0}
 	<div class="mb-6 space-y-3">
 		<div class="relative overflow-hidden rounded-2xl border border-white/12 bg-white/5">
@@ -165,9 +185,7 @@
 			<!-- Photo credit -->
 			<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 to-transparent p-4">
 				<a
-					href="https://map.railway-stations.org/station.php?countryCode=de&stationId={photos[
-						selectedPhotoIndex
-					].id}"
+						href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
