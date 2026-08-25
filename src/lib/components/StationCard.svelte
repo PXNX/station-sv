@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
+	import IconLoading from '~icons/svg-spinners/90-ring-with-bg';
 	import { getCategoryStyles } from '$lib/client/categories';
 	import { shouldAnimateStationNavigation } from '$lib/client/station-navigation';
 	import { FEATURE_AMENITIES, OPENING_HOURS_AMENITY } from '$lib/client/amenities';
@@ -31,10 +32,10 @@
 	}
 </script>
 
-<a
-	href={`/station/${station.eva}`}
-	class:opening
-	onclick={openStation}
+	<a
+		href={`/station/${station.eva}`}
+		onclick={openStation}
+	aria-busy={opening}
 	class="station-card group relative flex items-start gap-4 overflow-hidden rounded-2xl border p-4 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/25 {categoryStyles.cardClass}"
 	style="view-transition-name: station-{station.eva}"
 >
@@ -71,45 +72,13 @@
 		</div>
 	</div>
 
-	<!-- Arrow -->
-	<FluentArrowRight24Regular
-		class="mt-1 size-6 shrink-0 text-white/40 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white"
-	/>
-</a>
-
-<style>
-	.station-card::after {
-		position: absolute;
-		inset: 0;
-		z-index: 10;
-		content: '';
-		pointer-events: none;
-		opacity: 0;
-		background: linear-gradient(
-			105deg,
-			transparent 25%,
-			rgb(255 255 255 / 0.08) 45%,
-			rgb(255 255 255 / 0.24) 50%,
-			rgb(255 255 255 / 0.08) 55%,
-			transparent 75%
-		);
-		transform: translateX(-115%);
-	}
-
-	.station-card.opening::after {
-		opacity: 1;
-		animation: station-shimmer 360ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
-	}
-
-	@keyframes station-shimmer {
-		to {
-			transform: translateX(115%);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.station-card.opening::after {
-			animation: none;
-		}
-	}
-</style>
+		{#if opening}
+			<span class="mt-1 grid size-6 shrink-0 place-items-center text-white" role="status" aria-label="Loading station details">
+				<IconLoading class="size-5" />
+			</span>
+		{:else}
+			<FluentArrowRight24Regular
+				class="mt-1 size-6 shrink-0 text-white/40 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white"
+			/>
+		{/if}
+	</a>
