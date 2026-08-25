@@ -138,26 +138,6 @@
 </div>
 
 <!-- Community photos -->
-{#if operations}
-	<Card variant="inset" padding="sm" class="mb-6">
-		<div class="flex flex-wrap items-center justify-between gap-3">
-			<div>
-				<p class="text-xs font-semibold tracking-wide text-white/45 uppercase">Rail operations</p>
-				<div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-white/80">
-					{#if operations.ds100}<span class="rounded-md bg-white/10 px-2 py-0.5 font-mono text-xs">DS100 {operations.ds100}</span>{/if}
-					{#if operations.availableTransports.length > 0}<span>{operations.availableTransports.join(' · ')}</span>{/if}
-				</div>
-			</div>
-			<div class="flex gap-1.5">
-				<Badge tone={operations.isActiveRis ? 'success' : 'neutral'}>{operations.isActiveRis ? 'RIS active' : 'RIS inactive'}</Badge>
-				<Badge tone={operations.isActiveIris ? 'success' : 'neutral'}>{operations.isActiveIris ? 'IRIS active' : 'IRIS inactive'}</Badge>
-			</div>
-		</div>
-		<p class="mt-2 text-xs text-white/40">Directory data from {operations.sourceName}.</p>
-	</Card>
-{/if}
-
-<!-- Community photos -->
 {#if photos && photos.length > 0}
 	<div class="mb-6 space-y-3">
 		<div class="relative overflow-hidden rounded-2xl border border-white/12 bg-white/5">
@@ -185,13 +165,15 @@
 			<!-- Photo credit -->
 			<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 to-transparent p-4">
 				<a
-						href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
+					href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="group flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
 				>
 					<FluentEmojiCamera class="size-4" />
-					<span class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white">
+					<span
+						class="underline decoration-white/40 underline-offset-2 group-hover:decoration-white"
+					>
 						Photo by {photos[selectedPhotoIndex].photographer}
 					</span>
 				</a>
@@ -203,7 +185,9 @@
 			</div>
 
 			{#if photos.length > 1}
-				<div class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white">
+				<div
+					class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white"
+				>
 					{selectedPhotoIndex + 1} / {photos.length}
 				</div>
 			{/if}
@@ -301,6 +285,63 @@
 		</Card>
 	{/if}
 </div>
+
+<!-- Identifiers and transport metadata -->
+<Card variant="inset" title="Station metadata" icon={FluentEmojiInformation} class="mb-6">
+	<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+		<div>
+			<dt class="text-xs font-semibold tracking-wide text-white/45 uppercase">EVA number</dt>
+			<dd class="mt-1 font-mono text-white/90">{station.eva}</dd>
+		</div>
+		{#if station.station_id_ger}
+			<div>
+				<dt class="text-xs font-semibold tracking-wide text-white/45 uppercase">
+					German station ID
+				</dt>
+				<dd class="mt-1 font-mono text-white/90">{station.station_id_ger}</dd>
+			</div>
+		{/if}
+		{#if operations?.ds100}
+			<div>
+				<dt class="text-xs font-semibold tracking-wide text-white/45 uppercase">DS100</dt>
+				<dd class="mt-1 font-mono text-white/90">{operations.ds100}</dd>
+			</div>
+		{/if}
+		{#if operations?.metaEvas && operations.metaEvas.length > 0}
+			<div>
+				<dt class="text-xs font-semibold tracking-wide text-white/45 uppercase">
+					Related EVA numbers
+				</dt>
+				<dd class="mt-1 font-mono text-white/90">{operations.metaEvas.join(' · ')}</dd>
+			</div>
+		{/if}
+		{#if operations?.availableTransports && operations.availableTransports.length > 0}
+			<div class="sm:col-span-2">
+				<dt class="text-xs font-semibold tracking-wide text-white/45 uppercase">
+					Trains serving this station
+				</dt>
+				<dd class="mt-1 flex flex-wrap gap-2">
+					{#each operations.availableTransports as transport (transport)}<Badge tone="info"
+							>{transport}</Badge
+						>{/each}
+				</dd>
+			</div>
+		{/if}
+	</dl>
+	{#if operations}
+		<div class="mt-4 flex flex-wrap gap-2 border-t border-white/8 pt-3">
+			<Badge tone={operations.isActiveRis ? 'success' : 'neutral'}
+				>{operations.isActiveRis ? 'RIS active' : 'RIS inactive'}</Badge
+			>
+			<Badge tone={operations.isActiveIris ? 'success' : 'neutral'}
+				>{operations.isActiveIris ? 'IRIS active' : 'IRIS inactive'}</Badge
+			>
+		</div>
+		<p class="mt-2 text-xs text-white/40">
+			Operational directory data from {operations.sourceName}.
+		</p>
+	{/if}
+</Card>
 
 <!-- External links -->
 <div class="grid gap-3 sm:grid-cols-2">

@@ -24,6 +24,24 @@
 
 	const sources: Source[] = [
 		{
+			title: 'DB InfraGO OpenStation',
+			description:
+				'OpenStation provides the structured infrastructure and accessibility foundation for passenger-station information.',
+			linkLabel: 'Open OpenStation documentation',
+			href: 'https://developers.deutschebahn.com/db-api-marketplace/apis/product/open-station',
+			icon: FluentEmojiStation,
+			accent: 'from-sky-400 to-blue-600'
+		},
+		{
+			title: 'Bahn-Vorhersage station dataset',
+			description:
+				'Provides stable station identifiers, coordinates, DS100 short codes, and the transport modes serving a station.',
+			linkLabel: 'Open station dataset',
+			href: 'https://bahnvorhersage.de/api/stations.json',
+			icon: FluentEmojiInformationSource,
+			accent: 'from-emerald-400 to-teal-600'
+		},
+		{
 			title: 'Source Code',
 			description:
 				'This project is open source and available on GitHub. Contributions, bug reports, and feature requests are welcome!',
@@ -36,7 +54,7 @@
 			title: 'Station Photos',
 			description:
 				'Station photographs are provided by Railway-Stations.org, a community-driven project documenting railway stations across Europe.',
-			linkLabel: 'Visit Railway-Stations.org',
+			linkLabel: 'Visit Railway-Stations.org API',
 			href: 'https://railway-stations.org',
 			icon: FluentCamera24Regular,
 			accent: 'from-blue-400 to-teal-500'
@@ -98,11 +116,11 @@
 				official sources before making travel plans.
 			</p>
 			<p>
-				The database includes stations across Europe with detailed information about their facilities
-				and opening hours. Users can contribute by adding or updating station information based on
-				their experiences. If you have information about a station's amenities or notice outdated
-				information, please log in and submit your updates. All changes are reviewed before being
-				published to ensure accuracy.
+				The database includes stations across Europe with detailed information about their
+				facilities and opening hours. Users can contribute by adding or updating station information
+				based on their experiences. If you have information about a station's amenities or notice
+				outdated information, please log in and submit your updates. All changes are reviewed before
+				being published to ensure accuracy.
 			</p>
 		</div>
 	</Card>
