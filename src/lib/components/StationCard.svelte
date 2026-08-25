@@ -26,7 +26,7 @@
 		opening = true;
 
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		if (!reduceMotion) await new Promise((resolve) => window.setTimeout(resolve, 220));
+		if (!reduceMotion) await new Promise((resolve) => window.setTimeout(resolve, 360));
 		await goto(`/station/${station.eva}`);
 	}
 </script>
@@ -98,7 +98,7 @@
 
 	.station-card.opening::after {
 		opacity: 1;
-		animation: station-shimmer 220ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+		animation: station-shimmer 360ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
 	}
 
 	@keyframes station-shimmer {

@@ -16,7 +16,6 @@
 	import { favorites } from '$lib/client/favorites.svelte';
 	import { INPUT_CLASS } from '$lib/design/tokens';
 	import {
-		Alert,
 		Badge,
 		Button,
 		Card,
@@ -175,10 +174,6 @@
 		About
 	</a>
 </PageHeader>
-
-<Alert tone="info" title="Community data, made useful" class="mb-6">
-	Station details are community-maintained. Add what you know and help the next traveler.
-</Alert>
 
 <!-- Account and library navigation -->
 <Card padding="sm" class="mb-6 border-white/10 bg-white/4">
