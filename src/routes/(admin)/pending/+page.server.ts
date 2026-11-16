@@ -70,6 +70,9 @@ export const actions: Actions = {
 				toiletsOpenAtNight: edit[0].toiletsOpenAtNight,
 				isOpen24h: edit[0].isOpen24h,
 				openingHours: edit[0].openingHours,
+				hasWifi: edit[0].hasWifi,
+				wifiHasLimit: edit[0].wifiHasLimit,
+				wifiNotes: edit[0].wifiNotes,
 				additionalInfo: edit[0].additionalInfo
 			})
 			.where(eq(stations.eva, edit[0].stationEva));

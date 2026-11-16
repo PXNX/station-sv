@@ -53,6 +53,9 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			toilets_open_at_night: pendingEdit?.toiletsOpenAtNight ?? station.toiletsOpenAtNight ?? false,
 			is_open_24h: pendingEdit?.isOpen24h ?? station.isOpen24h ?? false,
 			opening_hours: pendingEdit?.openingHours ?? station.openingHours ?? '',
+			has_wifi: pendingEdit?.hasWifi ?? station.hasWifi ?? false,
+			wifi_has_limit: pendingEdit?.wifiHasLimit ?? station.wifiHasLimit ?? false,
+			wifi_notes: pendingEdit?.wifiNotes ?? station.wifiNotes ?? '',
 			latitude: station.latitude,
 			longitude: station.longitude,
 			additional_info: pendingEdit?.additionalInfo ?? station.additionalInfo ?? ''
@@ -67,6 +70,9 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			toilets_open_at_night: station.toiletsOpenAtNight ?? false,
 			is_open_24h: station.isOpen24h ?? false,
 			opening_hours: station.openingHours ?? '',
+			has_wifi: station.hasWifi ?? false,
+			wifi_has_limit: station.wifiHasLimit ?? false,
+			wifi_notes: station.wifiNotes ?? '',
 			additional_info: station.additionalInfo ?? ''
 		},
 		hasPendingEdit,
@@ -94,6 +100,9 @@ export const actions: Actions = {
 			toiletsOpenAtNight: formData.get('toilets_open_at_night') === 'on',
 			isOpen24h: formData.get('is_open_24h') === 'on',
 			openingHours: formData.get('opening_hours')?.toString() || null,
+			hasWifi: formData.get('has_wifi') === 'on',
+			wifiHasLimit: formData.get('wifi_has_limit') === 'on',
+			wifiNotes: formData.get('wifi_notes')?.toString() || null,
 			additionalInfo: formData.get('additional_info')?.toString() || null
 		};
 
