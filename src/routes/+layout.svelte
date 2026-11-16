@@ -35,7 +35,7 @@
 			class="flex items-center justify-center gap-2 border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-center text-xs font-medium text-amber-100 transition-colors hover:bg-amber-400/15"
 		>
 			<FluentCloudOffline24Regular class="size-4" />
-			You're offline — saved stations still work.
+			Offline · saved stations still work
 		</a>
 	{/if}
 
