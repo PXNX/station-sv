@@ -109,12 +109,15 @@ async function searchStationsInDB(query: string) {
 		console.error('Database query error:', error);
 		try {
 			const like = `%${query.toLowerCase()}%`;
-			return (await db
-				.select()
-				.from(stations)
-				.where(or(sql`LOWER(${stations.name}) LIKE ${like}`, sql`LOWER(${stations.city}) LIKE ${like}`))
-				.orderBy(asc(stations.category))
-				.limit(40)
+			return (
+				await db
+					.select()
+					.from(stations)
+					.where(
+						or(sql`LOWER(${stations.name}) LIKE ${like}`, sql`LOWER(${stations.city}) LIKE ${like}`)
+					)
+					.orderBy(asc(stations.category))
+					.limit(40)
 			).map((r) => ({ ...r, similarityScore: 0 }));
 		} catch (fallbackError) {
 			console.error('Fallback query error:', fallbackError);
@@ -123,7 +126,27 @@ async function searchStationsInDB(query: string) {
 	}
 }
 
-function mergeStationData(dbStations: any[], photoMap: Map<string, any>): StationResult[] {
+type StationRow = {
+	eva: number;
+	name: string;
+	city: string;
+	country: string;
+	category: number;
+	stationIdGER: number | null;
+	hasWarmSleep: boolean | null;
+	hasOutlets: boolean | null;
+	hasToilets: boolean | null;
+	toiletsOpenAtNight: boolean | null;
+	isOpen24h: boolean | null;
+	hasWifi: boolean | null;
+};
+
+type StationPhoto = { photoBaseUrl: string; photoPath: string };
+
+function mergeStationData(
+	dbStations: StationRow[],
+	photoMap: Map<string, StationPhoto>
+): StationResult[] {
 	return dbStations.map((dbStation) => {
 		const photo = dbStation.stationIdGER
 			? photoMap.get(`${dbStation.country}-${dbStation.stationIdGER}`)
@@ -133,7 +156,7 @@ function mergeStationData(dbStations: any[], photoMap: Map<string, any>): Statio
 			name: dbStation.name,
 			city: dbStation.city,
 			country: dbStation.country,
-			category: dbStation.category,
+			category: dbStation.category as StationResult['category'],
 			has_warm_sleep: dbStation.hasWarmSleep,
 			has_outlets: dbStation.hasOutlets,
 			has_toilets: dbStation.hasToilets,

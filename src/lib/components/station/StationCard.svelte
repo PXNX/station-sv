@@ -57,7 +57,9 @@
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center gap-2">
 				<h3 class="truncate text-base font-bold text-white sm:text-lg">{station.name}</h3>
-				<span class="hidden rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold text-white/45 sm:inline">
+				<span
+					class="hidden rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold text-white/45 sm:inline"
+				>
 					{category.label}
 				</span>
 			</div>
@@ -87,7 +89,9 @@
 	<button
 		type="button"
 		onclick={() => favorites.toggle(station.eva)}
-		aria-label={isFavorite ? `Remove ${station.name} from favorites` : `Add ${station.name} to favorites`}
+		aria-label={isFavorite
+			? `Remove ${station.name} from favorites`
+			: `Add ${station.name} to favorites`}
 		title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
 		class="relative z-10 grid size-9 shrink-0 place-items-center rounded-xl border transition-all duration-200 {isFavorite
 			? 'border-rose-400/40 bg-rose-500/15 text-rose-300'
@@ -101,7 +105,11 @@
 	</button>
 
 	{#if opening}
-		<span class="relative z-[1] grid size-5 shrink-0 place-items-center text-white" role="status" aria-label="Loading station">
+		<span
+			class="relative z-[1] grid size-5 shrink-0 place-items-center text-white"
+			role="status"
+			aria-label="Loading station"
+		>
 			<IconLoading class="size-5" />
 		</span>
 	{:else}

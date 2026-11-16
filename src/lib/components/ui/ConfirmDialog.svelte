@@ -47,7 +47,9 @@
 
 {#if open}
 	<dialog class="modal modal-open" open>
-		<div class="modal-box border border-white/12 bg-slate-900/95 text-white shadow-2xl backdrop-blur-md">
+		<div
+			class="modal-box border border-white/12 bg-slate-900/95 text-white shadow-2xl backdrop-blur-md"
+		>
 			<h3 class="text-lg font-bold">{title}</h3>
 			<p class="py-4 text-white/75">{message}</p>
 			<div class="modal-action">
@@ -57,7 +59,11 @@
 				</Button>
 			</div>
 		</div>
-		<button type="button" class="modal-backdrop cursor-default" aria-label="Close dialog" onclick={cancel}
+		<button
+			type="button"
+			class="modal-backdrop cursor-default"
+			aria-label="Close dialog"
+			onclick={cancel}
 		></button>
 	</dialog>
 {/if}

@@ -12,14 +12,7 @@ export type IconComponent = Component<SvelteHTMLElements['svg']>;
  * meaning; `brand`/`rail`/`violet`/`cyan` are accents used to tell amenities apart.
  */
 export type Tone =
-	| 'neutral'
-	| 'brand'
-	| 'info'
-	| 'success'
-	| 'warning'
-	| 'danger'
-	| 'violet'
-	| 'cyan';
+	'neutral' | 'brand' | 'info' | 'success' | 'warning' | 'danger' | 'violet' | 'cyan';
 
 /** Raised surface — cards, dialogs, anything sitting on the page background. */
 export const SURFACE_PANEL =
@@ -45,9 +38,11 @@ export const BUTTON_BASE =
 
 export const BUTTON_VARIANTS = {
 	primary: 'bg-signal-400 text-ink-950 shadow-lg shadow-signal-500/20 hover:bg-signal-300',
-	secondary: 'border border-white/12 bg-white/[0.06] text-white hover:border-white/25 hover:bg-white/[0.11]',
+	secondary:
+		'border border-white/12 bg-white/[0.06] text-white hover:border-white/25 hover:bg-white/[0.11]',
 	ghost: 'text-white/70 hover:bg-white/[0.07] hover:text-white',
-	danger: 'border border-rose-400/30 bg-rose-500/15 text-rose-200 hover:border-rose-400/60 hover:bg-rose-500/25',
+	danger:
+		'border border-rose-400/30 bg-rose-500/15 text-rose-200 hover:border-rose-400/60 hover:bg-rose-500/25',
 	success: 'border border-emerald-400/30 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25'
 } as const;
 

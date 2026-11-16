@@ -54,7 +54,12 @@
 	let query = $state(untrack(() => data.query ?? ''));
 	let filters = $state<Record<string, boolean>>(
 		Object.fromEntries(
-			AMENITIES.map(({ key }) => [key, untrack(() => data.filters?.[key]) ?? savedFilters[key] ?? false])
+			AMENITIES.map(({ key }) => [
+				key,
+				untrack(() => data.filters?.[key as keyof typeof data.filters]) ??
+					savedFilters[key] ??
+					false
+			])
 		)
 	);
 	let sort = $state<'relevance' | 'name' | 'category'>('relevance');
@@ -108,7 +113,10 @@
 	);
 
 	function remember(term: string) {
-		recent = [term, ...recent.filter((item) => item.toLowerCase() !== term.toLowerCase())].slice(0, 5);
+		recent = [term, ...recent.filter((item) => item.toLowerCase() !== term.toLowerCase())].slice(
+			0,
+			5
+		);
 		writeJson(RECENT_KEY, recent);
 	}
 
@@ -239,7 +247,7 @@
 
 			{#if showSuggestions && suggestions.length > 0}
 				<div
-					class="animate-pop absolute z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-white/12 bg-ink-800/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl"
+					class="animate-pop bg-ink-800/95 absolute z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-white/12 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl"
 				>
 					{#each suggestions as suggestion (suggestion.id || suggestion.name)}
 						<button
@@ -247,7 +255,7 @@
 							class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-white/8"
 							onclick={() => selectSuggestion(suggestion)}
 						>
-							<FluentLocation24Regular class="size-4 shrink-0 text-signal-300" />
+							<FluentLocation24Regular class="text-signal-300 size-4 shrink-0" />
 							<span class="min-w-0 grow truncate text-sm font-medium text-white">
 								{suggestion.name}
 							</span>
@@ -262,10 +270,10 @@
 
 		<fieldset>
 			<legend class="mb-3 flex items-center gap-2 text-sm font-semibold text-white/80">
-				<FluentFilter24Regular class="size-4 text-signal-300" />
+				<FluentFilter24Regular class="text-signal-300 size-4" />
 				Must have
 				{#if activeFilterCount > 0}
-					<span class="rounded-full bg-signal-400/15 px-2 py-0.5 text-xs text-signal-300">
+					<span class="bg-signal-400/15 text-signal-300 rounded-full px-2 py-0.5 text-xs">
 						{activeFilterCount}
 					</span>
 				{/if}
@@ -273,10 +281,10 @@
 			<div class="flex flex-wrap gap-2">
 				{#each AMENITIES as amenity (amenity.key)}
 					<label
-						class="group inline-flex cursor-pointer select-none items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 {filters[
+						class="group inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 select-none {filters[
 							amenity.key
 						]
-							? 'border-signal-400/50 bg-signal-400/15 text-signal-200 shadow-sm shadow-signal-500/10'
+							? 'border-signal-400/50 bg-signal-400/15 text-signal-200 shadow-signal-500/10 shadow-sm'
 							: 'border-white/12 bg-white/[0.04] text-white/60 hover:border-white/25 hover:text-white'}"
 					>
 						<input
@@ -341,7 +349,7 @@
 			Sort
 			<select
 				bind:value={sort}
-				class="rounded-lg border border-white/12 bg-ink-800 px-2.5 py-1.5 text-xs font-medium text-white outline-none focus:border-signal-400/60"
+				class="bg-ink-800 focus:border-signal-400/60 rounded-lg border border-white/12 px-2.5 py-1.5 text-xs font-medium text-white outline-none"
 			>
 				<option value="relevance">Best match</option>
 				<option value="name">Name A–Z</option>

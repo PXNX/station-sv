@@ -31,7 +31,11 @@
 </script>
 
 <div
-	class={cx('flex items-start gap-3 rounded-xl border p-4 backdrop-blur-sm', ALERT_TONE[tone], className)}
+	class={cx(
+		'flex items-start gap-3 rounded-xl border p-4 backdrop-blur-sm',
+		ALERT_TONE[tone],
+		className
+	)}
 	role="status"
 >
 	{#if Icon}<Icon class="mt-0.5 size-5 shrink-0" />{/if}

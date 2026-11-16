@@ -18,10 +18,11 @@
 
 	let { user }: Props = $props();
 
+	// Literal hrefs so resolve() can check them against the generated route list.
 	const links = [
-		{ href: '/', label: 'Search', icon: FluentSearch24Regular },
-		{ href: '/favorites', label: 'Favorites', icon: FluentHeart24Regular },
-		{ href: '/about', label: 'About', icon: FluentInfo24Regular }
+		{ href: '/' as const, label: 'Search', icon: FluentSearch24Regular },
+		{ href: '/favorites' as const, label: 'Favorites', icon: FluentHeart24Regular },
+		{ href: '/about' as const, label: 'About', icon: FluentInfo24Regular }
 	];
 
 	function isActive(href: string) {
@@ -34,12 +35,16 @@
 </script>
 
 <header
-	class="sticky top-0 z-40 border-b border-white/8 bg-ink-950/85 shadow-lg shadow-black/20 backdrop-blur-xl"
+	class="bg-ink-950/85 sticky top-0 z-40 border-b border-white/8 shadow-lg shadow-black/20 backdrop-blur-xl"
 >
 	<div class="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
-		<a href={resolve('/')} class="group flex shrink-0 items-center gap-2.5" aria-label="Station Atlas home">
+		<a
+			href={resolve('/')}
+			class="group flex shrink-0 items-center gap-2.5"
+			aria-label="Station Atlas home"
+		>
 			<span
-				class="grid size-9 place-items-center rounded-xl bg-signal-400 text-ink-950 shadow-md shadow-signal-500/25 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105"
+				class="bg-signal-400 text-ink-950 shadow-signal-500/25 grid size-9 place-items-center rounded-xl shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-6"
 			>
 				<FluentDriveTrain24Regular class="size-5" />
 			</span>
@@ -102,7 +107,10 @@
 		</div>
 	</div>
 
-	<nav class="flex items-center gap-1 border-t border-white/6 px-3 py-2 sm:hidden" aria-label="Mobile navigation">
+	<nav
+		class="flex items-center gap-1 border-t border-white/6 px-3 py-2 sm:hidden"
+		aria-label="Mobile navigation"
+	>
 		{#each links as link (link.href)}
 			<a
 				href={resolve(link.href)}

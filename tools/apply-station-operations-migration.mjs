@@ -4,7 +4,10 @@ import postgres from 'postgres';
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required');
 
-const migration = await readFile(new URL('../drizzle/0001_station_operations.sql', import.meta.url), 'utf8');
+const migration = await readFile(
+	new URL('../drizzle/0001_station_operations.sql', import.meta.url),
+	'utf8'
+);
 const statements = migration
 	.split('--> statement-breakpoint')
 	.map((statement) => statement.trim())

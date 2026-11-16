@@ -74,7 +74,14 @@
 			rows: [
 				{ label: 'Hotspot', value: station.has_wifi },
 				...(station.has_wifi
-					? [{ label: 'Data limit', value: station.wifi_has_limit, yesLabel: 'Limited', noLabel: 'Unlimited' }]
+					? [
+							{
+								label: 'Data limit',
+								value: station.wifi_has_limit,
+								yesLabel: 'Limited',
+								noLabel: 'Unlimited'
+							}
+						]
 					: [])
 			],
 			note: station.wifi_notes
@@ -88,7 +95,9 @@
 
 <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 	{#each groups as group (group.title)}
-		<div class="hover-lift rounded-2xl border border-white/10 bg-slate-900/60 p-4 hover:border-white/20">
+		<div
+			class="hover-lift rounded-2xl border border-white/10 bg-slate-900/60 p-4 hover:border-white/20"
+		>
 			<div class="flex items-center gap-3">
 				<span class="grid size-10 shrink-0 place-items-center rounded-xl {group.tint}">
 					<group.icon class="size-5" />

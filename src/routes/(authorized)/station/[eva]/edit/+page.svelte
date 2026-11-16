@@ -8,11 +8,18 @@
 	import FluentEmojiThreeOClock from '~icons/fluent-emoji/three-oclock';
 	import FluentEmojiSatelliteAntenna from '~icons/fluent-emoji/satellite-antenna';
 	import FluentEmojiInformation from '~icons/fluent-emoji/information';
-	import { Alert, Button, Card, CheckboxField, ConfirmDialog, PageHeader, TextField } from '$lib/components/ui';
-	import { resolve } from '$app/paths';
+	import {
+		Alert,
+		Button,
+		Card,
+		CheckboxField,
+		ConfirmDialog,
+		PageHeader,
+		TextField
+	} from '$lib/components/ui';
 	import type { PageData } from './$types';
 
-	let { data }: PageData = $props();
+	let { data }: { data: PageData } = $props();
 
 	let isSubmitting = $state(false);
 	let hasSubmitted = $state(false);
@@ -49,7 +56,11 @@
 		(Object.keys(form) as (keyof typeof form)[]).some((key) => form[key] !== original[key])
 	);
 	const buttonText = $derived(
-		data.isAdmin ? 'Save changes' : data.hasPendingEdit ? 'Update pending edit' : 'Submit for review'
+		data.isAdmin
+			? 'Save changes'
+			: data.hasPendingEdit
+				? 'Update pending edit'
+				: 'Submit for review'
 	);
 	const dialogMessage = $derived(
 		data.isAdmin
@@ -93,7 +104,13 @@
 	function handleSubmit() {
 		isSubmitting = true;
 		allowNavigation = true;
-		return async ({ result, update }: { result: { type: string; location?: string }; update: () => Promise<void> }) => {
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: string; location?: string };
+			update: () => Promise<void>;
+		}) => {
 			await update();
 			hasSubmitted = true;
 			isSubmitting = false;
@@ -112,9 +129,7 @@
 </svelte:head>
 
 <div class="animate-fade-up mx-auto max-w-3xl">
-	<Button variant="ghost" size="sm" onclick={goBack} class="mb-4 -ml-2">
-		← Back to station
-	</Button>
+	<Button variant="ghost" size="sm" onclick={goBack} class="mb-4 -ml-2">← Back to station</Button>
 
 	<PageHeader
 		title="Edit station details"
@@ -152,7 +167,11 @@
 
 		<Card title="Power outlets" icon={FluentEmojiHighVoltage}>
 			<div class="space-y-4">
-				<CheckboxField name="has_outlets" label="Outlets available" bind:checked={form.has_outlets} />
+				<CheckboxField
+					name="has_outlets"
+					label="Outlets available"
+					bind:checked={form.has_outlets}
+				/>
 				<TextField
 					label="Outlet notes"
 					name="outlet_notes"
@@ -165,7 +184,11 @@
 
 		<Card title="Toilets" icon={FluentEmojiToilet}>
 			<div class="space-y-4">
-				<CheckboxField name="has_toilets" label="Toilets available" bind:checked={form.has_toilets} />
+				<CheckboxField
+					name="has_toilets"
+					label="Toilets available"
+					bind:checked={form.has_toilets}
+				/>
 				{#if form.has_toilets}
 					<CheckboxField
 						name="toilets_open_at_night"
@@ -229,7 +252,12 @@
 			<p class="text-xs text-white/40">
 				{hasChanges ? 'You have unsaved changes.' : 'No changes yet.'}
 			</p>
-			<Button type="button" onclick={initiateSubmit} loading={isSubmitting} disabled={!hasChanges || hasSubmitted}>
+			<Button
+				type="button"
+				onclick={initiateSubmit}
+				loading={isSubmitting}
+				disabled={!hasChanges || hasSubmitted}
+			>
 				{buttonText}
 			</Button>
 		</div>

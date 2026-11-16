@@ -31,7 +31,10 @@
 		hasChanged: boolean;
 	}
 
-	function getChanges(edit: any, station: any): DiffField[] {
+	function getChanges(
+		edit: Record<string, unknown>,
+		station: Record<string, unknown>
+	): DiffField[] {
 		const fields: DiffField[] = [
 			['Warm sleeping area', 'hasWarmSleep', 'has_warm_sleep'],
 			['Sleep notes', 'sleepNotes', 'sleep_notes'],
@@ -50,7 +53,10 @@
 			label: label as string,
 			oldValue: station[stationKey as string],
 			newValue: edit[editKey as string],
-			hasChanged: edit[editKey as string] !== null && edit[editKey as string] !== undefined && edit[editKey as string] !== station[stationKey as string]
+			hasChanged:
+				edit[editKey as string] !== null &&
+				edit[editKey as string] !== undefined &&
+				edit[editKey as string] !== station[stationKey as string]
 		}));
 
 		return fields.filter((f) => f.hasChanged);
@@ -80,7 +86,9 @@
 		<EmptyState
 			icon={FluentEmojiCheckMark}
 			title="All caught up"
-			description={data.isAdmin ? 'No submissions are waiting for review.' : 'You have no pending edits.'}
+			description={data.isAdmin
+				? 'No submissions are waiting for review.'
+				: 'You have no pending edits.'}
 		>
 			<Button href={resolve('/')}>Find a station</Button>
 		</EmptyState>
@@ -92,7 +100,7 @@
 					{#snippet actions()}
 						<a
 							href={resolve(`/station/${station.eva}`)}
-							class="text-xs font-semibold text-signal-300 underline decoration-signal-300/40 underline-offset-2 hover:text-signal-200"
+							class="text-signal-300 decoration-signal-300/40 hover:text-signal-200 text-xs font-semibold underline underline-offset-2"
 						>
 							View station
 						</a>
@@ -102,11 +110,14 @@
 						<div>
 							<h2 class="text-xl font-bold text-white">{station.name}</h2>
 							<p class="mt-1 text-xs text-white/45">
-								{#if data.isAdmin}Submitted by {user.name} · {/if}
+								{#if data.isAdmin}Submitted by {user.name} ·
+								{/if}
 								{formatDate(edit.createdAt)}
 							</p>
 						</div>
-						<Badge tone="warning">{changes.length} {changes.length === 1 ? 'change' : 'changes'}</Badge>
+						<Badge tone="warning"
+							>{changes.length} {changes.length === 1 ? 'change' : 'changes'}</Badge
+						>
 					</div>
 
 					{#if !data.isAdmin}
@@ -122,7 +133,9 @@
 										<span class="mr-2 font-mono text-rose-300">−</span>
 										<span class="text-white/60">{formatValue(change.oldValue)}</span>
 									</div>
-									<div class="rounded-lg border-l-2 border-emerald-400/70 bg-emerald-500/8 px-3 py-2">
+									<div
+										class="rounded-lg border-l-2 border-emerald-400/70 bg-emerald-500/8 px-3 py-2"
+									>
 										<span class="mr-2 font-mono text-emerald-300">+</span>
 										<span class="text-white/85">{formatValue(change.newValue)}</span>
 									</div>

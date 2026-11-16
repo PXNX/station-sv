@@ -28,7 +28,7 @@
 				variant="secondary"
 				block
 				href={`/auth/login/google?next=${encodeURIComponent(next)}`}
-				class="border-white/20 bg-white text-ink-950 hover:bg-white/90"
+				class="text-ink-950 border-white/20 bg-white hover:bg-white/90"
 			>
 				<LogosGoogleIcon class="size-5" />
 				Continue with Google
@@ -38,7 +38,7 @@
 				By signing in, you agree to our
 				<a
 					href={resolve('/privacy-policy')}
-					class="text-signal-300 underline decoration-signal-300/40 underline-offset-2 transition-colors hover:text-signal-200"
+					class="text-signal-300 decoration-signal-300/40 hover:text-signal-200 underline underline-offset-2 transition-colors"
 				>
 					privacy policy
 				</a>.

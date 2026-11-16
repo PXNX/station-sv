@@ -23,7 +23,10 @@
 
 <svelte:head>
 	<title>Offline · Station Atlas</title>
-	<meta name="description" content="You are offline. Previously viewed pages and your favorites are still available." />
+	<meta
+		name="description"
+		content="You are offline. Previously viewed pages and your favorites are still available."
+	/>
 </svelte:head>
 
 <div class="animate-fade-up mx-auto max-w-xl">
@@ -38,13 +41,17 @@
 		<div class="space-y-5 text-sm leading-relaxed text-white/70">
 			<p>
 				Your saved stations live on this device, so they will appear in
-				<a href={resolve('/favorites')} class="font-semibold text-signal-300 underline underline-offset-2">Favorites</a>
+				<a
+					href={resolve('/favorites')}
+					class="text-signal-300 font-semibold underline underline-offset-2">Favorites</a
+				>
 				even without a connection. Search results and station pages you viewed earlier may also still
 				open from the local cache.
 			</p>
 			{#if favorites.count > 0}
 				<p class="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white/80">
-					{favorites.count} {favorites.count === 1 ? 'station is' : 'stations are'} saved on this device.
+					{favorites.count}
+					{favorites.count === 1 ? 'station is' : 'stations are'} saved on this device.
 				</p>
 			{/if}
 			<div class="flex flex-wrap gap-3">

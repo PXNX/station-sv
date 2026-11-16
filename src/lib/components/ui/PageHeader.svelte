@@ -41,7 +41,7 @@
 		<div class="flex items-start gap-4">
 			{#if Icon}
 				<div
-					class="grid size-12 shrink-0 place-items-center rounded-2xl border border-signal-400/25 bg-signal-400/10 text-signal-300"
+					class="border-signal-400/25 bg-signal-400/10 text-signal-300 grid size-12 shrink-0 place-items-center rounded-2xl border"
 				>
 					<Icon class="size-6" />
 				</div>

@@ -91,7 +91,10 @@ export const stationOperations = pgTable(
 		ds100: varchar('ds100', { length: 16 }),
 		isActiveRis: boolean('is_active_ris'),
 		isActiveIris: boolean('is_active_iris'),
-		metaEvas: jsonb('meta_evas').$type<number[]>().notNull().default(sql`'[]'::jsonb`),
+		metaEvas: jsonb('meta_evas')
+			.$type<number[]>()
+			.notNull()
+			.default(sql`'[]'::jsonb`),
 		availableTransports: jsonb('available_transports')
 			.$type<string[]>()
 			.notNull()
@@ -108,7 +111,9 @@ export const stationOperations = pgTable(
 
 // Custom function to set up pg_trgm extension and create trigram indexes
 // Call this once after your schema is set up
-export async function setupFuzzySearchIndexes(db: any) {
+export async function setupFuzzySearchIndexes(db: {
+	execute: (query: ReturnType<typeof sql>) => Promise<unknown>;
+}) {
 	try {
 		// Enable pg_trgm extension first
 		await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`);

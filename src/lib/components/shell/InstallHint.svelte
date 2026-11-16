@@ -55,10 +55,12 @@
 
 {#if visible}
 	<div
-		class="install-hint fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border border-signal-400/30 bg-ink-800/95 px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur-xl sm:right-6 sm:bottom-6"
+		class="install-hint border-signal-400/30 bg-ink-800/95 fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border px-4 py-3 shadow-2xl shadow-black/40 backdrop-blur-xl sm:right-6 sm:bottom-6"
 		role="status"
 	>
-		<span class="grid size-9 shrink-0 place-items-center rounded-xl bg-signal-400/15 text-signal-300">
+		<span
+			class="bg-signal-400/15 text-signal-300 grid size-9 shrink-0 place-items-center rounded-xl"
+		>
 			<FluentArrowDownload24Regular class="size-5" />
 		</span>
 		<div class="min-w-0">
@@ -68,7 +70,7 @@
 		<button
 			type="button"
 			onclick={install}
-			class="ml-1 shrink-0 rounded-lg bg-signal-400 px-3 py-1.5 text-xs font-bold text-ink-950 transition-colors hover:bg-signal-300"
+			class="bg-signal-400 text-ink-950 hover:bg-signal-300 ml-1 shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors"
 		>
 			Install
 		</button>
@@ -82,7 +84,9 @@
 		</button>
 	</div>
 {:else if installed}
-	<div class="install-hint fixed right-6 bottom-6 z-50 rounded-xl border border-emerald-400/30 bg-ink-800/95 px-4 py-2 text-sm text-emerald-200 shadow-xl backdrop-blur-xl">
+	<div
+		class="install-hint bg-ink-800/95 fixed right-6 bottom-6 z-50 rounded-xl border border-emerald-400/30 px-4 py-2 text-sm text-emerald-200 shadow-xl backdrop-blur-xl"
+	>
 		Ready to use offline ✓
 	</div>
 {/if}

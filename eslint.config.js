@@ -23,12 +23,25 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.svelte', '**/*.svelte.ts'],
 
 		languageOptions: {
 			parserOptions: {
 				parser: ts.parser
 			}
+		}
+	},
+	{
+		// Shared Button/IconButton accept external URLs and this app has no base
+		// path configured, so resolve() would not change any of these links.
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
+		}
+	},
+	{
+		files: ['tools/**/*.ts'],
+		rules: {
+			'@typescript-eslint/no-explicit-any': 'off'
 		}
 	}
 );

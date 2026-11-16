@@ -40,6 +40,7 @@
 	const currentPhotoUrl = $derived(
 		photos?.length ? `${photoBaseUrl}${photos[selectedPhotoIndex].path}` : null
 	);
+	const photoDate = $derived(photos?.[selectedPhotoIndex]?.createdAt);
 	const uploadUrl = $derived(
 		`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`
 	);
@@ -91,7 +92,8 @@
 				notify('Link copied to clipboard');
 			}
 		} catch (error) {
-			if (error instanceof Error && error.name !== 'AbortError') notify('Could not share this link');
+			if (error instanceof Error && error.name !== 'AbortError')
+				notify('Could not share this link');
 		}
 	}
 
@@ -100,7 +102,8 @@
 	}
 
 	function prevPhoto() {
-		if (photos?.length) selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
+		if (photos?.length)
+			selectedPhotoIndex = (selectedPhotoIndex - 1 + photos.length) % photos.length;
 	}
 
 	onDestroy(() => clearTimeout(toastTimer));
@@ -108,7 +111,10 @@
 
 <svelte:head>
 	<title>{station.name} · Station Atlas</title>
-	<meta name="description" content="Amenities and practical information for {station.name} station." />
+	<meta
+		name="description"
+		content="Amenities and practical information for {station.name} station."
+	/>
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
@@ -133,7 +139,9 @@
 
 	<!-- Hero: photo + identity -->
 	<div class="mb-6 grid gap-5 lg:grid-cols-[1.25fr_1fr]">
-		<div class="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 shadow-xl shadow-black/20">
+		<div
+			class="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 shadow-xl shadow-black/20"
+		>
 			{#if currentPhotoUrl}
 				<DetailImage
 					src={currentPhotoUrl}
@@ -154,12 +162,16 @@
 						class="absolute top-1/2 right-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
 						onclick={nextPhoto}
 					/>
-					<span class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white">
+					<span
+						class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white"
+					>
 						{selectedPhotoIndex + 1} / {photos.length}
 					</span>
 				{/if}
 
-				<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/45 to-transparent p-4 pt-12">
+				<div
+					class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/45 to-transparent p-4 pt-12"
+				>
 					<a
 						href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
 						target="_blank"
@@ -167,10 +179,14 @@
 						class="inline-flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
 					>
 						<FluentEmojiCamera class="size-4" />
-						<span class="underline decoration-white/40 underline-offset-2">Photo by {photos[selectedPhotoIndex].photographer}</span>
+						<span class="underline decoration-white/40 underline-offset-2"
+							>Photo by {photos[selectedPhotoIndex].photographer}</span
+						>
 					</a>
-					{#if photos[selectedPhotoIndex].createdAt}
-						<p class="mt-0.5 text-xs text-white/50">{formatDate(photos[selectedPhotoIndex].createdAt)}</p>
+					{#if photoDate}
+						<p class="mt-0.5 text-xs text-white/50">
+							{formatDate(photoDate)}
+						</p>
 					{/if}
 				</div>
 			{:else}
@@ -181,7 +197,7 @@
 						href={uploadUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="text-sm font-semibold text-signal-300 underline decoration-signal-300/40 underline-offset-2 hover:text-signal-200"
+						class="text-signal-300 decoration-signal-300/40 hover:text-signal-200 text-sm font-semibold underline underline-offset-2"
 					>
 						Be the first to add one
 					</a>
@@ -218,12 +234,12 @@
 	{#if unknownFields > 0}
 		<Alert tone="info" class="mb-5">
 			<strong>Help complete this station.</strong>
-			{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} still unknown — use the edit
-			button above to fill in what you know.
+			{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} still unknown — use
+			the edit button above to fill in what you know.
 		</Alert>
 	{/if}
 
-	<section class="mb-6 animate-fade-up">
+	<section class="animate-fade-up mb-6">
 		<div class="mb-3 flex items-center justify-between">
 			<h2 class="text-lg font-bold text-white">At a glance</h2>
 			<span class="text-xs text-white/40">Community-maintained</span>
@@ -233,7 +249,9 @@
 
 	{#if station.additional_info}
 		<Card class="mb-6" title="Good to know" icon={FluentEmojiWorldMap}>
-			<p class="text-sm leading-relaxed whitespace-pre-wrap text-white/65">{station.additional_info}</p>
+			<p class="text-sm leading-relaxed whitespace-pre-wrap text-white/65">
+				{station.additional_info}
+			</p>
 		</Card>
 	{/if}
 
@@ -309,7 +327,7 @@
 
 {#if toast}
 	<div
-		class="animate-pop fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-white/15 bg-ink-800/95 px-5 py-2.5 text-sm font-medium text-white shadow-2xl backdrop-blur-xl"
+		class="animate-pop bg-ink-800/95 fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white shadow-2xl backdrop-blur-xl"
 		role="status"
 	>
 		{toast}

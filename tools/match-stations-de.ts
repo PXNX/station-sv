@@ -66,7 +66,7 @@ function extractCityFromName(name: string): string {
 		.trim();
 
 	// Take the first part before any dash or "am"/"an"/"bei"
-	const cityPart = withoutSuffix.split(/[-\/]|(\sam\s)|(\san\s)|(\sbei\s)/i)[0].trim();
+	const cityPart = withoutSuffix.split(/[-/]|(\sam\s)|(\san\s)|(\sbei\s)/i)[0].trim();
 
 	return cityPart || name; // Fallback to full name if extraction fails
 }

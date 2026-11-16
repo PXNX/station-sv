@@ -53,7 +53,19 @@ try {
 		`;
 		imported += result.length;
 	}
-	console.log(JSON.stringify({ sourceUrl, sourceRecords: sourceRecords.length, uniqueEvaRecords: records.length, matchedDatabaseStations: targetRecords.length, imported }, null, 2));
+	console.log(
+		JSON.stringify(
+			{
+				sourceUrl,
+				sourceRecords: sourceRecords.length,
+				uniqueEvaRecords: records.length,
+				matchedDatabaseStations: targetRecords.length,
+				imported
+			},
+			null,
+			2
+		)
+	);
 } finally {
 	await sql.end({ timeout: 5 });
 }

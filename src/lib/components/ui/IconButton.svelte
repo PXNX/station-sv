@@ -26,7 +26,9 @@
 		onclick
 	}: Props = $props();
 
-	const classes = $derived(cx(ICON_BUTTON_BASE, active && 'border-rose-400/40 bg-rose-500/15', className));
+	const classes = $derived(
+		cx(ICON_BUTTON_BASE, active && 'border-rose-400/40 bg-rose-500/15', className)
+	);
 </script>
 
 {#if href}

@@ -5,11 +5,12 @@ import { db } from '$lib/server/db';
 import { stations, stationOperations } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
 import { fetchJsonWithTimeout } from '$lib/server/http';
+import type { StationPhoto } from '$lib/types';
 
 async function fetchStationPhotos(stationIdGer: number) {
 	const data = await fetchJsonWithTimeout<{
 		photoBaseUrl?: string;
-		stations?: { photos?: unknown[] }[];
+		stations?: { photos?: StationPhoto[] }[];
 	}>(`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`);
 	if (!data) return null;
 
@@ -86,14 +87,14 @@ export const load: PageServerLoad = async ({ params }) => {
 		},
 		operations: operations
 			? {
-				ds100: operations.ds100,
-				isActiveRis: operations.isActiveRis,
-				isActiveIris: operations.isActiveIris,
-				metaEvas: operations.metaEvas,
-				availableTransports: operations.availableTransports,
-				sourceName: operations.sourceName,
-				importedAt: operations.importedAt
-			}
+					ds100: operations.ds100,
+					isActiveRis: operations.isActiveRis,
+					isActiveIris: operations.isActiveIris,
+					metaEvas: operations.metaEvas,
+					availableTransports: operations.availableTransports,
+					sourceName: operations.sourceName,
+					importedAt: operations.importedAt
+				}
 			: null,
 		photos: photoData?.photos || [],
 		photoBaseUrl: photoData?.photoBaseUrl || 'https://api.railway-stations.org/photos/',

@@ -89,14 +89,14 @@
 		<Card title="What is this?" titleSize="lg" icon={FluentEmojiStation}>
 			<div class="space-y-3 text-sm leading-relaxed text-white/65">
 				<p>
-					Station Atlas helps travelers find stations with the facilities that matter — warm places to
-					sleep, power outlets, WiFi and accessible toilets. It is built on open data and on what
+					Station Atlas helps travelers find stations with the facilities that matter — warm places
+					to sleep, power outlets, WiFi and accessible toilets. It is built on open data and on what
 					travelers report from experience.
 				</p>
 				<p>
-					Everything is community-maintained: sign in to add or correct a detail, and an administrator
-					reviews changes before they go live. Accuracy is never guaranteed — always confirm critical
-					information with official sources before you travel.
+					Everything is community-maintained: sign in to add or correct a detail, and an
+					administrator reviews changes before they go live. Accuracy is never guaranteed — always
+					confirm critical information with official sources before you travel.
 				</p>
 			</div>
 		</Card>
@@ -105,7 +105,9 @@
 			<ol class="space-y-2 text-sm text-white/75">
 				{#each travelRules as rule, index (rule)}
 					<li class="flex gap-3">
-						<span class="w-5 shrink-0 text-right font-mono text-xs text-signal-300/70">{index + 1}.</span>
+						<span class="text-signal-300/70 w-5 shrink-0 text-right font-mono text-xs"
+							>{index + 1}.</span
+						>
 						<span>{rule}</span>
 					</li>
 				{/each}
@@ -116,7 +118,9 @@
 			<div class="grid gap-3 sm:grid-cols-2">
 				{#each sources as item (item.title)}
 					<div class="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-						<div class="grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br {item.accent}">
+						<div
+							class="grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br {item.accent}"
+						>
 							<item.icon class="size-5 text-white" />
 						</div>
 						<div class="min-w-0">
@@ -126,7 +130,7 @@
 								href={item.href}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-signal-300 transition-colors hover:text-signal-200"
+								class="text-signal-300 hover:text-signal-200 mt-2 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
 							>
 								{item.linkLabel}
 								<FluentOpenRegular class="size-3.5" />

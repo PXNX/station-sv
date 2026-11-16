@@ -113,12 +113,19 @@
 	</PageHeader>
 
 	{#if isStale}
-		<div class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+		<div
+			class="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100"
+		>
 			<span class="inline-flex items-center gap-2">
 				<FluentCloudOffline24Regular class="size-4" />
 				Showing saved copies — {network.online ? 'the connection is too slow' : "you're offline"}.
 			</span>
-			<Button size="sm" variant="secondary" onclick={() => refresh(favorites.evas)} disabled={isRefreshing}>
+			<Button
+				size="sm"
+				variant="secondary"
+				onclick={() => refresh(favorites.evas)}
+				disabled={isRefreshing}
+			>
 				{isRefreshing ? 'Retrying…' : 'Retry'}
 			</Button>
 		</div>
@@ -126,7 +133,9 @@
 
 	{#if isLoading}
 		<div class="flex justify-center py-16">
-			<div class="flex items-center gap-3 rounded-full border border-white/10 bg-slate-900/70 px-6 py-3">
+			<div
+				class="flex items-center gap-3 rounded-full border border-white/10 bg-slate-900/70 px-6 py-3"
+			>
 				<Spinner />
 				<span class="text-sm font-medium text-white/80">Loading your stations…</span>
 			</div>

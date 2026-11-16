@@ -5,7 +5,9 @@
 </script>
 
 <footer class="mt-16 border-t border-white/8 py-8">
-	<div class="flex flex-col gap-4 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+	<div
+		class="flex flex-col gap-4 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between"
+	>
 		<p>
 			<span class="font-semibold text-white/60">Station Atlas</span>
 			· Community-maintained station amenities across Europe.
