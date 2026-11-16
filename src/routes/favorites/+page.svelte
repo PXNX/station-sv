@@ -85,6 +85,9 @@
 		stations = [];
 		isStale = false;
 	}
+
+	// One batched write instead of one per card (a search can render dozens).
+	$effect(() => rememberStations(visibleStations));
 </script>
 
 <svelte:head>

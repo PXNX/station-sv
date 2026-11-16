@@ -70,7 +70,7 @@
 
 	// `navigating` reflects the real request, so the spinner can't get stuck when
 	// the same query is searched twice or a navigation fails.
-	const searching = $derived($navigating !== null || offlineAttempt);
+	const searching = $derived($navigating !== null || (offlineAttempt && !network.online));
 
 	// Keep the input in sync when the URL changes (back/forward buttons), but not
 	// while someone is typing a new query.
