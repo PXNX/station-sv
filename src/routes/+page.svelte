@@ -12,8 +12,8 @@
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
 	import type { PageData } from './$types';
 	import type { StationResult } from '$lib/types';
-	import StationCard from '$lib/components/StationCard.svelte';
-	import { AMENITIES } from '$lib/client/amenities';
+	import StationCard from '$lib/components/station/StationCard.svelte';
+	import { AMENITIES } from '$lib/features/stations/amenities';
 	import { INPUT_CLASS } from '$lib/design/tokens';
 	import { Button, Card, EmptyState, PageHeader, Spinner } from '$lib/components/ui';
 

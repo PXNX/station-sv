@@ -9,7 +9,7 @@
 	import FluentPerson24Regular from '~icons/fluent/person-24-regular';
 	import FluentSignOut24Regular from '~icons/fluent/sign-out-24-regular';
 	import FluentStar24Regular from '~icons/fluent/star-24-regular';
-	import { favorites } from '$lib/client/favorites.svelte';
+	import { favorites } from '$lib/features/favorites/state.svelte';
 	import { cx } from '$lib/design/tokens';
 
 	interface Props {

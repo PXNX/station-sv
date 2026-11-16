@@ -2,10 +2,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import '../app.css';
-	import AppHeader from '$lib/components/AppHeader.svelte';
-	import AppFooter from '$lib/components/AppFooter.svelte';
-	import InstallHint from '$lib/components/InstallHint.svelte';
-	import CookieBanner from '$lib/components/CookieBanner.svelte';
+	import AppHeader from '$lib/components/shell/AppHeader.svelte';
+	import AppFooter from '$lib/components/shell/AppFooter.svelte';
+	import InstallHint from '$lib/components/shell/InstallHint.svelte';
+	import CookieBanner from '$lib/components/shell/CookieBanner.svelte';
 	import type { LayoutData } from './$types';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();

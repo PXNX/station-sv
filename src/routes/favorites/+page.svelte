@@ -4,9 +4,9 @@
 	import FluentDelete24Regular from '~icons/fluent/delete-24-regular';
 	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
-	import StationCard from '$lib/components/StationCard.svelte';
+	import StationCard from '$lib/components/station/StationCard.svelte';
 	import { Button, ConfirmDialog, EmptyState, PageHeader, Spinner } from '$lib/components/ui';
-	import { favorites } from '$lib/client/favorites.svelte';
+	import { favorites } from '$lib/features/favorites/state.svelte';
 	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 	import type { StationResult } from '$lib/types';

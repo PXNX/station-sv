@@ -5,11 +5,11 @@
 	import FluentHeart24Regular from '~icons/fluent/heart-24-regular';
 	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
 	import IconLoading from '~icons/svg-spinners/90-ring-with-bg';
-	import { getCategoryStyles } from '$lib/client/categories';
-	import { shouldAnimateStationNavigation } from '$lib/client/station-navigation';
-	import { AMENITIES } from '$lib/client/amenities';
-	import PreviewImage from '$lib/components/PreviewImage.svelte';
-	import { favorites } from '$lib/client/favorites.svelte';
+	import { getCategoryStyles } from '$lib/features/stations/categories';
+	import { shouldAnimateStationNavigation } from '$lib/features/stations/navigation';
+	import { AMENITIES } from '$lib/features/stations/amenities';
+	import PreviewImage from '$lib/components/station/PreviewImage.svelte';
+	import { favorites } from '$lib/features/favorites/state.svelte';
 	import type { StationResult } from '$lib/types';
 
 	interface Props {

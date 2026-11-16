@@ -3,9 +3,9 @@
 	import { onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
-	import DetailImage from '$lib/components/DetailImage.svelte';
-	import StationAmenities from '$lib/components/StationAmenities.svelte';
-	import BackButton from '$lib/components/BackButton.svelte';
+	import DetailImage from '$lib/components/station/DetailImage.svelte';
+	import StationAmenities from '$lib/components/station/StationAmenities.svelte';
+	import BackButton from '$lib/components/shell/BackButton.svelte';
 	import FluentEdit24Regular from '~icons/fluent/edit-24-regular';
 	import FluentShare24Regular from '~icons/fluent/share-24-regular';
 	import FluentHeart24Regular from '~icons/fluent/heart-24-regular';
@@ -17,8 +17,8 @@
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentMap24Regular from '~icons/fluent/map-24-regular';
 	import { Alert, Badge, Button, Card, IconButton } from '$lib/components/ui';
-	import { favorites } from '$lib/client/favorites.svelte';
-	import { getCategoryStyles } from '$lib/client/categories';
+	import { favorites } from '$lib/features/favorites/state.svelte';
+	import { getCategoryStyles } from '$lib/features/stations/categories';
 	import { formatDate } from '$lib/utils/format';
 	import type { PageData } from './$types';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { shouldAnimateStationNavigation } from './station-navigation';
+import { shouldAnimateStationNavigation } from './navigation';
 
 const plainClick = {
 	defaultPrevented: false,
