@@ -2,7 +2,8 @@
 <script lang="ts">
 	import { onDestroy, untrack } from 'svelte';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { navigating } from '$app/stores';
 	import { resolve } from '$app/paths';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentSearch24Regular from '~icons/fluent/search-24-regular';
@@ -15,7 +16,9 @@
 	import StationCard from '$lib/components/station/StationCard.svelte';
 	import { AMENITIES } from '$lib/features/stations/amenities';
 	import { INPUT_CLASS } from '$lib/design/tokens';
-	import { Button, Card, EmptyState, PageHeader, Spinner } from '$lib/components/ui';
+	import { rememberStations } from '$lib/features/stations/station-cache';
+	import { network } from '$lib/features/network/online.svelte';
+	import { Alert, Button, Card, EmptyState, PageHeader, Spinner } from '$lib/components/ui';
 
 	interface Props {
 		data: PageData;
@@ -58,18 +61,30 @@
 	let recent = $state<string[]>(readJson<string[]>(RECENT_KEY, []));
 	let suggestions = $state<{ id?: string; name: string }[]>([]);
 	let showSuggestions = $state(false);
-	let searching = $state(false);
+	// A flag for searches started while offline; navigation state alone can't show
+	// a pending result when there is no request in flight at all.
+	let offlineAttempt = $state(false);
 
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 	let request: AbortController | undefined;
 
-	// Keep the input in sync when the URL changes (back/forward buttons).
+	// `navigating` reflects the real request, so the spinner can't get stuck when
+	// the same query is searched twice or a navigation fails.
+	const searching = $derived($navigating !== null || offlineAttempt);
+
+	// Keep the input in sync when the URL changes (back/forward buttons), but not
+	// while someone is typing a new query.
 	$effect(() => {
-		if (data.query && data.query !== query) query = data.query;
-		searching = false;
+		const urlQuery = data.query;
+		if (urlQuery && urlQuery !== query && $navigating === null) query = urlQuery;
 	});
 
 	$effect(() => writeJson(FILTER_KEY, filters));
+
+	$effect(() => network.start());
+
+	// Cache results for offline favorites even before a card is rendered.
+	$effect(() => rememberStations(data.stations ?? []));
 
 	const activeFilters = $derived(AMENITIES.filter(({ key }) => filters[key]));
 	const activeFilterCount = $derived(activeFilters.length);
@@ -102,14 +117,27 @@
 		return `${resolve('/')}?${params.toString()}`;
 	}
 
-	function runSearch(term: string) {
+	async function runSearch(term: string) {
 		const trimmed = term.trim();
 		if (trimmed.length < 2) return;
 		remember(trimmed);
 		showSuggestions = false;
 		suggestions = [];
-		searching = true;
-		goto(urlFor(trimmed), { noScroll: true, keepFocus: true });
+		offlineAttempt = false;
+
+		if (!network.online) {
+			// No point starting a request that will fail; show a clear state instead.
+			offlineAttempt = true;
+			return;
+		}
+
+		const target = urlFor(trimmed);
+		if (browser && target === location.pathname + location.search) {
+			// Re-running the same query: the URL doesn't change, so ask the server again.
+			await invalidateAll();
+			return;
+		}
+		await goto(target, { noScroll: true, keepFocus: true });
 	}
 
 	/** The form navigates natively; this only saves preferences and guards short queries. */
@@ -120,7 +148,7 @@
 			return;
 		}
 		remember(trimmed);
-		searching = true;
+		offlineAttempt = false;
 		showSuggestions = false;
 		suggestions = [];
 	}
@@ -175,6 +203,13 @@
 	icon={FluentEmojiStation}
 	description="Find stations with the amenities that matter on your trip."
 />
+
+{#if offlineAttempt && !network.online}
+	<Alert tone="warning" class="mb-5">
+		<strong>Search needs a connection.</strong>
+		You're offline — saved favorites and previously opened pages still work. Reconnect and try again.
+	</Alert>
+{/if}
 
 <!-- Search form: a plain GET so every search is a shareable URL. -->
 <Card class="mb-6 overflow-visible" padding="lg">
