@@ -12,13 +12,16 @@
 	import FluentHeart24Filled from '~icons/fluent/heart-24-filled';
 	import FluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
 	import FluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
-	import FluentEmojiCamera from '~icons/fluent-emoji/camera';
-	import FluentEmojiWorldMap from '~icons/fluent-emoji/world-map';
+	import FluentCamera24Regular from '~icons/fluent/camera-24-regular';
+	import FluentDriveTrain24Regular from '~icons/fluent/drive-train-24-regular';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentMap24Regular from '~icons/fluent/map-24-regular';
+	import FluentInfo24Regular from '~icons/fluent/info-24-regular';
 	import { Alert, Badge, Button, Card, IconButton } from '$lib/components/ui';
 	import { favorites } from '$lib/features/favorites/state.svelte';
 	import { getCategoryStyles } from '$lib/features/stations/categories';
+	import { getTransportStyle } from '$lib/features/stations/transports';
+	import { photoUrl } from '$lib/features/stations/normalize';
 	import { formatDate } from '$lib/utils/format';
 	import { rememberStations } from '$lib/features/stations/station-cache';
 	import { recentlyViewed } from '$lib/features/stations/recent.svelte';
@@ -38,13 +41,12 @@
 
 	const isFavorite = $derived(favorites.has(station.eva));
 	const category = $derived(getCategoryStyles(station.category));
-	const currentPhotoUrl = $derived(
-		photos?.length ? `${photoBaseUrl}${photos[selectedPhotoIndex].path}` : null
-	);
+	const currentPhotoUrl = $derived(photoUrl(photoBaseUrl, photos?.[selectedPhotoIndex]?.path));
 	const photoDate = $derived(photos?.[selectedPhotoIndex]?.createdAt);
 	const uploadUrl = $derived(
 		`https://map.railway-stations.org/upload.php?countryCode=${station.country.toLowerCase()}&stationId=${station.station_id_ger}`
 	);
+	const transports = $derived(operations?.availableTransports ?? []);
 	const unknownFields = $derived(
 		[
 			station.has_warm_sleep,
@@ -56,13 +58,18 @@
 		].filter((value) => value === null || value === undefined).length
 	);
 
+	function transportName(value: string) {
+		const style = getTransportStyle(value);
+		return style.short && style.short !== style.label
+			? `${style.label} · ${style.short}`
+			: style.label;
+	}
+
 	$effect(() => {
 		favorites.load();
 		recentlyViewed.load();
 	});
 
-	// Record this visit and keep a local copy for offline use. Visits are
-	// de-duplicated by EVA in the store, so photo navigation adds no entries.
 	$effect(() => {
 		const summary: StationResult = {
 			...station,
@@ -82,21 +89,18 @@
 
 	async function shareStation() {
 		if (!browser) return;
-		const shareData = {
-			title: `${station.name} · Station Atlas`,
-			text: `See what ${station.name} has to offer`,
-			url: window.location.href
-		};
 		try {
 			if (navigator.share) {
-				await navigator.share(shareData);
+				await navigator.share({
+					title: `${station.name} · Station Atlas`,
+					url: window.location.href
+				});
 			} else {
 				await navigator.clipboard.writeText(window.location.href);
-				notify('Link copied to clipboard');
+				notify('Link copied');
 			}
 		} catch (error) {
-			if (error instanceof Error && error.name !== 'AbortError')
-				notify('Could not share this link');
+			if (error instanceof Error && error.name !== 'AbortError') notify('Could not share');
 		}
 	}
 
@@ -116,7 +120,7 @@
 	<title>{station.name} · Station Atlas</title>
 	<meta
 		name="description"
-		content="Amenities and practical information for {station.name} station."
+		content="Amenities, train types and practical information for {station.name}."
 	/>
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
@@ -140,112 +144,101 @@
 		</div>
 	</div>
 
-	<!-- Hero: photo + identity -->
-	<div class="mb-6 grid gap-5 lg:grid-cols-[1.25fr_1fr]">
-		<div
-			class="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 shadow-xl shadow-black/20"
-		>
-			{#if currentPhotoUrl}
-				<DetailImage
-					src={currentPhotoUrl}
-					alt="Station photo by {photos[selectedPhotoIndex].photographer}"
-					class="h-72 w-full sm:h-96"
+	<!-- Identity -->
+	<div class="mb-6" style="view-transition-name: station-{station.eva}">
+		<div class="flex flex-wrap items-center gap-3">
+			<Badge class="animate-pop {category.badge}">{category.label}</Badge>
+			{#if operations?.ds100}
+				<span class="font-mono text-xs text-white/35">DS100 {operations.ds100}</span>
+			{/if}
+		</div>
+		<h1 class="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">{station.name}</h1>
+		{#if station.city}
+			<p class="mt-2 text-lg text-white/55">{station.city}, {station.country.toUpperCase()}</p>
+		{/if}
+	</div>
+
+	<!-- Photo -->
+	<div
+		class="relative mb-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 shadow-xl shadow-black/20"
+	>
+		{#if currentPhotoUrl}
+			<DetailImage
+				src={currentPhotoUrl}
+				alt="Station photo by {photos[selectedPhotoIndex].photographer}"
+				class="h-64 w-full sm:h-96"
+			/>
+
+			{#if photos.length > 1}
+				<IconButton
+					icon={FluentChevronLeft24Regular}
+					label="Previous photo"
+					class="absolute top-1/2 left-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
+					onclick={prevPhoto}
 				/>
-
-				{#if photos.length > 1}
-					<IconButton
-						icon={FluentChevronLeft24Regular}
-						label="Previous photo"
-						class="absolute top-1/2 left-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
-						onclick={prevPhoto}
-					/>
-					<IconButton
-						icon={FluentChevronRight24Regular}
-						label="Next photo"
-						class="absolute top-1/2 right-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
-						onclick={nextPhoto}
-					/>
-					<span
-						class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white"
-					>
-						{selectedPhotoIndex + 1} / {photos.length}
-					</span>
-				{/if}
-
-				<div
-					class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/45 to-transparent p-4 pt-12"
+				<IconButton
+					icon={FluentChevronRight24Regular}
+					label="Next photo"
+					class="absolute top-1/2 right-3 -translate-y-1/2 border-0 bg-black/50 hover:bg-black/70"
+					onclick={nextPhoto}
+				/>
+				<span
+					class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-0.5 text-xs text-white"
 				>
-					<a
-						href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
-					>
-						<FluentEmojiCamera class="size-4" />
-						<span class="underline decoration-white/40 underline-offset-2"
-							>Photo by {photos[selectedPhotoIndex].photographer}</span
-						>
-					</a>
-					{#if photoDate}
-						<p class="mt-0.5 text-xs text-white/50">
-							{formatDate(photoDate)}
-						</p>
-					{/if}
-				</div>
-			{:else}
-				<div class="flex h-72 flex-col items-center justify-center gap-3 text-center sm:h-96">
-					<FluentEmojiCamera class="size-12 opacity-40" />
-					<p class="text-sm text-white/50">No photos for this station yet.</p>
-					<a
-						href={uploadUrl}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-signal-300 decoration-signal-300/40 hover:text-signal-200 text-sm font-semibold underline underline-offset-2"
-					>
-						Be the first to add one
-					</a>
-				</div>
+					{selectedPhotoIndex + 1} / {photos.length}
+				</span>
 			{/if}
-		</div>
 
-		<div class="flex flex-col justify-center" style="view-transition-name: station-{station.eva}">
-			<div>
-				<Badge class="animate-pop {category.badge}">{category.label}</Badge>
+			<div
+				class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 bg-linear-to-t from-black/90 via-black/45 to-transparent p-4 pt-12"
+			>
+				<a
+					href="https://map.railway-stations.org/station.php?countryCode={station.country.toLowerCase()}&stationId={station.station_id_ger}"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="inline-flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
+				>
+					<FluentCamera24Regular class="size-4" />
+					<span class="underline decoration-white/40 underline-offset-2">
+						Photo by {photos[selectedPhotoIndex].photographer}
+					</span>
+				</a>
+				{#if photoDate}
+					<span class="text-xs text-white/50">{formatDate(photoDate)}</span>
+				{/if}
 			</div>
-			<h1 class="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">{station.name}</h1>
-			{#if station.city}
-				<p class="mt-2 text-lg text-white/55">{station.city}, {station.country.toUpperCase()}</p>
-			{/if}
-
-			{#if operations?.availableTransports?.length}
-				<div class="mt-5">
-					<p class="eyebrow mb-2">Trains serving this station</p>
-					<div class="flex flex-wrap gap-1.5">
-						{#each operations.availableTransports as transport (transport)}
-							<Badge tone="neutral">{transport}</Badge>
-						{/each}
-					</div>
-				</div>
-			{/if}
-		</div>
+		{:else}
+			<div class="flex h-48 flex-col items-center justify-center gap-2 text-center sm:h-64">
+				<FluentCamera24Regular class="size-10 text-white/30" />
+				<p class="text-sm text-white/50">No photo for this station yet.</p>
+				<a
+					href={uploadUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-signal-300 decoration-signal-300/40 hover:text-signal-200 text-sm font-semibold underline underline-offset-2"
+				>
+					Add one
+				</a>
+			</div>
+		{/if}
 	</div>
 
 	{#if unknownFields > 0}
 		<Alert tone="info" class="mb-5">
 			<strong
-				>{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} still unknown.</strong
+				>{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} unknown.</strong
 			>
 			Help fill them in if you know.
 		</Alert>
 	{/if}
 
-	<section class="animate-fade-up mb-6">
+	<section class="mb-6">
 		<h2 class="mb-3 text-lg font-bold text-white">At a glance</h2>
 		<StationAmenities {station} />
 	</section>
 
 	{#if station.additional_info}
-		<Card class="mb-6" title="Good to know" icon={FluentEmojiWorldMap}>
+		<Card class="mb-6" title="Good to know" icon={FluentInfo24Regular}>
 			<p class="text-sm leading-relaxed whitespace-pre-wrap text-white/65">
 				{station.additional_info}
 			</p>
@@ -253,7 +246,32 @@
 	{/if}
 
 	<div class="grid gap-4 lg:grid-cols-2">
-		<Card title="Station identifiers" icon={FluentEmojiWorldMap}>
+		<Card title="Trains & services" icon={FluentDriveTrain24Regular}>
+			{#if transports.length > 0}
+				<div class="flex flex-wrap gap-2">
+					{#each transports as transport (transport)}
+						{@const style = getTransportStyle(transport)}
+						<Badge tone={style.tone}>{transportName(transport)}</Badge>
+					{/each}
+				</div>
+			{:else}
+				<p class="text-sm text-white/45">No service data available.</p>
+			{/if}
+
+			{#if operations}
+				<div class="mt-4 flex flex-wrap gap-2 border-t border-white/8 pt-4">
+					<Badge tone={operations.isActiveRis ? 'success' : 'neutral'}>
+						RIS {operations.isActiveRis ? 'active' : 'inactive'}
+					</Badge>
+					<Badge tone={operations.isActiveIris ? 'success' : 'neutral'}>
+						IRIS {operations.isActiveIris ? 'active' : 'inactive'}
+					</Badge>
+				</div>
+				<p class="mt-2 text-xs text-white/30">Operational data from {operations.sourceName}.</p>
+			{/if}
+		</Card>
+
+		<Card title="Station identifiers" icon={FluentInfo24Regular}>
 			<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
 				<div>
 					<dt class="eyebrow">EVA number</dt>
@@ -261,7 +279,7 @@
 				</div>
 				{#if station.station_id_ger}
 					<div>
-						<dt class="eyebrow">German station ID</dt>
+						<dt class="eyebrow">Station ID</dt>
 						<dd class="mt-1 font-mono text-white/90">{station.station_id_ger}</dd>
 					</div>
 				{/if}
@@ -278,48 +296,37 @@
 					</div>
 				{/if}
 			</dl>
-			{#if operations}
-				<div class="mt-4 flex flex-wrap gap-2 border-t border-white/8 pt-3">
-					<Badge tone={operations.isActiveRis ? 'success' : 'neutral'}>
-						{operations.isActiveRis ? 'RIS active' : 'RIS inactive'}
-					</Badge>
-					<Badge tone={operations.isActiveIris ? 'success' : 'neutral'}>
-						{operations.isActiveIris ? 'IRIS active' : 'IRIS inactive'}
-					</Badge>
-				</div>
-				<p class="mt-2 text-xs text-white/35">Operational data from {operations.sourceName}.</p>
-			{/if}
-		</Card>
-
-		<Card title="Plan your visit" icon={FluentLocation24Regular}>
-			<div class="flex flex-col gap-2">
-				{#if pdfUrl}
-					<Button variant="secondary" href={pdfUrl} external>
-						<FluentEmojiWorldMap class="size-5" />
-						Location & platform plan
-					</Button>
-				{/if}
-				{#if station.latitude && station.longitude}
-					<Button
-						variant="secondary"
-						href="https://www.google.com/maps/search/?api=1&query={station.latitude},{station.longitude}"
-						external
-					>
-						<FluentLocation24Regular class="size-5" />
-						Open in Google Maps
-					</Button>
-					<Button
-						variant="secondary"
-						href="https://www.openstreetmap.org/?mlat={station.latitude}&mlon={station.longitude}&zoom=17"
-						external
-					>
-						<FluentMap24Regular class="size-5" />
-						Open in OpenStreetMap
-					</Button>
-				{/if}
-			</div>
 		</Card>
 	</div>
+
+	<Card class="mt-4" title="Find it on a map" icon={FluentLocation24Regular}>
+		<div class="flex flex-wrap gap-2">
+			{#if pdfUrl}
+				<Button variant="secondary" href={pdfUrl} external>
+					<FluentMap24Regular class="size-4" />
+					Platform plan
+				</Button>
+			{/if}
+			{#if station.latitude && station.longitude}
+				<Button
+					variant="secondary"
+					href="https://www.google.com/maps/search/?api=1&query={station.latitude},{station.longitude}"
+					external
+				>
+					<FluentLocation24Regular class="size-4" />
+					Google Maps
+				</Button>
+				<Button
+					variant="secondary"
+					href="https://www.openstreetmap.org/?mlat={station.latitude}&mlon={station.longitude}&zoom=17"
+					external
+				>
+					<FluentMap24Regular class="size-4" />
+					OpenStreetMap
+				</Button>
+			{/if}
+		</div>
+	</Card>
 </div>
 
 {#if toast}
