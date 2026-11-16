@@ -34,19 +34,18 @@
 		title="You're offline"
 		icon={FluentCloudOffline24Regular}
 		eyebrow="No connection"
-		description="New searches need the internet, but pages you've already opened are available."
+		description="New searches need the internet. Saved stations still work."
 	/>
 
 	<Card padding="lg">
 		<div class="space-y-5 text-sm leading-relaxed text-white/70">
 			<p>
-				Your saved stations live on this device, so they will appear in
+				Your
 				<a
 					href={resolve('/favorites')}
 					class="text-signal-300 font-semibold underline underline-offset-2">Favorites</a
 				>
-				even without a connection. Search results and station pages you viewed earlier may also still
-				open from the local cache.
+				are stored on this device. Pages you opened earlier may also be available from the cache.
 			</p>
 			{#if favorites.count > 0}
 				<p class="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white/80">
@@ -58,9 +57,6 @@
 				<Button onclick={() => location.reload()} disabled={!online}>Try again</Button>
 				<Button variant="secondary" href={resolve('/favorites')}>View favorites</Button>
 			</div>
-			{#if !online}
-				<p class="text-xs text-white/40">Waiting for a connection…</p>
-			{/if}
 		</div>
 	</Card>
 </div>

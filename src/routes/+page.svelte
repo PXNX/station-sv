@@ -202,20 +202,18 @@
 </script>
 
 <svelte:head>
-	<title>Station Atlas — find a station that has what you need</title>
+	<title>Station Atlas · Search</title>
 </svelte:head>
 
 <PageHeader
 	title="Where are you heading?"
-	eyebrow="Station Atlas"
 	icon={FluentEmojiStation}
-	description="Find stations with the amenities that matter on your trip."
+	description="Find stations with the amenities you need."
 />
 
 {#if offlineAttempt && !network.online}
 	<Alert tone="warning" class="mb-5">
-		<strong>Search needs a connection.</strong>
-		You're offline — saved favorites and previously opened pages still work. Reconnect and try again.
+		<strong>Search needs a connection.</strong> Reconnect and try again.
 	</Alert>
 {/if}
 
@@ -311,7 +309,7 @@
 		</fieldset>
 
 		<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-			<p class="text-xs text-white/40">At least 2 characters · filters apply as you type</p>
+			<p class="text-xs text-white/40">2+ characters · filters apply instantly</p>
 			<Button type="submit" loading={searching} disabled={query.trim().length < 2}>
 				Search stations
 				<FluentArrowRight24Regular class="size-4" />
@@ -370,13 +368,11 @@
 		icon={FluentEmojiFaceWithRaisedEyebrow}
 		title="No stations found"
 		description={activeFilterCount > 0
-			? 'No matches with these filters. Try removing a few and search again.'
-			: 'Try a nearby city or check the spelling — search also tolerates small typos.'}
+			? 'Try removing a filter.'
+			: 'Try another spelling or a nearby city.'}
 	>
 		{#if activeFilterCount > 0}
 			<Button variant="secondary" onclick={clearFilters}>Clear filters</Button>
-		{:else}
-			<Button onclick={() => runSearch('Berlin')}>Try “Berlin”</Button>
 		{/if}
 	</EmptyState>
 {/if}

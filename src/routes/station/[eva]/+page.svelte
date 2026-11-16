@@ -206,17 +206,11 @@
 		</div>
 
 		<div class="flex flex-col justify-center" style="view-transition-name: station-{station.eva}">
-			<p class="eyebrow">{category.label} · {station.country.toUpperCase()}</p>
+			<p class="eyebrow">{category.label}</p>
 			<h1 class="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">{station.name}</h1>
 			{#if station.city}
 				<p class="mt-2 text-lg text-white/55">{station.city}, {station.country.toUpperCase()}</p>
 			{/if}
-
-			<div class="mt-5 flex flex-wrap gap-2">
-				<Badge class={category.badgeClass}>{category.label}</Badge>
-				<Badge tone="neutral">EVA {station.eva}</Badge>
-				{#if operations?.ds100}<Badge tone="info">DS100 {operations.ds100}</Badge>{/if}
-			</div>
 
 			{#if operations?.availableTransports?.length}
 				<div class="mt-5">
@@ -233,17 +227,15 @@
 
 	{#if unknownFields > 0}
 		<Alert tone="info" class="mb-5">
-			<strong>Help complete this station.</strong>
-			{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} still unknown — use
-			the edit button above to fill in what you know.
+			<strong
+				>{unknownFields} amenity {unknownFields === 1 ? 'detail is' : 'details are'} still unknown.</strong
+			>
+			Help fill them in if you know.
 		</Alert>
 	{/if}
 
 	<section class="animate-fade-up mb-6">
-		<div class="mb-3 flex items-center justify-between">
-			<h2 class="text-lg font-bold text-white">At a glance</h2>
-			<span class="text-xs text-white/40">Community-maintained</span>
-		</div>
+		<h2 class="mb-3 text-lg font-bold text-white">At a glance</h2>
 		<StationAmenities {station} />
 	</section>
 

@@ -96,12 +96,7 @@
 </svelte:head>
 
 <div class="animate-fade-up">
-	<PageHeader
-		title="Saved stations"
-		icon={FluentEmojiGlowingStar}
-		eyebrow="Your shortlist"
-		description={`${favorites.count} ${favorites.count === 1 ? 'station' : 'stations'} saved on this device`}
-	>
+	<PageHeader title="Saved stations" icon={FluentEmojiGlowingStar} eyebrow="Your shortlist">
 		{#snippet actions()}
 			{#if visibleStations.length > 0}
 				<Button variant="danger" size="sm" onclick={() => (showClearDialog = true)}>
@@ -150,7 +145,7 @@
 		<EmptyState
 			icon={FluentCloudOffline24Regular}
 			title="Couldn't load these stations"
-			description="Your saved list is on this device, but the station details aren't available yet. Check your connection and retry."
+			description="Station details aren't available yet. Check your connection and retry."
 		>
 			<Button onclick={() => refresh(favorites.evas)} disabled={isRefreshing}>
 				{isRefreshing ? 'Retrying…' : 'Try again'}
@@ -160,7 +155,7 @@
 		<EmptyState
 			icon={FluentEmojiGlowingStar}
 			title="No favorites yet"
-			description="Tap the heart on any station to keep it here for later. Your list stays on this device."
+			description="Tap the heart on a station to save it here."
 		>
 			<Button href={resolve('/')}>
 				Find a station

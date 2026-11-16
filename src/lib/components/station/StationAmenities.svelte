@@ -23,7 +23,6 @@
 
 	interface Group {
 		title: string;
-		subtitle: string;
 		icon: IconComponent;
 		tint: string;
 		rows: Row[];
@@ -33,7 +32,6 @@
 	const groups = $derived<Group[]>([
 		{
 			title: 'Sleeping',
-			subtitle: 'Somewhere warm to rest',
 			icon: FluentEmojiBed,
 			tint: 'bg-amber-400/12',
 			rows: [{ label: 'Warm sleeping area', value: station.has_warm_sleep }],
@@ -41,7 +39,6 @@
 		},
 		{
 			title: 'Power',
-			subtitle: 'Keep your devices alive',
 			icon: FluentEmojiHighVoltage,
 			tint: 'bg-indigo-400/12',
 			rows: [{ label: 'Power outlets', value: station.has_outlets }],
@@ -49,7 +46,6 @@
 		},
 		{
 			title: 'Toilets',
-			subtitle: 'Facilities on site',
 			icon: FluentEmojiToilet,
 			tint: 'bg-violet-400/12',
 			rows: [
@@ -60,7 +56,6 @@
 		},
 		{
 			title: 'Access',
-			subtitle: 'When you can get in',
 			icon: FluentEmojiTwelveOclock,
 			tint: 'bg-sky-400/12',
 			rows: [{ label: 'Open 24/7', value: station.is_open_24h }],
@@ -68,7 +63,6 @@
 		},
 		{
 			title: 'WiFi',
-			subtitle: 'Stay connected',
 			icon: FluentEmojiSatelliteAntenna,
 			tint: 'bg-teal-400/12',
 			rows: [
@@ -102,10 +96,7 @@
 				<span class="grid size-10 shrink-0 place-items-center rounded-xl {group.tint}">
 					<group.icon class="size-5" />
 				</span>
-				<div class="min-w-0">
-					<h3 class="text-sm font-bold text-white">{group.title}</h3>
-					<p class="truncate text-xs text-white/40">{group.subtitle}</p>
-				</div>
+				<h3 class="text-sm font-bold text-white">{group.title}</h3>
 			</div>
 
 			<div class="mt-4 space-y-2">
