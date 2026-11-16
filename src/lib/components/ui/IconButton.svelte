@@ -1,6 +1,6 @@
 <!-- src/lib/components/ui/IconButton.svelte -->
 <script lang="ts">
-	import { cx, type IconComponent } from '$lib/design/tokens';
+	import { cx, ICON_BUTTON_BASE, type IconComponent } from '$lib/design/tokens';
 
 	interface Props {
 		icon: IconComponent;
@@ -8,7 +8,7 @@
 		label: string;
 		href?: string;
 		disabled?: boolean;
-		/** Highlights the icon, e.g. an active favourite. */
+		/** Highlights the icon, e.g. an active favorite. */
 		active?: boolean;
 		class?: string;
 		iconClass?: string;
@@ -26,20 +26,15 @@
 		onclick
 	}: Props = $props();
 
-	const classes = $derived(
-		cx(
-			'btn btn-circle border border-white/12 bg-white/8 text-white transition-colors hover:border-white/25 hover:bg-white/18',
-			className
-		)
-	);
+	const classes = $derived(cx(ICON_BUTTON_BASE, active && 'border-rose-400/40 bg-rose-500/15', className));
 </script>
 
 {#if href}
 	<a href={disabled ? undefined : href} class={classes} aria-label={label} title={label} {onclick}>
-		<Icon class={cx('size-5', active && 'text-rose-400', iconClass)} />
+		<Icon class={cx('size-5', active && 'text-rose-300', iconClass)} />
 	</a>
 {:else}
 	<button type="button" class={classes} aria-label={label} title={label} {disabled} {onclick}>
-		<Icon class={cx('size-5', active && 'text-rose-400', iconClass)} />
+		<Icon class={cx('size-5', active && 'text-rose-300', iconClass)} />
 	</button>
 {/if}

@@ -1,22 +1,37 @@
+<!-- src/routes/+layout.svelte -->
 <script lang="ts">
-	import CookieBanner from '$lib/components/CookieBanner.svelte';
+	import type { Snippet } from 'svelte';
 	import '../app.css';
-	let { children } = $props();
+	import AppHeader from '$lib/components/AppHeader.svelte';
+	import AppFooter from '$lib/components/AppFooter.svelte';
+	import InstallHint from '$lib/components/InstallHint.svelte';
+	import CookieBanner from '$lib/components/CookieBanner.svelte';
+	import type { LayoutData } from './$types';
+
+	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 </script>
 
 <svelte:head>
 	<title>Station Atlas</title>
 	<meta
 		name="description"
-		content="Find practical, community-maintained information for German railway stations."
+		content="Find train stations with the amenities that matter to you — community-maintained, open data, across Europe."
 	/>
+	<meta name="theme-color" content="#060a12" />
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
 
-<div class="flex min-h-dvh w-full justify-center px-4 py-6 md:py-10">
-	<div class="flex w-full max-w-3xl flex-col">
+<div class="flex min-h-dvh flex-col">
+	<AppHeader user={data.user} />
+
+	<main class="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 sm:px-6">
 		{@render children()}
+	</main>
+
+	<div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+		<AppFooter />
 	</div>
 </div>
 
+<InstallHint />
 <CookieBanner />

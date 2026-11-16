@@ -1,11 +1,17 @@
 <!-- src/lib/components/ui/Button.svelte -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { cx } from '$lib/design/tokens';
+	import {
+		BUTTON_BASE,
+		BUTTON_SIZES,
+		BUTTON_VARIANTS,
+		cx,
+		type IconComponent
+	} from '$lib/design/tokens';
 	import Spinner from './Spinner.svelte';
 
-	type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
-	type Size = 'sm' | 'md' | 'lg';
+	type Variant = keyof typeof BUTTON_VARIANTS;
+	type Size = keyof typeof BUTTON_SIZES;
 
 	interface Props {
 		children: Snippet;
@@ -16,10 +22,12 @@
 		type?: 'button' | 'submit' | 'reset';
 		disabled?: boolean;
 		loading?: boolean;
+		/** Adds an outline treatment to secondary and danger buttons. */
 		outline?: boolean;
 		block?: boolean;
 		/** Opens the link in a new tab with safe rel attributes. */
 		external?: boolean;
+		icon?: IconComponent;
 		title?: string;
 		label?: string;
 		class?: string;
@@ -37,33 +45,20 @@
 		outline = false,
 		block = false,
 		external = false,
+		icon: Icon,
 		title,
 		label,
 		class: className = '',
 		onclick
 	}: Props = $props();
 
-	const variants: Record<Variant, string> = {
-		primary: 'btn-primary',
-		secondary: 'border-white/15 bg-white/10 text-white hover:border-white/25 hover:bg-white/20',
-		ghost: 'btn-ghost text-white/80 hover:text-white',
-		danger: 'btn-error',
-		success: 'btn-success'
-	};
-
-	const sizes: Record<Size, string> = {
-		sm: 'btn-sm',
-		md: 'btn-md',
-		lg: 'btn-lg'
-	};
-
 	const classes = $derived(
 		cx(
-			'btn gap-2',
-			sizes[size],
-			variants[variant],
-			outline && 'btn-outline',
-			block && 'btn-block',
+			BUTTON_BASE,
+			BUTTON_SIZES[size],
+			BUTTON_VARIANTS[variant],
+			outline && 'bg-transparent',
+			block && 'w-full',
 			className
 		)
 	);
@@ -72,7 +67,7 @@
 {#if href}
 	<a
 		href={disabled ? undefined : href}
-		class={cx(classes, disabled && 'btn-disabled')}
+		class={classes}
 		aria-disabled={disabled || undefined}
 		aria-label={label}
 		{title}
@@ -80,7 +75,7 @@
 		rel={external ? 'noopener noreferrer' : undefined}
 		{onclick}
 	>
-		{#if loading}<Spinner size="sm" />{/if}
+		{#if loading}<Spinner size="xs" />{:else if Icon}<Icon class="size-4" />{/if}
 		{@render children()}
 	</a>
 {:else}
@@ -92,7 +87,7 @@
 		{title}
 		{onclick}
 	>
-		{#if loading}<Spinner size="sm" />{/if}
+		{#if loading}<Spinner size="xs" />{:else if Icon}<Icon class="size-4" />{/if}
 		{@render children()}
 	</button>
 {/if}
