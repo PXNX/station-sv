@@ -41,7 +41,12 @@ export async function fetchJsonWithTimeout<T>(
 		if (!response.ok) return null;
 		return (await response.json()) as T;
 	} catch (error) {
-		console.error(`External request failed: ${url}`, error);
+		// A timeout is an expected outcome on slow networks — not an app error.
+		if (error instanceof Error && error.name === 'AbortError') {
+			console.warn(`External request timed out: ${url}`);
+		} else {
+			console.error(`External request failed: ${url}`, error);
+		}
 		return null;
 	}
 }
