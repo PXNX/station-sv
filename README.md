@@ -9,6 +9,7 @@ A small, community-maintained web app for finding train stations by the faciliti
 - **Favorites** stored in local storage — no account required.
 - **Community contributions**: signed-in users submit edits; administrators review them before they go live.
 - **Installable PWA** with a service worker and an unobtrusive install hint.
+- **Offline-friendly**: station summaries are cached locally, favorites render instantly from that cache, and a resilient service worker serves previously visited pages when the network is unavailable.
 
 ## Tech stack
 
@@ -61,6 +62,10 @@ src/
 ├── app.css              global styles, theme and motion
 └── service-worker.js    PWA precache
 ```
+
+## Offline and slow connections
+
+External photo lookups have a hard timeout, so a slow third party can never hang a search or station page — results just render without a photo. The service worker precaches assets individually (one failed download does not disable offline support), races network requests against a timeout, and falls back to cached pages or a dedicated offline page. Favorites and recently viewed stations are stored locally and shown immediately; a refresh runs in the background and labels cached copies as stale when it cannot complete. Search itself needs the network, and says so plainly when offline.
 
 `docs/STATION_DATA_SOURCES.md` records where station data comes from and the terms attached to each source. The `tools/` directory holds one-off import and migration scripts for that data; they are not part of the running app.
 
