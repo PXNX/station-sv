@@ -1,6 +1,6 @@
 <!-- src/routes/station/[eva]/+page.svelte -->
 <script lang="ts">
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
 	import DetailImage from '$lib/components/station/DetailImage.svelte';
@@ -61,20 +61,17 @@
 		recentlyViewed.load();
 	});
 
-	// Record this visit and keep a local copy for offline use. Keyed on EVA so
-	// photo navigation doesn't append duplicate history entries.
+	// Record this visit and keep a local copy for offline use. Visits are
+	// de-duplicated by EVA in the store, so photo navigation adds no entries.
 	$effect(() => {
-		const eva = station.eva;
-		untrack(() => {
-			const summary: StationResult = {
-				...station,
-				city: station.city ?? null,
-				category: station.category as StationResult['category'],
-				photoUrl: currentPhotoUrl
-			};
-			rememberStations([summary]);
-			recentlyViewed.visit(summary);
-		});
+		const summary: StationResult = {
+			...station,
+			city: station.city ?? null,
+			category: station.category as StationResult['category'],
+			photoUrl: currentPhotoUrl
+		};
+		rememberStations([summary]);
+		recentlyViewed.visit(summary);
 	});
 
 	function notify(message: string) {
