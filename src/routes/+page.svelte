@@ -25,7 +25,6 @@
 
 	const RECENT_KEY = 'station_recent_searches';
 	const FILTER_KEY = 'station_search_filters';
-	const POPULAR = ['Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln'];
 
 	function readJson<T>(key: string, fallback: T): T {
 		if (!browser) return fallback;
@@ -278,37 +277,21 @@
 	</form>
 </Card>
 
-{#if !hasSearched}
+{#if !hasSearched && recent.length > 0}
 	<Card padding="lg">
-		<p class="eyebrow mb-3">Popular right now</p>
+		<p class="eyebrow mb-3">Recent searches</p>
 		<div class="flex flex-wrap gap-2">
-			{#each POPULAR as city (city)}
+			{#each recent as term (term)}
 				<button
 					type="button"
-					onclick={() => runSearch(city)}
-					class="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/70 transition-all hover:-translate-y-0.5 hover:border-signal-400/40 hover:text-white"
+					onclick={() => runSearch(term)}
+					class="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-sm text-white/60 transition-colors hover:text-white"
 				>
-					{city}
+					<FluentSearch24Regular class="size-3.5" />
+					{term}
 				</button>
 			{/each}
 		</div>
-		{#if recent.length > 0}
-			<div class="mt-6 border-t border-white/8 pt-5">
-				<p class="eyebrow mb-3">Recent searches</p>
-				<div class="flex flex-wrap gap-2">
-					{#each recent as term (term)}
-						<button
-							type="button"
-							onclick={() => runSearch(term)}
-							class="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-sm text-white/60 transition-colors hover:text-white"
-						>
-							<FluentSearch24Regular class="size-3.5" />
-							{term}
-						</button>
-					{/each}
-				</div>
-			</div>
-		{/if}
 	</Card>
 {:else if results.length > 0}
 	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">

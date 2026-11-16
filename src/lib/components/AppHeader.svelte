@@ -54,34 +54,25 @@
 					href={resolve(link.href)}
 					aria-current={isActive(link.href) ? 'page' : undefined}
 					class={cx(
-						'rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+						'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
 						isActive(link.href)
 							? 'bg-white/10 text-white'
 							: 'text-white/55 hover:bg-white/5 hover:text-white'
 					)}
 				>
 					{link.label}
+					{#if link.href === '/favorites' && favorites.count > 0}
+						<span
+							class="grid min-w-4 place-items-center rounded-full bg-rose-500/20 px-1 text-[10px] font-bold text-rose-200"
+						>
+							{favorites.count}
+						</span>
+					{/if}
 				</a>
 			{/each}
 		</nav>
 
 		<div class="ml-auto flex items-center gap-2">
-			<a
-				href={resolve('/favorites')}
-				class="relative grid size-10 place-items-center rounded-xl text-white/70 transition-colors hover:bg-white/8 hover:text-white"
-				aria-label="Favorites"
-				title="Favorites"
-			>
-				<FluentHeart24Regular class="size-5" />
-				{#if favorites.count > 0}
-					<span
-						class="absolute -top-0.5 -right-0.5 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white"
-					>
-						{favorites.count}
-					</span>
-				{/if}
-			</a>
-
 			{#if user}
 				{#if user.isAdmin}
 					<a
@@ -123,6 +114,11 @@
 			>
 				<link.icon class="size-4" />
 				{link.label}
+				{#if link.href === '/favorites' && favorites.count > 0}
+					<span class="rounded-full bg-rose-500/20 px-1.5 text-[10px] font-bold text-rose-200">
+						{favorites.count}
+					</span>
+				{/if}
 			</a>
 		{/each}
 	</nav>
