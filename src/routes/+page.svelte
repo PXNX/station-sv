@@ -1,6 +1,6 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -48,10 +48,11 @@
 
 	const savedFilters = readJson<Record<string, boolean>>(FILTER_KEY, {});
 
-	let query = $state(data.query ?? '');
+	// Seed from the URL/localStorage once; later URL changes are handled by the effect below.
+	let query = $state(untrack(() => data.query ?? ''));
 	let filters = $state<Record<string, boolean>>(
 		Object.fromEntries(
-			AMENITIES.map(({ key }) => [key, data.filters?.[key] ?? savedFilters[key] ?? false])
+			AMENITIES.map(({ key }) => [key, untrack(() => data.filters?.[key]) ?? savedFilters[key] ?? false])
 		)
 	);
 	let sort = $state<'relevance' | 'name' | 'category'>('relevance');

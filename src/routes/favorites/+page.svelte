@@ -1,6 +1,6 @@
 <!-- src/routes/favorites/+page.svelte -->
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import FluentDelete24Regular from '~icons/fluent/delete-24-regular';
 	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
@@ -18,7 +18,7 @@
 	let { data }: Props = $props();
 
 	let isLoading = $state(true);
-	let stations: StationResult[] = $state(data.stations ?? []);
+	let stations: StationResult[] = $state(untrack(() => data.stations ?? []));
 	let showClearDialog = $state(false);
 
 	function clearAllFavorites() {
@@ -33,7 +33,7 @@
 			return;
 		}
 		try {
-			const response = await fetch(`/favorites?evas=${evas.join(',')}`);
+			const response = await fetch(`/api/favorites?evas=${evas.join(',')}`);
 			if (response.ok) {
 				const payload = await response.json();
 				stations = payload.stations ?? [];
