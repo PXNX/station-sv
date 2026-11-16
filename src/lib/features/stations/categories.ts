@@ -7,6 +7,8 @@ import { normalizeCategory } from './normalize';
 export interface StationCategoryStyle {
 	label: string;
 	description: string;
+	/** Raw colour for SVG markers and charts. */
+	color: string;
 	/** Slim rail on result cards. */
 	accent: string;
 	/** Badge on the detail page and result cards. */
@@ -21,6 +23,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	1: {
 		label: 'Major hub',
 		description: 'Major traffic hub',
+		color: '#a78bfa',
 		accent: 'bg-violet-400',
 		badge: 'border-violet-400/50 bg-violet-500/15 text-violet-100',
 		surface:
@@ -30,6 +33,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	2: {
 		label: 'Important',
 		description: 'Important junction or airport connection',
+		color: '#38bdf8',
 		accent: 'bg-sky-400',
 		badge: 'border-sky-400/50 bg-sky-500/15 text-sky-100',
 		surface:
@@ -39,6 +43,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	3: {
 		label: 'Regional hub',
 		description: 'Regional hub',
+		color: '#34d399',
 		accent: 'bg-emerald-400',
 		badge: 'border-emerald-400/50 bg-emerald-500/15 text-emerald-100',
 		surface:
@@ -48,6 +53,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	4: {
 		label: 'Medium',
 		description: 'Medium-sized station',
+		color: '#fbbf24',
 		accent: 'bg-amber-400',
 		badge: 'border-amber-400/50 bg-amber-500/15 text-amber-100',
 		surface:
@@ -57,6 +63,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	5: {
 		label: 'Small',
 		description: 'Small station',
+		color: '#fb7185',
 		accent: 'bg-rose-400',
 		badge: 'border-rose-400/50 bg-rose-500/15 text-rose-100',
 		surface:
@@ -66,6 +73,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	6: {
 		label: 'Very small',
 		description: 'Very small station',
+		color: '#818cf8',
 		accent: 'bg-indigo-400',
 		badge: 'border-indigo-400/50 bg-indigo-500/15 text-indigo-100',
 		surface:
@@ -75,6 +83,7 @@ const STYLES: Record<StationCategory, StationCategoryStyle> = {
 	7: {
 		label: 'Minimal',
 		description: 'Minimal service station',
+		color: '#94a3b8',
 		accent: 'bg-slate-400',
 		badge: 'border-slate-400/50 bg-slate-500/15 text-slate-100',
 		surface:

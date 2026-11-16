@@ -60,6 +60,13 @@ export function getCachedStations(evas: number[]): StationResult[] {
 	});
 }
 
+/** All locally known stations, newest first — used for offline search. */
+export function getAllCachedStations(): StationResult[] {
+	return Object.values(read())
+		.sort((a, b) => b.savedAt - a.savedAt)
+		.map((entry) => entry.station);
+}
+
 export function clearStationCache() {
 	if (!browser) return;
 	try {
