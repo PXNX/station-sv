@@ -4,25 +4,15 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
 import { inArray } from 'drizzle-orm';
+import { fetchJsonWithTimeout } from '$lib/server/http';
 
 async function fetchStationPhoto(stationIdGer: number) {
-	try {
-		const response = await fetch(
-			`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`
-		);
-		if (!response.ok) {
-			return null;
-		}
-		const data = await response.json();
-		const photos = data.stations?.[0]?.photos || [];
-		if (photos.length > 0) {
-			return `${data.photoBaseUrl || 'https://api.railway-stations.org/photos/'}${photos[0].path}`;
-		}
-		return null;
-	} catch (error) {
-		console.error('Failed to fetch station photo:', error);
-		return null;
-	}
+	const data = await fetchJsonWithTimeout<{
+		photoBaseUrl?: string;
+		stations?: { photos?: { path?: string }[] }[];
+	}>(`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`);
+	const path = data?.stations?.[0]?.photos?.[0]?.path;
+	return path ? `${data?.photoBaseUrl || 'https://api.railway-stations.org/photos/'}${path}` : null;
 }
 
 export const GET: RequestHandler = async ({ url }) => {

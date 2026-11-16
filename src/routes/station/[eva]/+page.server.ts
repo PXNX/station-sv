@@ -4,24 +4,19 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { stations, stationOperations } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
+import { fetchJsonWithTimeout } from '$lib/server/http';
 
 async function fetchStationPhotos(stationIdGer: number) {
-	try {
-		const response = await fetch(
-			`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`
-		);
-		if (!response.ok) {
-			return null;
-		}
-		const data = await response.json();
-		return {
-			photoBaseUrl: data.photoBaseUrl || 'https://api.railway-stations.org/photos/',
-			photos: data.stations?.[0]?.photos || []
-		};
-	} catch (error) {
-		console.error('Failed to fetch station photos:', error);
-		return null;
-	}
+	const data = await fetchJsonWithTimeout<{
+		photoBaseUrl?: string;
+		stations?: { photos?: unknown[] }[];
+	}>(`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`);
+	if (!data) return null;
+
+	return {
+		photoBaseUrl: data.photoBaseUrl || 'https://api.railway-stations.org/photos/',
+		photos: data.stations?.[0]?.photos || []
+	};
 }
 
 function getStationImageUrl(stationIdGer: number): string {

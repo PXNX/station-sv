@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
 import { or, sql, asc, desc } from 'drizzle-orm';
 import type { StationResult } from '$lib/types';
+import { fetchJsonWithTimeout } from '$lib/server/http';
 
 const FILTER_KEYS = [
 	'open24h',
@@ -20,10 +21,12 @@ type FilterKey = (typeof FILTER_KEYS)[number];
 async function fetchStationPhotoById(country: string, germanId: number) {
 	try {
 		const url = `https://api.railway-stations.org/photoStationById/${country.toLowerCase()}/${germanId}`;
-		const response = await fetch(url);
-		if (!response.ok) return null;
+		const data = await fetchJsonWithTimeout<{
+			photoBaseUrl?: string;
+			stations?: { photos?: { path?: string }[] }[];
+		}>(url);
+		if (!data) return null;
 
-		const data = await response.json();
 		const station = data.stations?.[0];
 		const latestPhoto = station?.photos?.at(-1);
 		if (!latestPhoto?.path) return null;
