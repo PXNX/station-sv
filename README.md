@@ -63,6 +63,19 @@ src/
 └── service-worker.js    PWA precache
 ```
 
+## Deploying to Vercel
+
+Import the repository into Vercel. [`vercel.json`](vercel.json) sets the framework to SvelteKit, installs with `bun install --frozen-lockfile`, builds with `bun run build`, and deploys to the `fra1` region. Add these **Environment Variables** in the Vercel project settings (they are private and must never be committed):
+
+```dotenv
+DATABASE_URL=postgresql://...
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=https://<your-deployment>/auth/callback/google
+```
+
+They are imported as SvelteKit static private env, so they must exist **at build time**. Point `GOOGLE_REDIRECT_URI` at the final deployment URL and register the same callback URL with Google. Push to `main` to deploy; the Vercel adapter is configured in [`svelte.config.js`](svelte.config.js). Before pushing, run `bun fmt`, `bun lint`, `bun run check`, `bun run test` and `bun run build` locally.
+
 ## Offline and slow connections
 
 External photo lookups have a hard timeout, so a slow third party can never hang a search or station page — results just render without a photo. The service worker precaches assets individually (one failed download does not disable offline support), races network requests against a timeout, and falls back to cached pages or a dedicated offline page. Favorites and recently viewed stations are stored locally and shown immediately; a refresh runs in the background and labels cached copies as stale when it cannot complete. Search itself needs the network, and says so plainly when offline.
