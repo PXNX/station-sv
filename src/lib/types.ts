@@ -26,7 +26,8 @@ export interface Station {
 export interface StationResult {
 	eva: number;
 	name: string;
-	city: string;
+	/** null when the source repeats the station name as its city. */
+	city: string | null;
 	country: string;
 	category: StationCategory; // 1-7, where 1 is most important (major hubs)
 	has_warm_sleep: boolean | null;
@@ -38,17 +39,8 @@ export interface StationResult {
 	photoUrl: string | null;
 }
 
-// Category descriptions for reference
-export const STATION_CATEGORIES = {
-	1: 'Major traffic hub (e.g., München Hbf, Berlin Hbf)',
-	2: 'Important junction or airport connection',
-	3: 'Regional hub',
-	4: 'Medium-sized station',
-	5: 'Small station',
-	6: 'Very small station',
-	7: 'Minimal service station'
-} as const;
-
+// Category descriptions live in $lib/features/stations/categories.ts together
+// with the colours, so labels and presentation cannot drift apart.
 export type StationCategory = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface StationPhoto {

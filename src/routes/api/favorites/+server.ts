@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
 import { inArray } from 'drizzle-orm';
 import { fetchJsonWithTimeout } from '$lib/server/http';
+import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
 
 async function fetchStationPhoto(stationIdGer: number) {
 	const data = await fetchJsonWithTimeout<{
@@ -46,9 +47,9 @@ export const GET: RequestHandler = async ({ url }) => {
 			return {
 				eva: station.eva,
 				name: station.name,
-				city: station.city,
-				country: station.country,
-				category: station.category,
+				city: displayCity(station.name, station.city),
+				country: normalizeCountry(station.country),
+				category: normalizeCategory(station.category),
 				has_warm_sleep: station.hasWarmSleep,
 				has_outlets: station.hasOutlets,
 				has_toilets: station.hasToilets,

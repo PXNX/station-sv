@@ -5,6 +5,7 @@ import { db } from '$lib/server/db';
 import { stations, stationOperations } from '$lib/server/schema';
 import { eq } from 'drizzle-orm';
 import { fetchJsonWithTimeout } from '$lib/server/http';
+import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
 import type { StationPhoto } from '$lib/types';
 
 async function fetchStationPhotos(stationIdGer: number) {
@@ -65,8 +66,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			eva: station.eva,
 			station_id_ger: station.stationIdGER,
 			name: station.name,
-			city: station.city,
-			country: station.country,
+			city: displayCity(station.name, station.city),
+			country: normalizeCountry(station.country),
 			has_warm_sleep: station.hasWarmSleep,
 			sleep_notes: station.sleepNotes,
 			has_outlets: station.hasOutlets,
@@ -81,7 +82,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			wifi_notes: station.wifiNotes,
 			latitude: station.latitude,
 			longitude: station.longitude,
-			category: station.category,
+			category: normalizeCategory(station.category),
 
 			additional_info: station.additionalInfo
 		},

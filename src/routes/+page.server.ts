@@ -5,6 +5,7 @@ import { stations } from '$lib/server/schema';
 import { or, sql, asc, desc } from 'drizzle-orm';
 import type { StationResult } from '$lib/types';
 import { fetchJsonWithTimeout } from '$lib/server/http';
+import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
 
 const FILTER_KEYS = [
 	'open24h',
@@ -154,9 +155,9 @@ function mergeStationData(
 		return {
 			eva: dbStation.eva,
 			name: dbStation.name,
-			city: dbStation.city,
-			country: dbStation.country,
-			category: dbStation.category as StationResult['category'],
+			city: displayCity(dbStation.name, dbStation.city),
+			country: normalizeCountry(dbStation.country),
+			category: normalizeCategory(dbStation.category),
 			has_warm_sleep: dbStation.hasWarmSleep,
 			has_outlets: dbStation.hasOutlets,
 			has_toilets: dbStation.hasToilets,
