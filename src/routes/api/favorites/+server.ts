@@ -56,7 +56,9 @@ export const GET: RequestHandler = async ({ url }) => {
 				toilets_open_at_night: station.toiletsOpenAtNight,
 				is_open_24h: station.isOpen24h,
 				has_wifi: station.hasWifi,
-				photoUrl
+				photoUrl,
+				latitude: station.latitude,
+				longitude: station.longitude
 			};
 		})
 	);

@@ -80,6 +80,8 @@ async function searchStationsInDB(query: string) {
 				toiletsOpenAtNight: stations.toiletsOpenAtNight,
 				isOpen24h: stations.isOpen24h,
 				hasWifi: stations.hasWifi,
+				latitude: stations.latitude,
+				longitude: stations.longitude,
 				similarityScore: sql<number>`
 					GREATEST(
 						similarity(${stations.name}, ${query}) * 2.0,
@@ -140,6 +142,8 @@ type StationRow = {
 	toiletsOpenAtNight: boolean | null;
 	isOpen24h: boolean | null;
 	hasWifi: boolean | null;
+	latitude: number | null;
+	longitude: number | null;
 };
 
 type StationPhoto = { photoBaseUrl: string; photoPath: string };
@@ -164,7 +168,9 @@ function mergeStationData(
 			toilets_open_at_night: dbStation.toiletsOpenAtNight,
 			is_open_24h: dbStation.isOpen24h,
 			has_wifi: dbStation.hasWifi,
-			photoUrl: photo ? `${photo.photoBaseUrl}${photo.photoPath}` : null
+			photoUrl: photo ? `${photo.photoBaseUrl}${photo.photoPath}` : null,
+			latitude: dbStation.latitude,
+			longitude: dbStation.longitude
 		};
 	});
 }

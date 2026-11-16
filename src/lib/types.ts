@@ -37,6 +37,8 @@ export interface StationResult {
 	is_open_24h: boolean | null;
 	has_wifi: boolean | null;
 	photoUrl: string | null;
+	latitude: number | null;
+	longitude: number | null;
 }
 
 // Category descriptions live in $lib/features/stations/categories.ts together
