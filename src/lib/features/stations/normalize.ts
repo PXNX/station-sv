@@ -23,3 +23,10 @@ export function displayCity(name: string, city: string | null | undefined): stri
 export function normalizeCountry(value: string | null | undefined): string {
 	return (value || 'DE').trim().toUpperCase().slice(0, 2);
 }
+
+/** Join a photo base URL and path exactly once, whatever slashes each uses. */
+export function photoUrl(base: string | null | undefined, path: string | null | undefined) {
+	if (!path) return null;
+	const root = (base || 'https://api.railway-stations.org/photos').replace(/\/+$/, '');
+	return `${root}/${path.replace(/^\/+/, '')}`;
+}

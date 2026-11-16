@@ -5,7 +5,12 @@ import { stations } from '$lib/server/schema';
 import { or, sql, asc, desc } from 'drizzle-orm';
 import type { StationResult } from '$lib/types';
 import { fetchJsonWithTimeout } from '$lib/server/http';
-import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
+import {
+	displayCity,
+	normalizeCategory,
+	normalizeCountry,
+	photoUrl
+} from '$lib/features/stations/normalize';
 
 const FILTER_KEYS = [
 	'open24h',
@@ -168,7 +173,7 @@ function mergeStationData(
 			toilets_open_at_night: dbStation.toiletsOpenAtNight,
 			is_open_24h: dbStation.isOpen24h,
 			has_wifi: dbStation.hasWifi,
-			photoUrl: photo ? `${photo.photoBaseUrl}${photo.photoPath}` : null,
+			photoUrl: photoUrl(photo?.photoBaseUrl, photo?.photoPath),
 			latitude: dbStation.latitude,
 			longitude: dbStation.longitude
 		};

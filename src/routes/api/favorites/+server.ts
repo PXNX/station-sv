@@ -5,15 +5,19 @@ import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
 import { inArray } from 'drizzle-orm';
 import { fetchJsonWithTimeout } from '$lib/server/http';
-import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
+import {
+	displayCity,
+	normalizeCategory,
+	normalizeCountry,
+	photoUrl as buildPhotoUrl
+} from '$lib/features/stations/normalize';
 
 async function fetchStationPhoto(stationIdGer: number) {
 	const data = await fetchJsonWithTimeout<{
 		photoBaseUrl?: string;
 		stations?: { photos?: { path?: string }[] }[];
 	}>(`https://api.railway-stations.org/photoStationById/de/${stationIdGer}`);
-	const path = data?.stations?.[0]?.photos?.[0]?.path;
-	return path ? `${data?.photoBaseUrl || 'https://api.railway-stations.org/photos/'}${path}` : null;
+	return buildPhotoUrl(data?.photoBaseUrl, data?.stations?.[0]?.photos?.[0]?.path);
 }
 
 export const GET: RequestHandler = async ({ url }) => {

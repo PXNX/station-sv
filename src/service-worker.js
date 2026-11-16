@@ -52,33 +52,39 @@ function fetchWithTimeout(request, ms) {
 	return fetch(request, { signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
+/** Cache writes are best-effort; a full or blocked store must not lose a good response. */
+async function cacheQuietly(cache, request, response) {
+	if (!response.ok) return;
+	try {
+		await cache.put(request, response.clone());
+	} catch {
+		// Ignore storage failures.
+	}
+}
+
 async function networkFirst(request, cache, { timeout = NETWORK_TIMEOUT, cacheable = true } = {}) {
 	try {
 		const response = await fetchWithTimeout(request, timeout);
-		if (cacheable && isUncacheable(new URL(request.url))) {
-			return response;
-		}
-		if (cacheable && (response.ok || response.type === 'opaque')) {
-			await cache.put(request, response.clone());
-		}
+		if (!cacheable || isUncacheable(new URL(request.url))) return response;
+		await cacheQuietly(cache, request, response);
 		return response;
 	} catch (error) {
-		const cached = await cache.match(request);
+		const cached = await cache.match(request).catch(() => undefined);
 		if (cached) return cached;
 		throw error;
 	}
 }
 
 async function staleWhileRevalidate(request, cache) {
-	const cached = await cache.match(request);
+	const cached = await cache.match(request).catch(() => undefined);
 	const network = fetchWithTimeout(request, NETWORK_TIMEOUT)
 		.then(async (response) => {
-			if (response.ok || response.type === 'opaque') await cache.put(request, response.clone());
+			await cacheQuietly(cache, request, response);
 			return response;
 		})
 		.catch(() => cached);
 
-	return cached || network;
+	return cached || (await network);
 }
 
 self.addEventListener('fetch', (event) => {
@@ -107,7 +113,7 @@ self.addEventListener('fetch', (event) => {
 			if (event.request.mode === 'navigate') {
 				try {
 					const response = await fetchWithTimeout(event.request, NETWORK_TIMEOUT);
-					if (response.ok) await cache.put(event.request, response.clone());
+					await cacheQuietly(cache, event.request, response);
 					return response;
 				} catch {
 					return (
