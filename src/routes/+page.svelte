@@ -312,22 +312,24 @@
 	</form>
 </Card>
 
-{#if !hasSearched && recent.length > 0}
-	<Card padding="lg">
-		<p class="eyebrow mb-3">Recent searches</p>
-		<div class="flex flex-wrap gap-2">
-			{#each recent as term (term)}
-				<button
-					type="button"
-					onclick={() => runSearch(term)}
-					class="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-sm text-white/60 transition-colors hover:text-white"
-				>
-					<FluentSearch24Regular class="size-3.5" />
-					{term}
-				</button>
-			{/each}
-		</div>
-	</Card>
+{#if !hasSearched}
+	{#if recent.length > 0}
+		<Card padding="lg">
+			<p class="eyebrow mb-3">Recent searches</p>
+			<div class="flex flex-wrap gap-2">
+				{#each recent as term (term)}
+					<button
+						type="button"
+						onclick={() => runSearch(term)}
+						class="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-sm text-white/60 transition-colors hover:text-white"
+					>
+						<FluentSearch24Regular class="size-3.5" />
+						{term}
+					</button>
+				{/each}
+			</div>
+		</Card>
+	{/if}
 {:else if results.length > 0}
 	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 		<p class="text-sm text-white/60">
