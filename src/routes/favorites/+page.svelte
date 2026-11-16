@@ -1,10 +1,9 @@
 <!-- src/routes/favorites/+page.svelte -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import FluentDelete24Regular from '~icons/fluent/delete-24-regular';
 	import FluentEmojiGlowingStar from '~icons/fluent-emoji/glowing-star';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
-	import FluentDelete24Regular from '~icons/fluent/delete-24-regular';
-	import BackButton from '$lib/components/BackButton.svelte';
 	import StationCard from '$lib/components/StationCard.svelte';
 	import { Button, ConfirmDialog, EmptyState, PageHeader, Spinner } from '$lib/components/ui';
 	import { favorites } from '$lib/client/favorites.svelte';
@@ -19,7 +18,7 @@
 	let { data }: Props = $props();
 
 	let isLoading = $state(true);
-	let stations: StationResult[] = $state(data.stations || []);
+	let stations: StationResult[] = $state(data.stations ?? []);
 	let showClearDialog = $state(false);
 
 	function clearAllFavorites() {
@@ -27,18 +26,17 @@
 		stations = [];
 	}
 
-	async function fetchFavoriteStations(favoriteIds: number[]) {
-		if (favoriteIds.length === 0) {
+	async function fetchFavoriteStations(evas: number[]) {
+		if (evas.length === 0) {
 			isLoading = false;
 			stations = [];
 			return;
 		}
-
 		try {
-			const response = await fetch(`/favorites?evas=${favoriteIds.join(',')}`);
+			const response = await fetch(`/favorites?evas=${evas.join(',')}`);
 			if (response.ok) {
 				const payload = await response.json();
-				stations = payload.stations || [];
+				stations = payload.stations ?? [];
 			}
 		} catch (error) {
 			console.error('Failed to fetch favorite stations:', error);
@@ -55,60 +53,58 @@
 </script>
 
 <svelte:head>
-	<title>My Favorites - Train Station Search</title>
-	<meta name="description" content="Your favorite train stations" />
+	<title>Favorites · Station Atlas</title>
+	<meta name="description" content="Your saved stations." />
 </svelte:head>
 
-<div class="mb-6 flex items-center justify-between gap-4">
-	<BackButton href={resolve('/')} />
+<div class="animate-fade-up">
+	<PageHeader
+		title="Saved stations"
+		icon={FluentEmojiGlowingStar}
+		eyebrow="Your shortlist"
+		description={`${stations.length} ${stations.length === 1 ? 'station' : 'stations'} saved on this device`}
+	>
+		{#snippet actions()}
+			{#if stations.length > 0}
+				<Button variant="danger" size="sm" onclick={() => (showClearDialog = true)}>
+					<FluentDelete24Regular class="size-4" />
+					Clear all
+				</Button>
+			{/if}
+		{/snippet}
+	</PageHeader>
 
-	{#if stations.length > 0}
-		<Button variant="danger" size="sm" outline onclick={() => (showClearDialog = true)}>
-			<FluentDelete24Regular class="size-4" />
-			Clear all
-		</Button>
+	{#if isLoading}
+		<div class="flex justify-center py-16">
+			<div class="flex items-center gap-3 rounded-full border border-white/10 bg-slate-900/70 px-6 py-3">
+				<Spinner />
+				<span class="text-sm font-medium text-white/80">Loading your stations…</span>
+			</div>
+		</div>
+	{:else if stations.length > 0}
+		<div class="stagger space-y-3">
+			{#each stations as station (station.eva)}
+				<StationCard {station} />
+			{/each}
+		</div>
+	{:else}
+		<EmptyState
+			icon={FluentEmojiGlowingStar}
+			title="No favorites yet"
+			description="Tap the heart on any station to keep it here for later. Your list stays on this device."
+		>
+			<Button href={resolve('/')}>
+				Find a station
+				<FluentArrowRight24Regular class="size-4" />
+			</Button>
+		</EmptyState>
 	{/if}
 </div>
-
-<PageHeader
-	title="My Favorite Stations"
-	icon={FluentEmojiGlowingStar}
-	align="start"
-	description={`${stations.length} ${stations.length === 1 ? 'station' : 'stations'} saved`}
-/>
-
-{#if isLoading}
-	<div class="flex justify-center py-10">
-		<div
-			class="flex items-center gap-3 rounded-full border border-white/12 bg-white/6 px-6 py-3 backdrop-blur-md"
-		>
-			<Spinner />
-			<span class="text-sm font-medium text-white">Loading favorites...</span>
-		</div>
-	</div>
-{:else if stations.length > 0}
-	<div class="space-y-4">
-		{#each stations as station (station.eva)}
-			<StationCard {station} />
-		{/each}
-	</div>
-{:else}
-	<EmptyState
-		icon={FluentEmojiGlowingStar}
-		title="No favorites yet"
-		description="Start adding stations to your favorites by tapping the heart icon on a station's detail page."
-	>
-		<Button href={resolve('/')}>
-			Search stations
-			<FluentArrowRight24Regular class="size-5" />
-		</Button>
-	</EmptyState>
-{/if}
 
 <ConfirmDialog
 	bind:open={showClearDialog}
 	title="Remove all favorites?"
-	message="This clears every station from your favorites. It cannot be undone."
+	message="This clears every saved station. This cannot be undone."
 	confirmLabel="Clear all"
 	tone="danger"
 	onconfirm={clearAllFavorites}

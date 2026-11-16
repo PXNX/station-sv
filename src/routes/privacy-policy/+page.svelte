@@ -1,123 +1,80 @@
+<!-- src/routes/privacy-policy/+page.svelte -->
+<script lang="ts">
+	import { Card, PageHeader } from '$lib/components/ui';
+	import FluentEmojiInformationSource from '~icons/fluent-emoji/information';
+</script>
+
 <svelte:head>
-	<title>MN Map | Privacy Policy</title>
+	<title>Privacy Policy · Station Atlas</title>
+	<meta name="description" content="How Station Atlas handles your data." />
 </svelte:head>
 
-<div class="prose lg:prose-xl bg-base-100 mx-auto rounded-2xl p-6 shadow-md">
-	<h1 class="text-3xl font-bold">Privacy Policy</h1>
-	<p>
-		<strong>Effective Date:</strong> 19 July 2025<br />
-		<strong>Last Updated:</strong> 19 July 2025
-	</p>
+<div class="animate-fade-up mx-auto max-w-3xl">
+	<PageHeader
+		title="Privacy policy"
+		icon={FluentEmojiInformationSource}
+		eyebrow="Last updated: 16 November 2026"
+		description="A short, plain-language explanation of what this project stores."
+	/>
 
-	<h2 class="mt-6 text-2xl font-semibold">1. Introduction</h2>
-	<p>
-		We at <strong>Militaernews</strong> (“we”, “us”, or “our”) are committed to protecting your
-		privacy. This Privacy Policy explains how we collect, use, and safeguard your personal data when
-		you visit our website
-		<a class="link link-primary" href="https://geo-mn.vercel.app/">https://geo-mn.vercel.app/</a> (the
-		“Site”), in accordance with the General Data Protection Regulation (EU) 2016/679 (“GDPR”).
-	</p>
+	<div class="space-y-5 text-sm leading-relaxed text-white/70">
+		<Card title="At a glance" titleSize="md">
+			<p>
+				Station Atlas is a small, non-commercial project. It does not show advertising and does not run
+				third-party analytics or tracking scripts. We collect only what is needed to let you sign in and
+				to store the station information you choose to contribute.
+			</p>
+		</Card>
 
-	<h2 class="mt-6 text-2xl font-semibold">2. Data Controller</h2>
-	<p>The data controller responsible for your personal data is:</p>
-	<p>
-		<strong>Militaernews</strong><br />
-		<a class="link link-primary" href="https://t.me/MilitaernewsKontakt"
-			>https://t.me/MilitaernewsKontakt</a
-		>
-	</p>
+		<Card title="What is stored on your device" titleSize="md">
+			<ul class="list-inside list-disc space-y-1.5">
+				<li><strong>Favorites</strong> are kept in your browser's local storage. They never leave your device.</li>
+				<li>
+					<strong>Recent searches and filter choices</strong> are also kept locally so the app can
+					restore them on your next visit.
+				</li>
+				<li>You can clear all of this at any time through your browser's site-data settings.</li>
+			</ul>
+		</Card>
 
-	<h2 class="mt-6 text-2xl font-semibold">3. What Personal Data We Collect</h2>
-	<ul class="list-inside list-disc">
-		<li><strong>Contact details:</strong> name</li>
-		<li>
-			<strong>Usage data:</strong> IP address, browser type, pages visited, time spent on the site
-		</li>
-		<li><strong>Cookies and tracking technologies</strong></li>
-		<li><strong>Information you provide</strong> through forms or direct communication</li>
-	</ul>
+		<Card title="Sign-in and contributed data" titleSize="md">
+			<p>
+				If you choose to sign in with Google, we receive your name, email address and a stable account
+				identifier from Google. A session cookie keeps you signed in. Station edits you submit are stored
+				in our database together with your account, and are reviewed before being published. If you do
+				not sign in, you can still browse and save favorites — you simply cannot contribute edits.
+			</p>
+		</Card>
 
-	<h2 class="mt-6 text-2xl font-semibold">4. How We Use Your Data</h2>
-	<ul class="list-inside list-disc">
-		<li>To provide and maintain our services</li>
-		<li>To respond to inquiries and support requests</li>
-		<li>To improve the functionality and performance of our website</li>
-		<li>To comply with legal obligations</li>
-	</ul>
+		<Card title="Third-party services" titleSize="md">
+			<p>
+				Station photos are loaded from Railway-Stations.org, maps link to Google Maps and
+				OpenStreetMap, and sign-in is provided by Google. When you use those features, the respective
+				providers may process technical data such as your IP address under their own privacy policies.
+				Loading the core search page does not contact them.
+			</p>
+		</Card>
 
-	<h2 class="mt-6 text-2xl font-semibold">5. Legal Basis for Processing</h2>
-	<ul class="list-inside list-disc">
-		<li>Your <strong>consent</strong> (Article 6(1)(a) GDPR)</li>
-		<li>The necessity for the <strong>performance of a contract</strong> (Article 6(1)(b) GDPR)</li>
-		<li><strong>Legal obligations</strong> (Article 6(1)(c) GDPR)</li>
-		<li>
-			Our <strong>legitimate interests</strong> (Article 6(1)(f) GDPR), where those interests are not
-			overridden by your rights
-		</li>
-	</ul>
+		<Card title="Your rights" titleSize="md">
+			<p>
+				You can ask to access, correct or delete the data associated with your account, or withdraw a
+				consent you previously gave. To do so, contact the project maintainer through the repository
+				linked below. You also have the right to complain to your local data protection authority.
+			</p>
+		</Card>
 
-	<h2 class="mt-6 text-2xl font-semibold">6. Data Sharing and Transfers</h2>
-	<p>We do not sell or rent your data. We may share your personal data with:</p>
-	<ul class="list-inside list-disc">
-		<li>Service providers who support our business operations</li>
-		<li>Legal authorities when required by law</li>
-		<li>Business partners with your consent</li>
-	</ul>
-	<p>
-		If data is transferred outside the European Economic Area (EEA), we ensure adequate protection
-		through Standard Contractual Clauses or other appropriate safeguards.
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">7. Your Rights Under the GDPR</h2>
-	<ul class="list-inside list-disc">
-		<li>Right to <strong>access</strong> your data</li>
-		<li>Right to <strong>rectify</strong> inaccurate or incomplete data</li>
-		<li>Right to <strong>erasure</strong> ("right to be forgotten")</li>
-		<li>Right to <strong>restrict</strong> processing</li>
-		<li>Right to <strong>data portability</strong></li>
-		<li>Right to <strong>object</strong> to processing</li>
-		<li>Right to <strong>withdraw consent</strong> at any time</li>
-	</ul>
-	<p>
-		To exercise any of these rights, contact us at:
-		<a class="link link-primary" href="https://t.me/MilitaernewsKontakt"
-			>https://t.me/MilitaernewsKontakt</a
-		>
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">8. Data Retention</h2>
-	<p>
-		We retain your personal data only as long as necessary for the purposes described in this policy
-		or to comply with legal obligations.
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">9. Cookies</h2>
-	<p>
-		We use cookies to enhance user experience and analyze site traffic. You can control cookies
-		through your browser settings.
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">10. Security</h2>
-	<p>
-		We implement appropriate technical and organizational measures to protect your data from
-		unauthorized access, loss, or misuse.
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">11. Contact</h2>
-	<p>
-		If you have questions or concerns about this Privacy Policy or our data practices, please
-		contact:
-	</p>
-	<p>
-		<strong>Data Protection Officer (DPO)</strong> (if applicable):<br />
-		<a class="link link-primary" href="https://t.me/MilitaernewsKontakt"
-			>https://t.me/MilitaernewsKontakt</a
-		>
-	</p>
-
-	<h2 class="mt-6 text-2xl font-semibold">12. Complaints</h2>
-	<p>
-		If you believe your data protection rights have been violated, you can lodge a complaint with
-		your local Data Protection Authority.
-	</p>
+		<Card title="Contact" titleSize="md">
+			<p>
+				Questions about this policy or your data can be raised as an issue at
+				<a
+					href="https://github.com/PXNX/station-sv"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="font-semibold text-signal-300 underline decoration-signal-300/40 underline-offset-2 hover:text-signal-200"
+				>
+					github.com/PXNX/station-sv
+				</a>.
+			</p>
+		</Card>
+	</div>
 </div>
