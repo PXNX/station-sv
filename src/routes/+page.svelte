@@ -279,7 +279,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each AMENITIES as amenity (amenity.key)}
 					<label
-						class="group inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 select-none {filters[
+						class="group inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 select-none active:scale-95 {filters[
 							amenity.key
 						]
 							? 'border-signal-400/50 bg-signal-400/15 text-signal-200 shadow-signal-500/10 shadow-sm'

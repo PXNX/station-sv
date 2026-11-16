@@ -35,7 +35,7 @@
 </script>
 
 <div
-	class="hover-lift group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3.5 shadow-lg shadow-black/15 hover:border-white/20 hover:bg-slate-900/80 hover:shadow-xl"
+	class="sheen-card hover-lift group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border p-3.5 shadow-lg shadow-black/15 hover:shadow-xl {category.surface}"
 	style="view-transition-name: station-{station.eva}"
 >
 	<span class="absolute inset-y-0 left-0 w-1 {category.accent}" aria-hidden="true"></span>
@@ -58,7 +58,7 @@
 			<div class="flex items-center gap-2">
 				<h3 class="truncate text-base font-bold text-white sm:text-lg">{station.name}</h3>
 				<span
-					class="hidden rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] font-semibold text-white/45 sm:inline"
+					class="hidden shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:inline {category.badge}"
 				>
 					{category.label}
 				</span>

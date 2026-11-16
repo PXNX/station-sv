@@ -206,8 +206,10 @@
 		</div>
 
 		<div class="flex flex-col justify-center" style="view-transition-name: station-{station.eva}">
-			<p class="eyebrow">{category.label}</p>
-			<h1 class="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">{station.name}</h1>
+			<div>
+				<Badge class="animate-pop {category.badge}">{category.label}</Badge>
+			</div>
+			<h1 class="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">{station.name}</h1>
 			{#if station.city}
 				<p class="mt-2 text-lg text-white/55">{station.city}, {station.country.toUpperCase()}</p>
 			{/if}

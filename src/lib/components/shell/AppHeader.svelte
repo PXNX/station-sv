@@ -46,7 +46,7 @@
 			<span
 				class="bg-signal-400 text-ink-950 shadow-signal-500/25 grid size-9 place-items-center rounded-xl shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-6"
 			>
-				<FluentDriveTrain24Regular class="size-5" />
+				<FluentDriveTrain24Regular class="brand-float size-5" />
 			</span>
 			<span class="text-base font-bold tracking-tight text-white">
 				Station<span class="text-signal-400">Atlas</span>
