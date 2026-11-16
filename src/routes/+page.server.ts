@@ -2,7 +2,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { stations } from '$lib/server/schema';
-import { or, sql, asc, desc, eq } from 'drizzle-orm';
+import { or, sql, asc, desc } from 'drizzle-orm';
 import type { StationResult } from '$lib/types';
 import { fetchJsonWithTimeout } from '$lib/server/http';
 import { displayCity, normalizeCategory, normalizeCountry } from '$lib/features/stations/normalize';
@@ -129,31 +129,6 @@ async function searchStationsInDB(query: string) {
 	}
 }
 
-/** Browse a single importance tier — powers the colour-coded category chips. */
-async function browseStationsInDB(category: number): Promise<StationRow[]> {
-	return db
-		.select({
-			eva: stations.eva,
-			stationIdGER: stations.stationIdGER,
-			name: stations.name,
-			city: stations.city,
-			country: stations.country,
-			category: stations.category,
-			hasWarmSleep: stations.hasWarmSleep,
-			hasOutlets: stations.hasOutlets,
-			hasToilets: stations.hasToilets,
-			toiletsOpenAtNight: stations.toiletsOpenAtNight,
-			isOpen24h: stations.isOpen24h,
-			hasWifi: stations.hasWifi,
-			latitude: stations.latitude,
-			longitude: stations.longitude
-		})
-		.from(stations)
-		.where(eq(stations.category, category))
-		.orderBy(asc(stations.name))
-		.limit(40);
-}
-
 type StationRow = {
 	eva: number;
 	name: string;
@@ -211,8 +186,6 @@ async function enrichStations(dbStations: StationRow[]): Promise<StationResult[]
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const query = url.searchParams.get('name')?.trim() ?? '';
-	const categoryParam = url.searchParams.get('category');
-	const category = categoryParam && /^[1-7]$/.test(categoryParam) ? Number(categoryParam) : null;
 	// Accept both `true` (legacy links) and `on` (native checkbox submits).
 	const filters = Object.fromEntries(
 		FILTER_KEYS.map((key) => [
@@ -221,10 +194,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		])
 	) as Record<FilterKey, boolean>;
 
-	const base = { query, category, filters, user: locals.user, session: locals.session };
-	if (query.length < 2 && !category) return { ...base, stations: [] };
+	const base = { query, filters, user: locals.user, session: locals.session };
+	if (query.length < 2) return { ...base, stations: [] };
 
-	const dbStations =
-		query.length >= 2 ? await searchStationsInDB(query) : await browseStationsInDB(category!);
-	return { ...base, stations: await enrichStations(dbStations) };
+	return { ...base, stations: await enrichStations(await searchStationsInDB(query)) };
 };

@@ -15,11 +15,10 @@
 	import FluentEmojiFaceWithRaisedEyebrow from '~icons/fluent-emoji/face-with-raised-eyebrow';
 	import FluentEmojiStation from '~icons/fluent-emoji/station';
 	import type { PageData } from './$types';
-	import type { StationCategory, StationResult } from '$lib/types';
+	import type { StationResult } from '$lib/types';
 	import StationCard from '$lib/components/station/StationCard.svelte';
 	import StationMap from '$lib/components/station/StationMap.svelte';
 	import { AMENITIES } from '$lib/features/stations/amenities';
-	import { getCategoryStyles } from '$lib/features/stations/categories';
 	import { getAllCachedStations, rememberStations } from '$lib/features/stations/station-cache';
 	import { recentlyViewed } from '$lib/features/stations/recent.svelte';
 	import { network } from '$lib/features/network/online.svelte';
@@ -34,7 +33,6 @@
 
 	const RECENT_KEY = 'station_recent_searches';
 	const FILTER_KEY = 'station_search_filters';
-	const CATEGORY_IDS: StationCategory[] = [1, 2, 3, 4, 5, 6, 7];
 
 	function readJson<T>(key: string, fallback: T): T {
 		if (!browser) return fallback;
@@ -69,16 +67,14 @@
 			])
 		)
 	);
-	let sort = $state<'relevance' | 'name' | 'category'>('relevance');
+	let sort = $state<'relevance' | 'name'>('relevance');
 	let view = $state<'list' | 'map'>('list');
 	let recent = $state<string[]>(readJson<string[]>(RECENT_KEY, []));
 	let suggestions = $state<{ id?: string; name: string }[]>([]);
 	let showSuggestions = $state(false);
 
-	// Offline overrides: when there is no connection, searches and category
-	// browsing run against the locally cached stations instead of the server.
+	// Offline searches run against the locally cached stations instead of the server.
 	let localQuery = $state<string | null>(null);
-	let localCategory = $state<number | null>(null);
 
 	let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 	let request: AbortController | undefined;
@@ -86,9 +82,7 @@
 	const searching = $derived($navigating !== null);
 
 	const effectiveQuery = $derived((localQuery ?? data.query ?? '').trim());
-	const effectiveCategory = $derived(localCategory ?? data.category ?? null);
-	const offlineMode = $derived(!network.online && (localQuery !== null || localCategory !== null));
-	const activeCategory = $derived(effectiveCategory ? getCategoryStyles(effectiveCategory) : null);
+	const offlineMode = $derived(!network.online && localQuery !== null);
 
 	// Keep the input in sync with the URL (back/forward), but not while typing.
 	$effect(() => {
@@ -101,12 +95,9 @@
 	$effect(() => recentlyViewed.load());
 	$effect(() => rememberStations(data.stations ?? []));
 
-	// Reconnecting: drop local overrides so server results take over again.
+	// Reconnecting: drop the local override so server results take over again.
 	$effect(() => {
-		if (network.online && (localQuery !== null || localCategory !== null)) {
-			localQuery = null;
-			localCategory = null;
-		}
+		if (network.online && localQuery !== null) localQuery = null;
 	});
 
 	const sourceStations = $derived(offlineMode ? getAllCachedStations() : (data.stations ?? []));
@@ -122,24 +113,17 @@
 				(s) => s.name.toLowerCase().includes(term) || (s.city ?? '').toLowerCase().includes(term)
 			);
 		}
-		if (effectiveCategory) {
-			list = list.filter((s) => s.category === effectiveCategory);
-		}
 		if (activeFilters.length > 0) {
 			list = list.filter((s) => activeFilters.every((a) => s[a.field] === true));
 		}
 		if (sort === 'name') {
 			list = [...list].sort((a, b) => a.name.localeCompare(b.name));
-		} else if (sort === 'category') {
-			list = [...list].sort((a, b) => a.category - b.category || a.name.localeCompare(b.name));
 		}
 		return list;
 	});
 
-	const hasSearched = $derived(effectiveQuery.length >= 2 || effectiveCategory !== null);
-	const resultsKey = $derived(
-		`${effectiveQuery}|${effectiveCategory}|${activeFilterCount}|${sort}|${view}`
-	);
+	const hasSearched = $derived(effectiveQuery.length >= 2);
+	const resultsKey = $derived(`${effectiveQuery}|${activeFilterCount}|${sort}|${view}`);
 	const recentStations = $derived(recentlyViewed.stations);
 
 	function remember(term: string) {
@@ -163,7 +147,6 @@
 		suggestions = [];
 
 		if (!network.online) {
-			localCategory = null;
 			localQuery = trimmed;
 			return;
 		}
@@ -174,19 +157,6 @@
 			return;
 		}
 		await goto(target, { noScroll: true, keepFocus: true });
-	}
-
-	async function browseCategory(category: StationCategory) {
-		localQuery = null;
-		if (!network.online) {
-			localCategory = localCategory === category ? null : category;
-			return;
-		}
-		if (data.category === category) {
-			await goto(resolve('/'), { noScroll: true });
-			return;
-		}
-		await goto(`${resolve('/')}?category=${category}`, { noScroll: true });
 	}
 
 	function onSubmit(event: SubmitEvent) {
@@ -356,38 +326,6 @@
 	</form>
 </Card>
 
-<!-- Category browser -->
-<section class="mb-6">
-	<div class="mb-3 flex items-center justify-between">
-		<h2 class="eyebrow">Browse by station size</h2>
-		{#if activeCategory}
-			<button
-				type="button"
-				onclick={() => browseCategory(effectiveCategory as StationCategory)}
-				class="text-signal-300 hover:text-signal-200 text-xs font-semibold"
-			>
-				Clear
-			</button>
-		{/if}
-	</div>
-	<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-		{#each CATEGORY_IDS as categoryId (categoryId)}
-			{@const style = getCategoryStyles(categoryId)}
-			<button
-				type="button"
-				onclick={() => browseCategory(categoryId)}
-				class="hover-lift flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-semibold {style.surface} {effectiveCategory ===
-				categoryId
-					? 'ring-1 ring-white/40'
-					: ''}"
-			>
-				<span class="size-2 shrink-0 rounded-full {style.accent}"></span>
-				<span class="truncate text-white/90">{style.label}</span>
-			</button>
-		{/each}
-	</div>
-</section>
-
 {#if !hasSearched}
 	{#if recentStations.length > 0}
 		<section class="mb-6">
@@ -420,15 +358,8 @@
 	<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
 		<p class="text-sm text-white/60">
 			<span class="text-lg font-bold text-white">{results.length}</span>
-			{#if activeCategory}
-				<span class="text-white/60">
-					{activeCategory.label}
-					{offlineMode ? 'cached' : ''} stations
-				</span>
-			{:else}
-				stations for <span class="font-semibold text-white">“{effectiveQuery}”</span>
-				{#if offlineMode}<span class="text-signal-300">· offline results</span>{/if}
-			{/if}
+			stations for <span class="font-semibold text-white">“{effectiveQuery}”</span>
+			{#if offlineMode}<span class="text-signal-300">· offline results</span>{/if}
 		</p>
 
 		<div class="flex items-center gap-2">
@@ -464,7 +395,6 @@
 				>
 					<option value="relevance">Best match</option>
 					<option value="name">Name A–Z</option>
-					<option value="category">Station size</option>
 				</select>
 			</label>
 		</div>
