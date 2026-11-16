@@ -1,84 +1,130 @@
 /// <reference types="@sveltejs/kit" />
 import { build, files, version } from '$service-worker';
 
-// Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
+const CACHE_PREFIX = 'cache-';
+const NETWORK_TIMEOUT = 2500;
+const PRECACHE = [...new Set([...build, ...files])];
 
-const ASSETS = [
-	...build, // the app itself
-	...files // everything in `static`
-];
+// Auth and session endpoints must never be served from a cache.
+function isUncacheable(url) {
+	return url.pathname.startsWith('/auth/') || url.pathname.startsWith('/api/auth');
+}
 
 self.addEventListener('install', (event) => {
-	// Create a new cache and add all files to it
-	async function addFilesToCache() {
-		const cache = await caches.open(CACHE);
-		await cache.addAll(ASSETS);
-	}
-
-	event.waitUntil(addFilesToCache());
+	event.waitUntil(
+		(async () => {
+			const cache = await caches.open(CACHE);
+			// Cache assets individually: one failed request must not abort the whole
+			// install (slow or flaky connections would otherwise lose offline support).
+			await Promise.all(
+				PRECACHE.map(async (url) => {
+					try {
+						await cache.add(url);
+					} catch {
+						// Skip this asset; it will be fetched on demand later.
+					}
+				})
+			);
+			await self.skipWaiting();
+		})()
+	);
 });
 
 self.addEventListener('activate', (event) => {
-	// Remove previous cached data from disk
-	async function deleteOldCaches() {
-		for (const key of await caches.keys()) {
-			if (key !== CACHE) {
-				await caches.delete(key);
-			}
-		}
-	}
-
-	event.waitUntil(deleteOldCaches());
+	event.waitUntil(
+		(async () => {
+			const keys = await caches.keys();
+			await Promise.all(
+				keys
+					.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE)
+					.map((key) => caches.delete(key))
+			);
+			await self.clients.claim();
+		})()
+	);
 });
 
+/** Run a fetch with a hard deadline so slow networks fall back instead of hanging. */
+function fetchWithTimeout(request, ms) {
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), ms);
+	return fetch(request, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+async function networkFirst(request, cache, { timeout = NETWORK_TIMEOUT, cacheable = true } = {}) {
+	try {
+		const response = await fetchWithTimeout(request, timeout);
+		if (cacheable && isUncacheable(new URL(request.url))) {
+			return response;
+		}
+		if (cacheable && (response.ok || response.type === 'opaque')) {
+			await cache.put(request, response.clone());
+		}
+		return response;
+	} catch (error) {
+		const cached = await cache.match(request);
+		if (cached) return cached;
+		throw error;
+	}
+}
+
+async function staleWhileRevalidate(request, cache) {
+	const cached = await cache.match(request);
+	const network = fetchWithTimeout(request, NETWORK_TIMEOUT)
+		.then(async (response) => {
+			if (response.ok || response.type === 'opaque') await cache.put(request, response.clone());
+			return response;
+		})
+		.catch(() => cached);
+
+	return cached || network;
+}
+
 self.addEventListener('fetch', (event) => {
-	// ignore POST requests etc
-	if (event.request.method !== 'GET') {
+	if (event.request.method !== 'GET') return;
+
+	const url = new URL(event.request.url);
+
+	// Only control our own origin; let third parties handle their own requests.
+	if (url.origin !== self.location.origin) {
+		// Community photos: show a cached copy immediately, refresh in background.
+		if (event.request.destination === 'image') {
+			event.respondWith(
+				caches.open(CACHE).then((cache) => staleWhileRevalidate(event.request, cache))
+			);
+		}
 		return;
 	}
 
-	async function respond() {
-		const url = new URL(event.request.url);
-		const cache = await caches.open(CACHE);
+	if (isUncacheable(url)) return;
 
-		// `build`/`files` can always be served from the cache
-		if (ASSETS.includes(url.pathname)) {
-			const response = await cache.match(url.pathname);
+	event.respondWith(
+		(async () => {
+			const cache = await caches.open(CACHE);
 
-			if (response) {
-				return response;
-			}
-		}
-
-		// for everything else, try the network first, but
-		// fall back to the cache if we're offline
-		try {
-			const response = await fetch(event.request);
-
-			// if we're offline, fetch can return a value that is not a Response
-			// instead of throwing - and we can't pass this non-Response to respondWith
-			if (!(response instanceof Response)) {
-				throw new Error('invalid response from fetch');
+			// Navigation: network first, then the exact page, then the offline page.
+			if (event.request.mode === 'navigate') {
+				try {
+					const response = await fetchWithTimeout(event.request, NETWORK_TIMEOUT);
+					if (response.ok) await cache.put(event.request, response.clone());
+					return response;
+				} catch {
+					return (
+						(await cache.match(event.request)) ||
+						(await cache.match('/offline')) ||
+						new Response('Offline', { status: 503, headers: { 'content-type': 'text/plain' } })
+					);
+				}
 			}
 
-			if (response.status === 200) {
-				cache.put(event.request, response.clone());
+			// Hashed build assets and static files are immutable — cache first.
+			if (PRECACHE.includes(url.pathname)) {
+				const cached = await cache.match(event.request);
+				if (cached) return cached;
 			}
 
-			return response;
-		} catch (err) {
-			const response = await cache.match(event.request);
-
-			if (response) {
-				return response;
-			}
-
-			// if there's no cache, then just error out
-			// as there is nothing we can do to respond to this request
-			throw err;
-		}
-	}
-
-	event.respondWith(respond());
+			return networkFirst(event.request, cache);
+		})()
+	);
 });

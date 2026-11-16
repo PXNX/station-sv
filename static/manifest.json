@@ -1,6 +1,16 @@
 {
-	"theme_color": "#8936FF",
-	"background_color": "#000000",
+	"id": "/",
+	"name": "Station Atlas",
+	"short_name": "Station Atlas",
+	"description": "Find train stations with the amenities that matter — community-maintained, works offline.",
+	"start_url": "/",
+	"scope": "/",
+	"theme_color": "#060a12",
+	"background_color": "#060a12",
+	"orientation": "any",
+	"display": "standalone",
+	"dir": "ltr",
+	"lang": "en",
 	"icons": [
 		{
 			"purpose": "maskable",
@@ -14,12 +24,5 @@
 			"src": "icon-512.png",
 			"type": "image/png"
 		}
-	],
-	"orientation": "portrait",
-	"display": "standalone",
-	"dir": "ltr",
-	"lang": "en",
-	"name": "Train Stations",
-	"short_name": "Train Stations",
-	"description": "Search for train stations in Germany. Find sleeping spots, outlets, toilets & station info"
+	]
 }
