@@ -6,9 +6,14 @@
 	import AppFooter from '$lib/components/shell/AppFooter.svelte';
 	import InstallHint from '$lib/components/shell/InstallHint.svelte';
 	import CookieBanner from '$lib/components/shell/CookieBanner.svelte';
+	import { network } from '$lib/features/network/online.svelte';
+	import FluentCloudOffline24Regular from '~icons/fluent/cloud-offline-24-regular';
+	import { resolve } from '$app/paths';
 	import type { LayoutData } from './$types';
 
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+
+	$effect(() => network.start());
 </script>
 
 <svelte:head>
@@ -23,6 +28,16 @@
 
 <div class="flex min-h-dvh flex-col">
 	<AppHeader user={data.user} />
+
+	{#if !network.online}
+		<a
+			href={resolve('/offline')}
+			class="flex items-center justify-center gap-2 border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-center text-xs font-medium text-amber-100 transition-colors hover:bg-amber-400/15"
+		>
+			<FluentCloudOffline24Regular class="size-4" />
+			You're offline — saved stations still work.
+		</a>
+	{/if}
 
 	<main class="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 sm:px-6">
 		{@render children()}

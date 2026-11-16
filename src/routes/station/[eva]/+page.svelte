@@ -20,6 +20,8 @@
 	import { favorites } from '$lib/features/favorites/state.svelte';
 	import { getCategoryStyles } from '$lib/features/stations/categories';
 	import { formatDate } from '$lib/utils/format';
+	import { rememberStations } from '$lib/features/stations/station-cache';
+	import type { StationResult } from '$lib/types';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -54,6 +56,18 @@
 
 	$effect(() => {
 		favorites.load();
+	});
+
+	// Make this station available offline, including its photo when present.
+	$effect(() => {
+		rememberStations([
+			{
+				...station,
+				city: station.city ?? '',
+				category: (station.category ?? 5) as StationResult['category'],
+				photoUrl: currentPhotoUrl
+			}
+		]);
 	});
 
 	function notify(message: string) {

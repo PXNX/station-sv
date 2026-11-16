@@ -10,6 +10,7 @@
 	import { AMENITIES } from '$lib/features/stations/amenities';
 	import PreviewImage from '$lib/components/station/PreviewImage.svelte';
 	import { favorites } from '$lib/features/favorites/state.svelte';
+	import { rememberStations } from '$lib/features/stations/station-cache';
 	import type { StationResult } from '$lib/types';
 
 	interface Props {
@@ -21,6 +22,9 @@
 	const category = $derived(getCategoryStyles(station.category));
 	const isFavorite = $derived(favorites.has(station.eva));
 	let opening = $state(false);
+
+	// Keep a local copy so the favorites page can render this station offline.
+	$effect(() => rememberStations([station]));
 
 	async function openStation(event: MouseEvent) {
 		if (!shouldAnimateStationNavigation(event)) return;
